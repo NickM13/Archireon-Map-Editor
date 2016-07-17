@@ -1,12 +1,8 @@
-Release/
+.vs/
 Debug/
-
-One Punch Out/Release/
-One Punch Out/Debug/
+Release/
 
 *.sdf
 *.opendb
 *.db
-.vs/One Punch Out/v14/.suo
 *.opo
-.vs/One Punch Out/v14/.suo
