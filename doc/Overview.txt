@@ -1,0 +1,9 @@
+This map editor is being developed for use of an android game named *No name yet*, however is available for anyone to use if you have such desire.  Please remember that this editor is still in development, and if you happen to find bugs, the developers would appreciate a specific note of what went wrong.  The note should look like this:
+
+	Hello,
+		I was putting your map editor to good use when I stumbled upon a small bug that affected the trek of my endeavers in a spectacular way, and I would appreciate a fix with the next update.  A screenshot of the error is attached to this email.  What the bug did was (this), (and if you have any idea of how to fix it, that would also be appreciated).  Thank you for your time.
+	Sincerely,
+	(Your alias)
+
+And the email should be sent to Nick at NickMead0313@outlook.com.  Please refrain from sending spam emails, this is his personal email.  However, if you are have spam emails you are trying to get rid of, feel free to send them to ericw5531@gmail.com.  If the bug is fixed, your name will be added alongside the bug fix in the Bug Fixes.txt file.
+The same goes for any suggestions you may have about this editor.  If you would benefit from a feature such as disabling layers for saving, email NickMead0313@outlook.com in any fashion you prefer, and we will move it to a higher priority task.

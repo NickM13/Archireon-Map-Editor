@@ -1,0 +1,27 @@
+*cfg = config
+*tmf = tile map file
+*Unsigned = always positive
+*Short = 2 bytes
+
+Maps will be saved to their own folders found in the "zones" folder.
+
+The entities folder will include files with information of the entities.  Currently not implemented
+
+Info.cfg:	Includes information of basics of the map, in the following format:
+*Note: The name of the zone is the name of the root folder.
+	Unsigned Short zoneWidth
+	Unsigned Short zoneHeight
+
+Ground.tmf:	Includes information of the Ground layer, in the following format:
+*Note: Ground tiles render under entities, and are purely visual.
+	Repeated:
+		Unsigned Short tileTexId
+		Unsigned Short tileCount
+		
+World.tmf:	Includes information of the World layer, in the following format:
+*Note: World tiles have both visual effects, and collision properties.  This layer is necessary for switches and doors.
+	Repeated:
+		Unsigned Short objectId
+		Unsigned Short objectCount
+
+Entity.tmf:	Entity layer
