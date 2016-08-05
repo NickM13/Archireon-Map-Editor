@@ -6,7 +6,7 @@ bool Application::init()
 {
 	m_screenSize = Vector2<Uint16>(1280, 768);
 
-	Globals::getInstance().m_developer = true;
+	Globals::getInstance().m_developer = false;
 	Globals::getInstance().m_fps = 0;
 	Globals::getInstance().m_screenSize = m_screenSize;
 
@@ -24,7 +24,7 @@ bool Application::init()
 
 	m_screenSize = Globals::getInstance().m_screenSize;
 
-	m_mainWindow = glfwCreateWindow(m_screenSize.x, m_screenSize.y, "GE - Map Editor - Indev", 0, 0);
+	m_mainWindow = glfwCreateWindow(m_screenSize.x, m_screenSize.y, "Map Editor - Indev", 0, 0);
 
 	if(!m_mainWindow)
 	{

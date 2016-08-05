@@ -8,13 +8,13 @@ class Globals : public Singleton< Globals >
 {
 public:
 
-	Globals(){};
-	Globals( const Globals& ){};
-	Globals operator=( const Globals& ){};
+	Globals() {};
+	Globals(const Globals&) {};
+	Globals operator=(const Globals&) {};
 
 	float m_fps;
-	Vector2< Sint32 > m_screenSize;
-	Vector2< Sint32 > m_mousePos;
+	Vector2<Sint32> m_screenSize;
+	Vector2<Sint32> m_mousePos;
 	bool m_developer;
 	Sint8 m_keyStates[1024];
 	Sint8 m_specStates[256];

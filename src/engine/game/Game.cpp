@@ -33,9 +33,9 @@ bool Game::init()
 	m_guiRight->addComponent(new Panel("PANEL_RIGHT", "", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, 0, true), PANEL_ALIGN_RIGHT);
 	//m_guiTop->addComponent(new Panel("PANEL_TOP", "", {0, 0}, {Globals::getInstance().m_screenSize.x - 288 * 2, 24}, 0, true), PANEL_ALIGN_TOP);
 
-	m_guiLeft->addComponent(new CButton("BUTTON_MAP_SAVE", "Save Map", {0, 24}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiLeft->addComponent(new CButton("BUTTON_MAP_LOAD", "Load Map", {0, 64}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiLeft->addComponent(new CButton("BUTTON_MAP_NEW", "Clear Map", {0, 104}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiLeft->addComponent(new CButton("BUTTON_MAP_SAVE", "Save Zone", {0, 24}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiLeft->addComponent(new CButton("BUTTON_MAP_LOAD", "Load Zone", {0, 64}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiLeft->addComponent(new CButton("BUTTON_MAP_NEW", "Clear", {0, 104}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
 	m_guiLeft->addComponent(new CButton("BUTTON_MAP_RESIZE", "Resize", {0, 144}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
 
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma warning( disable : 6031 )
+
 #include "engine\utils\variable\datatype\Macros.h"
 #include "engine\utils\variable\datatype\Rectangle.h"
 #include "engine\utils\variable\datatype\Vector2.h"

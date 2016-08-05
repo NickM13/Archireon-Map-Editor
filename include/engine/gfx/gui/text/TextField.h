@@ -104,10 +104,10 @@ public:
 				&& p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
 			{
 				m_cursorPos = p_mousePos / m_fontSize;
-				if(m_cursorPos.y > m_text.size() - 1)
-					m_cursorPos.y = m_text.size() - 1;
-				if(m_cursorPos.x > m_text[m_cursorPos.y].length())
-					m_cursorPos.x = m_text[m_cursorPos.y].length();
+				if(m_cursorPos.y > Sint32(m_text.size()) - 1)
+					m_cursorPos.y = Sint32(m_text.size()) - 1;
+				if(m_cursorPos.x > Sint32(m_text[m_cursorPos.y].length()))
+					m_cursorPos.x = Sint32(m_text[m_cursorPos.y].length());
 			}
 		}
 
@@ -142,7 +142,7 @@ public:
 					}
 					else if(_keyEvents[i].m_keyCode == GLFW_KEY_DELETE)
 					{
-						if(m_cursorPos.x < m_text[m_text.size() - 1].length() || m_cursorPos.y < m_text.size() - 1)
+						if(m_cursorPos.x < Sint32(m_text[m_text.size() - 1].length()) || m_cursorPos.y < Sint32(m_text.size()) - 1)
 						{
 							if(m_cursorPos.x == m_text[m_cursorPos.y].length())
 							{
