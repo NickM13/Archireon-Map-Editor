@@ -17,7 +17,7 @@ private:
 	bool m_scrolling;
 	std::vector<std::string> m_text;
 public:
-	TextField(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Uint16 p_fontSize, Sint8 p_colorTheme = 0)
+	TextField(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_fontSize, Sint8 p_colorTheme = 0)
 	{
 		m_compName = p_compName;
 		m_blankField = p_title;
@@ -86,9 +86,8 @@ public:
 		return m_title;
 	}
 
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
-		Sint8 _rValue = 0;
 		p_mousePos = p_mousePos - m_pos;
 		if(p_mouseStates[0] == 1)
 		{
@@ -111,8 +110,9 @@ public:
 			}
 		}
 
-		if(m_selected)
+		if(((p_interactFlags & 2) == 0) && m_selected)
 		{
+			p_interactFlags += 2;
 			std::vector<Globals::keyPress> _keyEvents = Globals::getInstance().m_keyEvents;
 			for(Uint16 i = 0; i < _keyEvents.size(); i++)
 			{
@@ -308,15 +308,12 @@ public:
 					}
 				}
 			}
-			_rValue += 2;
 		}
 
-		if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x
+		if(((p_interactFlags & 1) == 0) &&
+			p_mousePos.x >= 0 && p_mousePos.x < m_size.x
 			&& p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
-			_rValue += 1;
-		else
-			return 0;
-		return _rValue;
+			p_interactFlags += 1;
 	}
 
 	void update(GLfloat p_deltaUpdate)

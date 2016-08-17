@@ -125,9 +125,6 @@
     <ClInclude Include="include\engine\gfx\gui\slider\Slider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\engine\gfx\gui\tab\Bar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\engine\gfx\gui\text\Text.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,6 +141,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\engine\gfx\gui\dropdown\DropDown.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\gfx\gui\container\ContainerPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\gfx\gui\tabbar\TabBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\gfx\gui\toolbar\Toolbar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

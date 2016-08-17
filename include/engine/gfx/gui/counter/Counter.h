@@ -8,7 +8,7 @@ struct CCounter : public Component
 private:
 	CButton* m_buttonAdd, *m_buttonSubtract;
 public:
-	CCounter(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint8 p_colorTheme, Sint16 p_currValue)
+	CCounter(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, Sint16 p_currValue)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -17,8 +17,8 @@ public:
 		m_colorTheme = m_colorThemes[p_colorTheme];
 		m_numValue = p_currValue;
 
-		m_buttonAdd = new CButton("", "+", Vector2< Sint32 >(p_pos.x + m_title.length() * 16 + 20, p_pos.y), Vector2< Sint32 >(16, 16), 16, 1);
-		m_buttonSubtract = new CButton("", "-", Vector2< Sint32 >(p_pos.x + m_title.length() * 16, p_pos.y), Vector2< Sint32 >(16, 16), 16, 1);
+		m_buttonAdd = new CButton("", "+", Vector2<Sint32>(p_pos.x + m_title.length() * 16 + 20, p_pos.y), Vector2<Sint32>(16, 16), 16, 1);
+		m_buttonSubtract = new CButton("", "-", Vector2<Sint32>(p_pos.x + m_title.length() * 16, p_pos.y), Vector2<Sint32>(16, 16), 16, 1);
 	}
 	~CCounter()
 	{
@@ -27,10 +27,10 @@ public:
 		Component::~Component();
 	}
 
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
-		m_buttonAdd->input(p_keyStates, p_mouseStates, p_mousePos);
-		m_buttonSubtract->input(p_keyStates, p_mouseStates, p_mousePos);
+		m_buttonAdd->input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos);
+		m_buttonSubtract->input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos);
 		if(p_keyStates[GLFW_KEY_LEFT_SHIFT] || p_keyStates[GLFW_KEY_RIGHT_SHIFT])
 		{
 			if(m_buttonAdd->isSelected() != 0)
@@ -57,8 +57,6 @@ public:
 			m_numValue = m_size.x;
 		if(m_numValue > m_size.y)
 			m_numValue = m_size.y;
-
-		return false;
 	}
 	void update(GLfloat p_deltaUpdate)
 	{
@@ -77,11 +75,11 @@ public:
 		m_buttonAdd->render();
 	}
 
-	void setPos(Vector2< Sint32 > p_pos)
+	void setPos(Vector2<Sint32> p_pos)
 	{
 		m_pos = p_pos;
 	}
-	Vector2< Sint32 > getPos()
+	Vector2<Sint32> getPos()
 	{
 		return m_pos;
 	}

@@ -20,7 +20,7 @@ private:
 	bool m_hover;
 	bool m_dragging;
 public:
-	CTileSet(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Uint16 p_tileSize, Texture p_tileSheet, Sint8 p_colorTheme = 0)
+	CTileSet(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_tileSize, Texture p_tileSheet, Sint8 p_colorTheme = 0)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -42,14 +42,15 @@ public:
 		m_tileSheet = p_tileSheet;
 		m_tileCount = m_tileSheet.getSize() / m_tileSize;
 	}
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
 		if(p_mousePos.x >= m_pos.x - 4 && p_mousePos.x <= m_pos.x + m_size.x + 4 &&
 			p_mousePos.y >= m_pos.y - 24 && p_mousePos.y <= m_pos.y + m_size.y + 4)
 			m_hover = true;
 		else
 			m_hover = false;
-		if(p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
+		if((((p_interactFlags & 1) == 0) || m_dragging) && 
+			p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
 			p_mousePos.y >= m_pos.y && p_mousePos.y <= m_pos.y + m_size.y)
 		{
 			if(p_mouseStates[0] == 1)
@@ -60,10 +61,16 @@ public:
 									  Sint16(GLfloat(p_mousePos.y - m_pos.y + floor(GLfloat(m_scroll.y) / m_tileSize) * m_tileSize) / m_tileSize)};
 
 				m_dragging = false;
-				return 1;
+				if((p_interactFlags & 1) == 0)
+					p_interactFlags += 1;
+
 			}
 			else if(p_mouseStates[1] == 1 || p_mouseStates[1] == 2 && m_dragging)
+			{
 				m_dragging = true;
+				if((p_interactFlags & 1) == 0)
+					p_interactFlags += 1;
+			}
 		}
 
 		if(m_dragging)
@@ -85,13 +92,10 @@ public:
 				else if(m_scroll.y > m_tileSheet.getSize().y - m_size.y + m_tileSize - 1)
 					m_scroll.y = m_tileSheet.getSize().y - m_size.y + m_tileSize - 1;
 				m_mouseBuffer = p_mousePos;
-				return 1;
 			}
 		}
 
 		m_mouseBuffer = p_mousePos;
-
-		return 0;
 	}
 	void update(GLfloat p_deltaUpdate)
 	{

@@ -24,7 +24,7 @@ GLuint LTexture::loadImage(std::string src)
 	ilGenImages(1, &m_imgId);
 	ilBindImage(m_imgId);
 	ilLoadImage(_src.c_str());
-	Texture p_temp(src, 0, Vector2< Sint32 >(Sint32(ilGetInteger(IL_IMAGE_WIDTH)), Sint32(ilGetInteger(IL_IMAGE_HEIGHT))));
+	Texture p_temp(src, 0, Vector2<Sint32>(Sint32(ilGetInteger(IL_IMAGE_WIDTH)), Sint32(ilGetInteger(IL_IMAGE_HEIGHT))));
 	if(MTexture::getInstance().contains(p_temp))
 	{
 		ilDeleteImage(m_imgId);
@@ -34,7 +34,7 @@ GLuint LTexture::loadImage(std::string src)
 	{
 		ilutRenderer(ILUT_OPENGL);
 		m_imgId = ilutGLBindTexImage();
-		return MTexture::getInstance().addUnit(Texture(src, m_imgId, Vector2< Sint32 >(Sint32(ilGetInteger(IL_IMAGE_WIDTH)), Sint32(ilGetInteger(IL_IMAGE_HEIGHT)))));
+		return MTexture::getInstance().addUnit(Texture(src, m_imgId, Vector2<Sint32>(Sint32(ilGetInteger(IL_IMAGE_WIDTH)), Sint32(ilGetInteger(IL_IMAGE_HEIGHT)))));
 	}
 }
 

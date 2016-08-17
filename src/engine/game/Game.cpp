@@ -2,6 +2,7 @@
 
 #include "engine\gfx\font\Font.h"
 
+#include <functional>
 #include <iostream>
 
 bool Game::init()
@@ -22,43 +23,78 @@ bool Game::init()
 	resize();
 
 	m_guiAll = new Container("CONTAINER_ALL", Globals::getInstance().m_screenSize / -2, Globals::getInstance().m_screenSize, true);
-	m_guiLeft = new Container("CONTAINER_LEFT", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, true);
-	m_guiRight = new Container("CONTAINER_RIGHT", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, true);
-	m_guiTop = new Container("CONTAINER_TOP", {0, 0}, {Globals::getInstance().m_screenSize.x - 288 * 2, 24}, true);
+	m_guiPause = new Container("CONTAINER_PAUSE", {0, 0}, Globals::getInstance().m_screenSize, false);
+	m_guiTop = new Container("CONTAINER_TOP", {0, 0}, {Globals::getInstance().m_screenSize.x, 32}, true);
+	m_guiLeft = new ContainerPanel("CONTAINER_LEFT", "Layers", {16, 64}, {266, 149}, 0, true, LTexture::getInstance().loadImage("gui\\BarFlatRound.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+	m_guiRight = new ContainerPanel("CONTAINER_RIGHT", "Pallet",  {16, 32}, {288, 640}, 0, true, LTexture::getInstance().loadImage("gui\\BarFlatRound.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 
-	m_guiAll->addComponent(m_guiLeft, PANEL_ALIGN_LEFT);
-	m_guiAll->addComponent(m_guiRight, PANEL_ALIGN_RIGHT);
-	m_guiAll->addComponent(m_guiTop, PANEL_ALIGN_TOP);
-	m_guiLeft->addComponent(new Panel("PANEL_LEFT", "", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, 0, true), PANEL_ALIGN_LEFT);
-	m_guiRight->addComponent(new Panel("PANEL_RIGHT", "", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, 0, true), PANEL_ALIGN_RIGHT);
-	//m_guiTop->addComponent(new Panel("PANEL_TOP", "", {0, 0}, {Globals::getInstance().m_screenSize.x - 288 * 2, 24}, 0, true), PANEL_ALIGN_TOP);
-
-	m_guiLeft->addComponent(new CButton("BUTTON_MAP_SAVE", "Save Zone", {0, 24}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiLeft->addComponent(new CButton("BUTTON_MAP_LOAD", "Load Zone", {0, 64}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiLeft->addComponent(new CButton("BUTTON_MAP_NEW", "Clear", {0, 104}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiLeft->addComponent(new CButton("BUTTON_MAP_RESIZE", "Resize", {0, 144}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiAll->addComponent(m_guiPause, PANEL_ALIGN_TOP_LEFT)->setPriorityLayer(5);
+	m_guiPause->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
+	m_guiAll->addComponent(m_guiLeft, PANEL_ALIGN_TOP_LEFT);
+	m_guiAll->addComponent(m_guiRight, PANEL_ALIGN_TOP_RIGHT);
+	m_guiAll->addComponent(m_guiTop, PANEL_ALIGN_TOP_LEFT)->setPriorityLayer(4);
 
 
 
-	m_selectLayer = new CButtonRadio("RADIO_LAYER", "Layer", {0, 480}, {264, 200}, 1);
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_GROUND", "Ground", {0, 0}, {264, 32}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_WORLD", "World", {0, 40}, {264, 32}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_ENTITY", "Entity", {0, 80}, {264, 32}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_SKY", "Sky", {0, 120}, {264, 32}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_STAMPS", "Stamps", {0, 160}, {264, 32}, 16, 1));
+	m_toolbarMenu = new CToolbar("TOOLBAR_MENU", {0, 0}, {Globals::getInstance().m_screenSize.x, 24}, 0);
+	m_toolbarMenu->addButton("", "File");
+	{
+		m_toolbarMenu->addButton("File", "Save", [](){
+			Game::getInstance().m_guiSaveMap->setVisible(true);
+			Game::getInstance().m_guiPause->setVisible(true);
+		});
+		m_toolbarMenu->addButton("File", "Load", [](){
+			Game::getInstance().m_guiLoadMap->setVisible(true);
+			Game::getInstance().m_guiPause->setVisible(true);
+		});
+		m_toolbarMenu->addButton("File", "New", [](){
+			Game::getInstance().m_guiClearMap->setVisible(true);
+			Game::getInstance().m_guiPause->setVisible(true);
+		});
+	}
+	m_toolbarMenu->addButton("", "Edit");
+	{
+		m_toolbarMenu->addButton("Edit", "Resize", [](){
+			Game::getInstance().m_guiResizeMap->findComponent("SLIDER_WIDTH")->setValue(Game::getInstance().m_zoneMap->getSize().x);
+			Game::getInstance().m_guiResizeMap->findComponent("SLIDER_HEIGHT")->setValue(Game::getInstance().m_zoneMap->getSize().y);
+			Game::getInstance().m_guiResizeMap->setVisible(true);
+			Game::getInstance().m_guiPause->setVisible(true);
+		});
+	}
+	m_toolbarMenu->addButton("", "View");
+	{
+		m_toolbarMenu->addButton("View", "Toggle Grid", [](){
+			Game::getInstance().m_showGrid = !Game::getInstance().m_showGrid;
+		});
+		m_toolbarMenu->addButton("View", "Toggle Overlay", [](){
+			Game::getInstance().m_guiLeft->setVisible(!Game::getInstance().m_guiLeft->isVisible());
+			Game::getInstance().m_guiRight->setVisible(!Game::getInstance().m_guiRight->isVisible());
+		});
+	}
+	m_toolbarMenu->addButton("", "Help");
+	{
+		m_toolbarMenu->addButton("Help", "Nothing yet!");
+	}
+	m_guiTop->addComponent(m_toolbarMenu);
+
+
+
+	m_selectLayer = new CButtonRadio("RADIO_LAYER", "Layer", {0, 24}, {264, 200}, 1);
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_GROUND", "Ground", {0, 0}, {264, 24}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_WORLD", "World", {0, 25}, {264, 24}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_ENTITY", "Entity", {0, 50}, {264, 24}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_SKY", "Sky", {0, 75}, {264, 24}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_STAMPS", "Stamps", {0, 100}, {264, 24}, 16, 1));
 	m_guiLeft->addComponent(m_selectLayer, PANEL_ALIGN_TOP);
 
 	m_guiLeft->addComponent(new CButtonToggle("BUTTON_GROUND_VISIBLE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Visible.png")),
-		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-116, 484}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
+		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-120, 24}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 	m_guiLeft->addComponent(new CButtonToggle("BUTTON_WORLD_VISIBLE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Visible.png")),
-		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-116, 524}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
+		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-120, 49}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 	m_guiLeft->addComponent(new CButtonToggle("BUTTON_ENTITY_VISIBLE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Visible.png")),
-		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-116, 564}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
+		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-120, 74}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 	m_guiLeft->addComponent(new CButtonToggle("BUTTON_SKY_VISIBLE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Visible.png")),
-		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-116, 604}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
-
-	m_guiLeft->addComponent(new CButtonToggle("BUTTON_GRID", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Grid.png")),
-		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("NoGrid.png")), {0, 1}, {32, 32}, 16, 1), PANEL_ALIGN_BOTTOM_RIGHT);
+		MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Invisible.png")), {-120, 99}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 
 
 
@@ -84,13 +120,13 @@ bool Game::init()
 
 	//m_guiRightGround->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp1", Vector2<Sint32>(16, 324), Vector2<Sint32>(16, 1), 16, 1));
 
-	m_guiRightWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>(8, 20), Vector2<Sint32>(17, 1), 16, 1));
+	m_guiRightWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>(8, 320), Vector2<Sint32>(17, 1), 16, 1));
 
 	m_guiRightWorldPortal->addComponent(new TextField("TEXTFIELD_PORTAL", "Destination Zone", {8, 416}, {17, 1}, 16, 1));
 	m_guiRightWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_X", "X:", {0, 440}, {0, 500}, 1, 0));
 	m_guiRightWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_Y", "Y:", {0, 460}, {0, 500}, 1, 0));
 
-	m_dropDownInteract = new CDropDown("", "Interaction Type", {0, 374}, {264, 32}, 16, 1);
+	m_dropDownInteract = new CDropDown("", "Interaction Type", {0, 450}, {264, 32}, 16, 1);
 	m_dropDownInteract->addItem("None");
 	m_dropDownInteract->addItem("Solid");
 	m_dropDownInteract->addItem("Switch");
@@ -106,7 +142,6 @@ bool Game::init()
 
 	m_guiEntityTex = new Container("CONTAINER_ENTITY_TEX", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiEntityTex->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 		m_guiEntityTex->addComponent(new Panel("PANEL_BG2", "Set Texture", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiEntityTex->addComponent(new TextField("TEXTFIELD_TEXTURE", "Texture", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
 		m_guiEntityTex->addComponent(new CButton("BUTTON_SET", "Set", {-130, 24}, {252, 24}, 16, 1), PANEL_ALIGN_CENTER);
@@ -114,7 +149,6 @@ bool Game::init()
 	}
 	m_guiEntityScript = new Container("CONTAINER_ENTITY_SCRIPT", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiEntityScript->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 		m_guiEntityScript->addComponent(new Panel("PANEL_BG2", "Entity Script", {0, 0}, Globals::getInstance().m_screenSize, 0, true), PANEL_ALIGN_CENTER);
 		m_guiEntityScript->addComponent(new TextField("TEXTFIELD_SCRIPT", "Go to docs folder for script help", {0, -16}, Globals::getInstance().m_screenSize / 16 - Vector2<Sint32>(0, 5), 16, 1), PANEL_ALIGN_CENTER);
 		m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setTitle("Test\nING\nSTuff");
@@ -122,8 +156,8 @@ bool Game::init()
 		m_guiEntityScript->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1), PANEL_ALIGN_BOTTOM);
 	}
 
-	m_guiAll->addComponent(m_guiEntityTex, PANEL_ALIGN_CENTER);
-	m_guiAll->addComponent(m_guiEntityScript, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiEntityTex, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiEntityScript, PANEL_ALIGN_CENTER);
 
 	m_guiRightEntity->addComponent(new TextField("TEXTFIELD_ENTITY_NAME", "Entity Name", Vector2<Sint32>(8, 20), Vector2<Sint32>(17, 1), 16, 1));
 
@@ -161,7 +195,6 @@ bool Game::init()
 
 	m_guiSaveMap = new Container("CONTAINER_SAVE_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiSaveMap->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 		m_guiSaveMap->addComponent(new Panel("PANEL_BG2", "Save Zone", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiSaveMap->addComponent(new TextField("TEXTFIELD_WORLD_NAME", "Zone Name", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
 		m_guiSaveMap->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1), PANEL_ALIGN_CENTER);
@@ -169,7 +202,6 @@ bool Game::init()
 	}
 	m_guiLoadMap = new Container("CONTAINER_LOAD_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiLoadMap->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 		m_guiLoadMap->addComponent(new Panel("PANEL_BG2", "Load Zone", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiLoadMap->addComponent(new TextField("TEXTFIELD_WORLD_NAME", "Zone Name", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
 		m_guiLoadMap->addComponent(new CButton("BUTTON_LOAD", "Load", {-130, 24}, {252, 24}, 16, 1), PANEL_ALIGN_CENTER);
@@ -177,7 +209,6 @@ bool Game::init()
 	}
 	m_guiClearMap = new Container("CONTAINER_CLEAR_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiClearMap->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 		m_guiClearMap->addComponent(new Panel("PANEL_BG2", "Clear Zone (Warning: No Undo)", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 		
 		m_guiClearMap->addComponent(new CButton("BUTTON_CLEAR", "Clear", {-130, 24}, {252, 24}, 16, 1), PANEL_ALIGN_CENTER);
@@ -185,7 +216,6 @@ bool Game::init()
 	}
 	m_guiResizeMap = new Container("CONTAINER_RESIZE_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiResizeMap->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 		m_guiResizeMap->addComponent(new Panel("PANEL_BG2", "Resize Zone", {0, -12}, {1220, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiResizeMap->addComponent(new CSlider("SLIDER_WIDTH", "Width", {0, -16}, 1024, 1024, 10, 1), PANEL_ALIGN_CENTER);
 		m_guiResizeMap->addComponent(new CSlider("SLIDER_HEIGHT", "Height", {0, 4}, 1024, 1024, 10, 1), PANEL_ALIGN_CENTER);
@@ -194,7 +224,6 @@ bool Game::init()
 	}
 	m_guiExit = new Container("CONTAINER_EXIT", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiExit->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 		m_guiExit->addComponent(new Panel("PANEL_BG2", "Exit Editor", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 
 		m_guiExit->addComponent(new TextField("TEXTFIELD_WORLD_NAME", "Zone Name", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
@@ -203,41 +232,41 @@ bool Game::init()
 		m_guiExit->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {173, 24}, {166, 24}, 16, 1), PANEL_ALIGN_CENTER);
 	}
 
-	m_guiAll->addComponent(m_guiSaveMap, PANEL_ALIGN_CENTER);
-	m_guiAll->addComponent(m_guiLoadMap, PANEL_ALIGN_CENTER);
-	m_guiAll->addComponent(m_guiClearMap, PANEL_ALIGN_CENTER);
-	m_guiAll->addComponent(m_guiResizeMap, PANEL_ALIGN_CENTER);
-	m_guiAll->addComponent(m_guiExit, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiSaveMap, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiLoadMap, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiClearMap, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiResizeMap, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiExit, PANEL_ALIGN_CENTER);
 
 
-
-	m_listWorld = new CList("LIST_WORLD", "World Obj List", {16, 208}, {256, 8}, 32, m_zoneMap->getTextureWorld(), 1);
-	m_listWorld->addItem({"None", 0});
-	m_zoneMap->addWorldObject(ZoneMap::WorldObject("None", 0, 0));
-	m_guiLeftWorld->addComponent(m_listWorld);
 
 	m_listEntity = new CList("LIST_ENTITY", "Entity List", {16, 208}, {256, 8}, 32, Texture(), 1);
 	m_listEntity->addItem({"None", 0});
 	m_zoneMap->addEntity(ZoneMap::Entity("None", Texture()));
-	m_guiLeftEntity->addComponent(m_listEntity);
+	m_guiRightEntity->addComponent(m_listEntity);
 
 	m_listStamps = new CList("LIST_STAMPS", "Stamp List", {16, 208}, {256, 8}, 32, Texture(), 1);
 	m_listStamps->addItem({"None", 0});
 	m_stamps.push_back(Stamp());
-	m_guiLeftStamp->addComponent(m_listStamps);
+	m_guiRightStamp->addComponent(m_listStamps);
 
-	m_tileSetGround = new CTileSet("TILESET_GROUND", "Ground Tile Set", {0, 208}, {256, 256}, 32, m_zoneMap->getTextureGround(), 1);
-	m_tileSetWorld = new CTileSet("TILESET_WORLD", "World Tile Set", {0, 88}, {256, 256}, 32, m_zoneMap->getTextureWorld(), 1);
+	m_tileSetGround = new CTileSet("TILESET_GROUND", "Ground Tile Set", {0, 360}, {256, 256}, 32, m_zoneMap->getTextureGround(), 1);
+	m_tileSetWorld = new CTileSet("TILESET_WORLD", "World Tile Set", {0, 60}, {256, 256}, 32, m_zoneMap->getTextureWorld(), 1);
 	m_tileSetEntity = new CTileSet("TILESET_ENTITY", "Sprite Sheet", {0, 128}, {256, 256}, 32, m_zoneMap->getTextureWorld(), 1);
-	m_tileSetSky = new CTileSet("TILESET_SKY", "Sky Tile Set", {0, 208}, {256, 256}, 32, m_zoneMap->getTextureSky(), 1);
+	m_tileSetSky = new CTileSet("TILESET_SKY", "Sky Tile Set", {0, 60}, {256, 256}, 32, m_zoneMap->getTextureSky(), 1);
 	m_tileSetStamps = new CTileSet("TILESET_WORLD", "TODO: Preview", {0, 88}, {256, 256}, 32, m_zoneMap->getTextureWorld(), 1);
-	m_guiLeftGround->addComponent(m_tileSetGround, PANEL_ALIGN_TOP);
+	m_guiRightGround->addComponent(m_tileSetGround, PANEL_ALIGN_TOP);
 	m_guiRightWorld->addComponent(m_tileSetWorld, PANEL_ALIGN_TOP);
 	m_guiRightEntity->addComponent(m_tileSetEntity, PANEL_ALIGN_TOP);
-	m_guiLeftSky->addComponent(m_tileSetSky, PANEL_ALIGN_TOP);
+	m_guiRightSky->addComponent(m_tileSetSky, PANEL_ALIGN_TOP);
 	m_guiRightStamp->addComponent(m_tileSetStamps, PANEL_ALIGN_TOP);
 
-	m_guiTop->addComponent(new CText("TEXT_POS", "1", {0, 0}, {100, 100}, 16, ALIGN_LEFT, Color(255, 255, 255, 255)));
+	m_listWorld = new CList("LIST_WORLD", "World Obj List", {16, 60}, {256, 6}, 32, m_zoneMap->getTextureWorld(), 1);
+	m_listWorld->addItem({"None", 0});
+	m_zoneMap->addWorldObject(ZoneMap::WorldObject("None", 0, 0));
+	m_guiRightWorld->addComponent(m_listWorld);
+
+	//m_guiTop->addComponent(new CText("TEXT_POS", "1", {0, 0}, {100, 100}, 16, ALIGN_LEFT, Color(255, 255, 255, 255)));
 
 	m_selectStart = {-1, -1};
 
@@ -246,18 +275,22 @@ bool Game::init()
 
 void Game::resize()
 {
-	m_tileMapArea = Rect(-GLfloat(Globals::getInstance().m_screenSize.x / 2) + 288, -GLfloat(Globals::getInstance().m_screenSize.y / 2), GLfloat(Globals::getInstance().m_screenSize.x / 2) - 288, GLfloat(Globals::getInstance().m_screenSize.y / 2));
+	m_tileMapArea = Rect(-GLfloat(Globals::getInstance().m_screenSize.x / 2), -GLfloat(Globals::getInstance().m_screenSize.y / 2), GLfloat(Globals::getInstance().m_screenSize.x / 2), GLfloat(Globals::getInstance().m_screenSize.y / 2));
+}
+
+std::string Game::getZoneName()
+{
+	return m_zoneMap->getName();
 }
 
 void Game::input()
 {
 	Vector2<Sint32> _mousePos = Globals::getInstance().m_mousePos;
-	Sint8 _rValue = m_guiAll->input(Globals::getInstance().m_keyStates, Globals::getInstance().m_mouseStates, _mousePos);
-	if(!m_rmbDown && !m_lmbDown && (_rValue & 1) == 1)
-		_mousePos = {-9001, -9001};
+	Sint8 _rValue = 0;
+	m_guiAll->input(_rValue, Globals::getInstance().m_keyStates, Globals::getInstance().m_mouseStates, _mousePos);
 
 	if((_rValue & 2) != 2 && Globals::getInstance().m_keyStates[GLFW_KEY_G] == 1)
-		m_guiLeft->findComponent("BUTTON_GRID")->setState(Sint8(!(m_guiLeft->findComponent("BUTTON_GRID")->isSelected() != 0)));
+		m_showGrid = !m_showGrid;
 
 	if(m_mouseInArea && Globals::getInstance().m_mouseStates[0] == 1)
 	{
@@ -277,8 +310,7 @@ void Game::input()
 	{
 		m_rmbDown = false;
 	}
-
-	if(m_lmbDown && !m_rmbDown && m_mouseInArea)
+	if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)
 	{
 		switch(m_selectLayer->getSelectedButton())
 		{
@@ -329,7 +361,7 @@ void Game::input()
 			break;
 		}
 	}
-	else if(m_rmbDown)
+	else if(m_rmbDown && (_rValue & 1) == 0)
 	{
 		m_camPos = m_camPos + (m_mouseBuffer - _mousePos);
 		if(m_camPos.x < TILE_SIZE)
@@ -345,7 +377,8 @@ void Game::input()
 	}
 
 	m_mouseBuffer = _mousePos;
-	m_mouseInArea = (m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y))
+	m_mouseInArea = ((_rValue & 1) == 0 
+		&& m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y))
 		&& (m_mouseBuffer.x + m_camPos.x >= TILE_SIZE) && (m_mouseBuffer.y + m_camPos.y >= TILE_SIZE)
 		&& (m_mouseBuffer.x + m_camPos.x < TILE_SIZE * (m_zoneMap->getSize().x + 1)) && (m_mouseBuffer.y + m_camPos.y < TILE_SIZE * (m_zoneMap->getSize().y + 1)));
 
@@ -367,6 +400,7 @@ void Game::update()
 			m_guiResizeMap->setVisible(false);
 			m_guiEntityTex->setVisible(false);
 			m_guiEntityScript->setVisible(false);
+			m_guiPause->setVisible(false);
 		}
 		else
 		{
@@ -374,11 +408,13 @@ void Game::update()
 			{
 				Globals::getInstance().m_exitting = 0;
 				m_guiExit->setVisible(false);
+				m_guiPause->setVisible(false);
 			}
 			else if(Globals::getInstance().m_exitting == 0)
 			{
 				Globals::getInstance().m_exitting = 1;
 				m_guiExit->setVisible(true);
+				m_guiPause->setVisible(true);
 			}
 		}
 	}
@@ -390,6 +426,7 @@ void Game::update()
 		m_guiResizeMap->setVisible(false);
 		m_guiEntityTex->setVisible(false);
 		m_guiEntityScript->setVisible(false);
+		m_guiPause->setVisible(true);
 		m_guiExit->setVisible(true);
 	}
 
@@ -399,9 +436,15 @@ void Game::update()
 		{
 			m_zoneMap->save(m_guiSaveMap->findComponent("TEXTFIELD_WORLD_NAME")->getTitle());
 			m_guiSaveMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiSaveMap->findComponent("BUTTON_SAVE")->setState(0);
 		}
 		else if(m_guiSaveMap->findComponent("BUTTON_CANCEL")->isSelected() == 3)
+		{
 			m_guiSaveMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiSaveMap->findComponent("BUTTON_CANCEL")->setState(0);
+		}
 	}
 
 	if(m_guiLoadMap->isVisible())
@@ -416,10 +459,14 @@ void Game::update()
 			for(Uint16 i = 0; i < m_zoneMap->getEntitySize(); i++)
 				m_listEntity->addItem({m_zoneMap->getEntity(i).m_name, 0});
 			m_guiLoadMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiLoadMap->findComponent("BUTTON_LOAD")->setState(0);
 		}
 		else if(m_guiLoadMap->findComponent("BUTTON_CANCEL")->isSelected() == 3)
 		{
 			m_guiLoadMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiLoadMap->findComponent("BUTTON_CANCEL")->setState(0);
 		}
 	}
 
@@ -429,9 +476,15 @@ void Game::update()
 		{
 			m_zoneMap->createNew();
 			m_guiClearMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiClearMap->findComponent("BUTTON_CLEAR")->setState(0);
 		}
 		else if(m_guiClearMap->findComponent("BUTTON_CANCEL")->isSelected() == 3)
+		{
 			m_guiClearMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiClearMap->findComponent("BUTTON_CANCEL")->setState(0);
+		}
 	}
 
 	if(m_guiResizeMap->isVisible())
@@ -440,9 +493,15 @@ void Game::update()
 		{
 			m_zoneMap->resize(Vector2<Uint16>(m_guiResizeMap->findComponent("SLIDER_WIDTH")->getValue(), m_guiResizeMap->findComponent("SLIDER_HEIGHT")->getValue()));
 			m_guiResizeMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiResizeMap->findComponent("BUTTON_RESIZE")->setState(0);
 		}
 		else if(m_guiResizeMap->findComponent("BUTTON_CANCEL")->isSelected() == 3)
+		{
 			m_guiResizeMap->setVisible(false);
+			m_guiPause->setVisible(false);
+			m_guiResizeMap->findComponent("BUTTON_CANCEL")->setState(0);
+		}
 	}
 
 	if(m_guiExit->isVisible())
@@ -459,6 +518,7 @@ void Game::update()
 		else if(m_guiExit->findComponent("BUTTON_CANCEL")->isSelected() == 3)
 		{
 			m_guiExit->setVisible(false);
+			m_guiPause->setVisible(false);
 			Globals::getInstance().m_exitting = 0;
 		}
 	}
@@ -471,9 +531,13 @@ void Game::update()
 			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex.setName(m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->getTitle());
 			m_tileSetEntity->setTileSheet(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex);
 			m_guiEntityTex->setVisible(false);
+			m_guiPause->setVisible(false);
 		}
 		else if(m_guiEntityTex->findComponent("BUTTON_CANCEL")->isSelected() == 3)
+		{
 			m_guiEntityTex->setVisible(false);
+			m_guiPause->setVisible(false);
+		}
 	}
 
 	if(m_guiEntityScript->isVisible())
@@ -483,25 +547,19 @@ void Game::update()
 			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_script = m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->getTitle();
 			m_tileSetEntity->setTileSheet(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex);
 			m_guiEntityScript->setVisible(false);
+			m_guiPause->setVisible(false);
 		}
 		else if(m_guiEntityScript->findComponent("BUTTON_CANCEL")->isSelected() == 3)
+		{
 			m_guiEntityScript->setVisible(false);
+			m_guiPause->setVisible(false);
+		}
 	}
 
-	if(m_guiLeft->findComponent("BUTTON_MAP_SAVE")->isSelected() == 3)
-		m_guiSaveMap->setVisible(true);
-	if(m_guiLeft->findComponent("BUTTON_MAP_LOAD")->isSelected() == 3)
-		m_guiLoadMap->setVisible(true);
-	if(m_guiLeft->findComponent("BUTTON_MAP_NEW")->isSelected() == 3)
-		m_guiClearMap->setVisible(true);
-	if(m_guiLeft->findComponent("BUTTON_MAP_RESIZE")->isSelected() == 3)
-	{
-		m_guiResizeMap->findComponent("SLIDER_WIDTH")->setValue(m_zoneMap->getSize().x);
-		m_guiResizeMap->findComponent("SLIDER_HEIGHT")->setValue(m_zoneMap->getSize().y);
-		m_guiResizeMap->setVisible(true);
-	}
+	m_deltaUpdate = GLfloat(glfwGetTime() - m_lastUpdate);
+	m_lastUpdate = GLfloat(glfwGetTime());
 
-	m_guiAll->update(0);
+	m_guiAll->update(m_deltaUpdate);
 
 	if(m_selectLayer->getPrevSelectedButton() != m_selectLayer->getSelectedButton())
 	{
@@ -513,7 +571,7 @@ void Game::update()
 			break;
 		case 1:
 			m_guiLeftWorld->setVisible(true);
-			m_guiRightWorld->setVisible(m_listWorld->getSelectedItem() != 0);
+			m_guiRightWorld->setVisible(true);
 			break;
 		case 2:
 			m_guiLeftEntity->setVisible(true);
@@ -559,7 +617,7 @@ void Game::update()
 	{
 		if(m_listWorld->isUpdated() != 0)
 		{
-			m_guiRightWorld->setVisible(m_listWorld->getSelectedItem() != 0);
+			m_guiRightWorld->setVisible(true);
 			if((m_listWorld->isUpdated() & 2) == 2) // New item
 			{
 				m_zoneMap->addWorldObject({m_listWorld->getItem(m_listWorld->getSelectedItem()).m_name, 1, m_listWorld->getItem(m_listWorld->getSelectedItem()).m_texId});
@@ -582,7 +640,7 @@ void Game::update()
 			m_zoneMap->removeWorldObject(m_listWorld->getSelectedItem() + 1);
 
 
-			m_guiRightWorld->setVisible(m_listWorld->getSelectedItem() != 0);
+			m_guiRightWorld->setVisible(true);
 			m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getItem(m_listWorld->getSelectedItem()).m_name);
 			m_dropDownInteract->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
 			m_tileSetWorld->setSelectedTile(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
@@ -722,14 +780,15 @@ void Game::update()
 		}
 	}
 	
-	if(m_mouseInArea)
+	/*if(m_mouseInArea)
 		m_guiTop->findComponent("TEXT_POS")->setTitle("Select Pos\nX:" + Util::numToString(Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1)) + "\nY:" + Util::numToString(Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)));
 	else
 		m_guiTop->findComponent("TEXT_POS")->setTitle("Select Pos\nX:NA\nY:NA");
+	*/
 
 	m_zoneMap->setViewSize(m_tileMapArea);
 	m_zoneMap->setTileSize(TILE_SIZE);
-	m_zoneMap->setGridVisible(m_guiLeft->findComponent("BUTTON_GRID")->isSelected() != 0);
+	m_zoneMap->setGridVisible(m_showGrid);
 }
 
 void Game::render()

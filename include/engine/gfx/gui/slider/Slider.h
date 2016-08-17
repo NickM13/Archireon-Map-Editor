@@ -49,36 +49,41 @@ public:
 		m_numValue += p_value;
 	}
 
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
 		m_slideValue = m_numValue * (m_length / m_maxValue);
-		switch(p_mouseStates[0])
+		if(((p_interactFlags & 1) == 0) || m_held)
 		{
-		case 0:
-			break;
-		case 1:
-			if(p_mousePos.x >= m_pos.x + m_slideValue - 4 && p_mousePos.x < m_pos.x + m_slideValue + 4 &&
-				p_mousePos.y >= m_pos.y - m_height / 2 && p_mousePos.y < m_pos.y + m_height / 2)
+			switch(p_mouseStates[0])
 			{
-				m_held = true;
-				m_holdPos = p_mousePos;
-			}
-			break;
-		case 2:
-			if(m_held)
-			{
-				m_slideValue = p_mousePos.x - m_pos.x;
-				setValue(m_slideValue / (m_length / m_maxValue));
-			}
-			break;
-		case 3:
-			m_held = false;
-			break;
-		default:
+			case 0:
+				break;
+			case 1:
+				if(p_mousePos.x >= m_pos.x + m_slideValue - 4 && p_mousePos.x < m_pos.x + m_slideValue + 4 &&
+					p_mousePos.y >= m_pos.y - m_height / 2 && p_mousePos.y < m_pos.y + m_height / 2)
+				{
+					m_held = true;
+					m_holdPos = p_mousePos;
+				}
+				break;
+			case 2:
+				if(m_held)
+				{
+					m_slideValue = p_mousePos.x - m_pos.x;
+					setValue(m_slideValue / (m_length / m_maxValue));
+				}
+				break;
+			case 3:
+				m_held = false;
+				break;
+			default:
 
-			break;
+				break;
+			}
+			if(((p_interactFlags & 1) == 0) && (m_held || (p_mousePos.x >= m_pos.x + m_slideValue - 4 && p_mousePos.x < m_pos.x + m_slideValue + 4 &&
+				p_mousePos.y >= m_pos.y - m_height / 2 && p_mousePos.y < m_pos.y + m_height / 2)))
+				p_interactFlags += 1;
 		}
-		return Sint8(m_held ? 1 : 0);
 	}
 	void update(Vector2<Sint32> p_pos)
 	{

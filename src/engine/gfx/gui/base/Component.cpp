@@ -3,15 +3,15 @@
 
 Component::Component()
 {
-	//						   BACK							FORE							ACTIVE							TEXT
-	m_colorThemes.push_back({ Color(192, 192, 192, 255),	Color(32, 32, 32, 255),		Color(48, 48, 48, 255),		Color(255, 255, 255, 255) });		// 0
-	m_colorThemes.push_back({ Color(192, 192, 192, 255),	Color(48, 48, 48, 255),		Color(92, 92, 92, 255),		Color(255, 255, 255, 255) });		// 1
+	//						   BACK							FORE						ACTIVE						TEXT
+	m_colorThemes.push_back({ Color(128, 128, 128, 255),	Color(200, 206, 210, 255),	Color(240, 240, 240, 255),	Color(24, 24, 24, 255) });		// 0
+	m_colorThemes.push_back({ Color(64, 64, 64, 255),		Color(170, 174, 177, 255),	Color(150, 150, 150, 255),	Color(24, 24, 24, 255) });		// 1
 	m_colorThemes.push_back({ Color(192, 128, 64, 255),		Color(255, 242, 204, 255),	Color(128, 128, 192, 255),	Color(32, 32, 32, 255) });			// 2
 	m_colorThemes.push_back({ Color(255, 242, 204, 255),	Color(120, 63, 4, 255),		Color(164, 92, 16, 255),	Color(32, 32, 32, 255) });			// 3
-	m_colorThemes.push_back({ Color(192, 192, 192, 128),	Color(32, 32, 32, 128),		Color(48, 48, 48, 128),		Color(255, 255, 255, 128) });		// 0
+	m_colorThemes.push_back({ Color(192, 192, 192, 128),	Color(32, 32, 32, 128),		Color(48, 48, 48, 128),		Color(255, 255, 255, 128) });		// 4
 }
 
-Component::Component(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint8 p_colorTheme)
+Component::Component(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme)
 {
 	m_compName = p_compName;
 	m_title = p_title;
@@ -33,20 +33,20 @@ void Component::setTitle(std::string p_title)
 {
 	m_title = p_title;
 }
-void Component::setPosition(Vector2< Sint32 > p_pos)
+void Component::setPosition(Vector2<Sint32> p_pos)
 {
 	m_pos = p_pos;
 }
-void Component::setSize(Vector2< Sint32 > p_size)
+void Component::setSize(Vector2<Sint32> p_size)
 {
 	m_size = p_size;
 }
 
-Vector2< Sint32 > Component::getPosition()
+Vector2<Sint32> Component::getPosition()
 {
 	return m_pos;
 }
-Vector2< Sint32 > Component::getSize()
+Vector2<Sint32> Component::getSize()
 {
 	return m_size;
 }
@@ -65,9 +65,9 @@ bool Component::isVisible()
 	return m_visible;
 }
 
-Sint8 Component::input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+void Component::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 {
-	return false;
+
 }
 void Component::update(GLfloat p_deltaUpdate)
 {
@@ -90,19 +90,21 @@ void Component::renderBack()
 	}
 	glPopMatrix();
 }
-void Component::renderFill()
+void Component::renderFill(bool p_setColor)
 {
 	glPushMatrix();
 	{
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
-		if(isSelected())
+		if(p_setColor)
 		{
-			m_colorTheme.m_active.useColor();
-		}
-		else
-		{
-			if(m_texture == -1) m_colorTheme.m_fore.useColor();
-			else glColor3f(1, 1, 1);
+			if(isSelected())
+			{
+				m_colorTheme.m_active.useColor();
+			}
+			else
+			{
+				m_colorTheme.m_fore.useColor();
+			}
 		}
 		if(m_texture != -1)
 		{
@@ -112,7 +114,7 @@ void Component::renderFill()
 		{
 			if(m_texture != -1)
 			{
-				Vector2< Sint32 > _texSize;
+				Vector2<Sint32> _texSize;
 				switch(m_textureStyle)
 				{
 				case COMPONENT_TEXTURE_STYLE_NONE: // Scale
@@ -361,4 +363,12 @@ void Component::setValue(Sint16 p_value)
 Sint32& Component::getValue()
 {
 	return m_numValue;
+}
+Sint8 Component::getPriorityLayer()
+{
+	return m_priority + m_moveToFront;
+}
+void Component::setPriorityLayer(Sint8 p_priority)
+{
+	m_priority = p_priority;
 }

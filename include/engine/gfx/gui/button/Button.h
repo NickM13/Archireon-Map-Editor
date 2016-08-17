@@ -14,7 +14,7 @@ private:
 	bool m_hover;
 	bool m_stuck;
 public:
-	CButton(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint32 p_fontSize, Sint8 p_colorTheme)
+	CButton(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -23,9 +23,10 @@ public:
 		m_fontSize = p_fontSize;
 		m_colorTheme = m_colorThemes[p_colorTheme];
 
-		m_borderThickness = 1;
+		m_texture = LTexture::getInstance().loadImage("gui\\BarRect.png");
+		m_textureStyle = COMPONENT_TEXTURE_STYLE_SCALE;
 	}
-	CButton(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint32 p_fontSize, Sint8 p_colorTheme)
+	CButton(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -35,13 +36,19 @@ public:
 		m_fontSize = p_fontSize;
 		m_colorTheme = m_colorThemes[p_colorTheme];
 
-		m_borderThickness = 1;
+		m_texture = LTexture::getInstance().loadImage("gui\\BarRect.png");
+		m_textureStyle = COMPONENT_TEXTURE_STYLE_SCALE;
 	}
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
-		if(p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
+		if(((p_interactFlags & 1) == 0 || m_hover) &&
+			p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
 			p_mousePos.y >= m_pos.y && p_mousePos.y <= m_pos.y + m_size.y)
+		{
 			m_hover = true;
+			if((p_interactFlags & 1) == 0)
+				p_interactFlags += 1;
+		}
 		else
 			m_hover = false;
 		
@@ -53,7 +60,7 @@ public:
 				{
 					if(m_selected == 0) m_selected = 1;
 					else m_selected = 2;
-					return 1;
+					return;
 				}
 			}
 			else
@@ -61,17 +68,16 @@ public:
 				if(m_selected == 1 || m_selected == 2)
 				{
 					m_selected = 3;
-					return 1;
+					return;
 				}
 				else if(m_selected == 3)
 				{
 					m_selected = 0;
-					return 0;
+					return;
 				}
 			}
 		}
 		m_selected = 0;
-		return 0;
 	}
 	void update(GLfloat p_deltaUpdate)
 	{
@@ -87,29 +93,22 @@ public:
 	}
 	void render()
 	{
-		Component::renderBack();
+		if(m_selected)
+			m_colorTheme.m_active.useColor();
+		else
+		{
+			if(m_hover)
+				Color((m_colorTheme.m_active / 2 + m_colorTheme.m_fore / 2)).useColor();
+			else
+				m_colorTheme.m_fore.useColor();
+		}
+		Component::renderFill(false);
+
 		glPushMatrix();
 		{
 			glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
-			if(m_selected)
-				m_colorTheme.m_active.useColor();
-			else
-			{
-				if(m_hover)
-					Color((m_colorTheme.m_active + m_colorTheme.m_fore) / 2).useColor();
-				else
-					m_colorTheme.m_fore.useColor();
-			}
-			glBegin(GL_QUADS);
-			{
-				glVertex2f(0, 0);
-				glVertex2f(GLfloat(m_size.x), 0);
-				glVertex2f(GLfloat(m_size.x), GLfloat(m_size.y));
-				glVertex2f(0, GLfloat(m_size.y));
-			}
-			glEnd();
-
 			glTranslatef(GLfloat(m_size.x / 2), GLfloat(m_size.y / 2), 0);
+			
 			if(m_buttonTex.getId() != 0)
 			{
 				glPushMatrix();
@@ -131,6 +130,7 @@ public:
 				}
 				glPopMatrix();
 			}
+			
 
 			m_colorTheme.m_text.useColor();
 			Font::getInstance().setFontSize(m_fontSize);
@@ -156,7 +156,7 @@ private:
 
 	bool m_hover;
 public:
-	CButtonToggle(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state = 0)
+	CButtonToggle(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state = 0)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -169,7 +169,7 @@ public:
 		m_borderThickness = 1;
 		m_texType = 0;
 	}
-	CButtonToggle(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state = 0)
+	CButtonToggle(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state = 0)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -182,7 +182,7 @@ public:
 		m_borderThickness = 1;
 		m_texType = 1;
 	}
-	CButtonToggle(std::string p_compName, std::string p_title, Texture p_activeTex, Texture p_inactiveTex, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state = 0)
+	CButtonToggle(std::string p_compName, std::string p_title, Texture p_activeTex, Texture p_inactiveTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state = 0)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -197,21 +197,23 @@ public:
 		m_texType = 2;
 	}
 
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
-		if(p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
+		m_numValue = 0;
+		if((p_interactFlags & 1) == 0 &&
+			p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
 			p_mousePos.y >= m_pos.y && p_mousePos.y <= m_pos.y + m_size.y)
 		{
 			m_hover = true;
 			if(p_mouseStates[0] == 1)
 			{
+				m_numValue = 1;
 				m_selected = !m_selected;
-				return 1;
+				p_interactFlags += 1;
 			}
 		}
 		else
 			m_hover = false;
-		return 0;
 	}
 
 	void update(GLfloat p_deltaUpdate)
@@ -230,7 +232,7 @@ public:
 			else
 			{
 				if(m_hover)
-					((m_colorTheme.m_active + m_colorTheme.m_fore) / 2).useColor();
+					((m_colorTheme.m_active / 2 + m_colorTheme.m_fore / 2)).useColor();
 				else
 					m_colorTheme.m_fore.useColor();
 			}
@@ -286,7 +288,7 @@ private:
 
 	std::vector<CButtonToggle*> m_buttonList;
 public:
-	CButtonRadio(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint8 p_colorTheme)
+	CButtonRadio(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -304,21 +306,29 @@ public:
 		m_buttonList[m_selectedButton]->setState(1);
 	}
 
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
 		m_prevSelectedButton = m_selectedButton;
 		p_mousePos = p_mousePos - m_pos;
-		for(Uint16 i = 0; i < m_buttonList.size(); i++)
+		if((p_interactFlags & 1) == 0)
 		{
-			if(i != m_selectedButton && m_buttonList[i]->input(p_keyStates, p_mouseStates, p_mousePos))
+			for(Uint16 i = 0; i < m_buttonList.size(); i++)
 			{
-				m_buttonList[m_selectedButton]->setState(0);
-				m_selectedButton = i;
-				m_buttonList[m_selectedButton]->setState(1);
-				return 1;
+				m_buttonList[i]->input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos);
+				if(m_buttonList[i]->getValue() != 0)
+				{
+					if(i != m_selectedButton)
+					{
+						m_buttonList[m_selectedButton]->setState(0);
+						m_selectedButton = i;
+					}
+					m_buttonList[m_selectedButton]->setState(1);
+					if((p_interactFlags & 1) == 0)
+						p_interactFlags += 1;
+					return;
+				}
 			}
 		}
-		return 0;
 	}
 	void update(GLfloat p_deltaUpdate)
 	{

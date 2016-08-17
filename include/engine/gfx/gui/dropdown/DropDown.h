@@ -14,7 +14,7 @@ private:
 
 	std::vector<std::string> m_itemList;
 public:
-	CDropDown(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Sint16 p_fontSize, Sint8 p_colorTheme = 0)
+	CDropDown(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint16 p_fontSize, Sint8 p_colorTheme = 0)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -42,42 +42,47 @@ public:
 		m_update = true;
 	}
 
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
 		p_mousePos = p_mousePos - m_pos;
 
 		m_update = false;
-		if(p_mouseStates[0] == 1)
+		if((p_interactFlags & 1) == 0)
 		{
-			if(m_selected == 0)
+			if(p_mouseStates[0] == 1)
 			{
-				if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x &&
-					p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
+				if(m_selected == 0)
 				{
-					m_selected = 1;
-					return 1;
+					if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x &&
+						p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
+					{
+						m_selected = 1;
+						p_interactFlags += 1;
+					}
 				}
-			}
-			else
-			{
-				m_selected = 0;
-				if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x && p_mousePos.y >= m_size.y && p_mousePos.y < m_size.y * Sint32(m_itemList.size() + 1))
+				else
 				{
-					m_selectedItem = p_mousePos.y / m_size.y - 1;
-					m_update = true;
-					return 1;
+					m_selected = 0;
+					if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x && p_mousePos.y >= m_size.y && p_mousePos.y < m_size.y * Sint32(m_itemList.size() + 1))
+					{
+						m_selectedItem = p_mousePos.y / m_size.y - 1;
+						m_update = true;
+						p_interactFlags += 1;
+					}
 				}
 			}
 		}
 
 		if(m_selected != 0)
 		{
-			if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x && p_mousePos.y >= m_size.y && p_mousePos.y < m_size.y * Sint32(m_itemList.size() + 1))
+			if(((p_interactFlags & 1) == 0) && p_mousePos.x >= 0 && p_mousePos.x < m_size.x && p_mousePos.y >= m_size.y && p_mousePos.y < m_size.y * Sint32(m_itemList.size() + 1))
+			{
 				m_hoverItem = p_mousePos.y / m_size.y - 1;
+				p_interactFlags += 1;
+			}
 			else
 				m_hoverItem = -1;
 		}
-		return 0;
 	}
 	void update(GLfloat p_deltaUpdate)
 	{

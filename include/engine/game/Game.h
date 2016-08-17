@@ -13,6 +13,7 @@
 #include "world\map\ZoneMap.h"
 
 #include "..\gfx\gui\container\Container.h"
+#include "..\gfx\gui\container\ContainerPanel.h"
 #include "..\gfx\gui\counter\Counter.h"
 #include "..\gfx\gui\button\Button.h"
 #include "..\gfx\gui\dropdown\DropDown.h"
@@ -22,12 +23,15 @@
 #include "..\gfx\gui\text\Text.h"
 #include "..\gfx\gui\text\TextField.h"
 #include "..\gfx\gui\tileset\Tileset.h"
+#include "..\gfx\gui\toolbar\Toolbar.h"
 
 class Game : public Singleton<Game>
 {
 public:
 	bool init();
 	void resize();
+
+	std::string getZoneName();
 
 	void input();
 	void update();
@@ -59,7 +63,17 @@ private:
 	Rect m_tileMapArea;
 	Texture m_backTexId;
 
-	Container* m_guiAll, *m_guiLeft, *m_guiRight, *m_guiTop;
+	Vector2<Sint32> m_selectStart, m_selectEnd;
+
+	GLfloat m_lastUpdate, m_deltaUpdate;
+
+protected:
+	bool m_showGrid;
+
+	CToolbar* m_toolbarMenu;
+	Container* m_guiAll, *m_guiTop;
+	Container* m_guiPause;
+	ContainerPanel* m_guiLeft, *m_guiRight;
 	Container* m_guiSaveMap, *m_guiLoadMap, *m_guiClearMap, *m_guiResizeMap;
 	Container* m_guiLeftGround, *m_guiLeftWorld, *m_guiLeftEntity, *m_guiLeftSky, *m_guiLeftStamp;
 	Container* m_guiRightGround, *m_guiRightWorld, *m_guiRightEntity, *m_guiRightSky, *m_guiRightStamp;
@@ -70,6 +84,4 @@ private:
 	CList* m_listWorld, *m_listEntity, *m_listStamps;
 	CButtonRadio* m_selectLayer;
 	CDropDown* m_dropDownInteract;
-
-	Vector2<Sint32> m_selectStart, m_selectEnd;
 };

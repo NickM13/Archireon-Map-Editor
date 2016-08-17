@@ -33,7 +33,7 @@ private:
 	};
 	std::vector<ListItem> m_itemList;
 public:
-	CList(std::string p_compName, std::string p_title, Vector2< Sint32 > p_pos, Vector2< Sint32 > p_size, Uint16 p_itemHeight, Texture p_tileSheet, Sint8 p_colorTheme = 0)
+	CList(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_itemHeight, Texture p_tileSheet, Sint8 p_colorTheme = 0)
 	{
 		m_compName = p_compName;
 		m_title = p_title;
@@ -65,17 +65,19 @@ public:
 		return Uint16(m_itemList.size());
 	}
 
-	Sint8 input(Sint8* p_keyStates, Sint8* p_mouseStates, Vector2< Sint32 > p_mousePos)
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
 		p_mousePos = p_mousePos - m_pos;
-		if(p_mousePos.x >= -4 && p_mousePos.x <= m_size.x + 4 &&
+		if(((p_interactFlags & 1) == 0) &&
+			p_mousePos.x >= -4 && p_mousePos.x <= m_size.x + 4 &&
 			p_mousePos.y >= -24 && p_mousePos.y <= m_size.y * m_itemHeight + 4)
 			m_hover = true;
 		else
 			m_hover = false;
 		
 		m_update = 0;
-		if(p_mousePos.x >= 0 && p_mousePos.x <= m_size.x &&
+		if(((p_interactFlags & 1) == 0) &&
+			p_mousePos.x >= 0 && p_mousePos.x <= m_size.x &&
 			p_mousePos.y >= 0 && p_mousePos.y <= m_size.y * m_itemHeight)
 		{
 			if(p_mouseStates[0] == 1)
@@ -97,10 +99,13 @@ public:
 				}
 
 				m_dragging = false;
-				return 1;
+				p_interactFlags += 1;
 			}
 			else if(p_mouseStates[1] == 1 || p_mouseStates[1] == 2 && m_dragging)
+			{
 				m_dragging = true;
+				p_interactFlags += 1;
+			}
 		}
 
 		if(m_dragging)
@@ -108,7 +113,11 @@ public:
 			if(p_mouseStates[1] == 0 || p_mouseStates[0] == 1)
 				m_dragging = false;
 			else
+			{
 				m_scroll = m_scroll - (p_mousePos.y - m_mouseBuffer.y);
+				if((p_interactFlags & 1) == 0)
+					p_interactFlags += 1;
+			}
 		}
 
 		if(m_hover)
@@ -120,8 +129,6 @@ public:
 			m_scroll = 0;
 
 		m_mouseBuffer = p_mousePos;
-
-		return m_dragging;
 	}
 	void update(GLfloat p_deltaUpdate)
 	{

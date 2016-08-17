@@ -9,10 +9,10 @@ struct Texture
 private:
 	Sint32 m_texId;
 	std::string m_name;
-	Vector2< Sint32 > m_size;
+	Vector2<Sint32> m_size;
 
 public:
-	Texture( std::string p_name = "", Sint32 p_texId = -1, Vector2< Sint32 > p_size = {} )
+	Texture( std::string p_name = "", Sint32 p_texId = -1, Vector2<Sint32> p_size = {} )
 	{
 		m_texId = p_texId;
 		m_name = p_name;
@@ -34,7 +34,7 @@ public:
 	{
 		return m_name;
 	}
-	Vector2< Sint32 > getSize()
+	Vector2<Sint32> getSize()
 	{
 		return m_size;
 	}

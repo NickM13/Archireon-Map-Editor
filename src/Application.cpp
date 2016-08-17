@@ -6,7 +6,7 @@ bool Application::init()
 {
 	m_screenSize = Vector2<Uint16>(1280, 768);
 
-	Globals::getInstance().m_developer = false;
+	Globals::getInstance().m_developer = true;
 	Globals::getInstance().m_fps = 0;
 	Globals::getInstance().m_screenSize = m_screenSize;
 
@@ -31,7 +31,6 @@ bool Application::init()
 		glfwTerminate();
 		return false;
 	}
-
 	glfwSetKeyCallback(m_mainWindow, keyCallback);
 	glfwSetMouseButtonCallback(m_mainWindow, mousePressCallback);
 	glfwSetCursorEnterCallback(m_mainWindow, mouseEnterCallback);
@@ -191,6 +190,8 @@ void Application::update()
 		if(Globals::getInstance().m_mouseStates[i] == 3)
 			Globals::getInstance().m_mouseStates[i] = 0;
 	}
+
+	glfwSetWindowTitle(m_mainWindow, ("Map Editor - Indev - Map: " + Game::getInstance().getZoneName()).c_str());
 }
 
 void Application::render()
