@@ -7,6 +7,7 @@
 
 bool Game::init()
 {
+	glewInit();
 	Font::getInstance().setFont("Fontsheet.png");
 
 	m_zoneMap = new ZoneMap(Vector2<Uint16>(64, 64));

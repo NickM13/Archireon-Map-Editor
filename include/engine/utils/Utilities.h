@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine\utils\variable\datatype\Color.h"
+#include "engine\utils\variable\datatype\Rectangle.h"
 #include "engine\utils\variable\datatype\Vector2.h"
 #include "engine\utils\variable\datatype\Vector3.h"
 #include "engine\utils\variable\datatype\Vector4.h"

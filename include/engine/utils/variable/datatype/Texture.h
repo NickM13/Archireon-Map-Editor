@@ -38,4 +38,21 @@ public:
 	{
 		return m_size;
 	}
+
+	void copyPixels8( GLubyte* pixels, GLuint imgWidth, GLuint imgHeight )
+	{
+		if( imgWidth > 0 && imgHeight > 0 )
+		{
+			GLuint size = imgWidth * imgHeight;
+			mPixels8 = new GLubyte[ size ];
+			memcpy( mPixels8, pixels, size );
+
+			mImageWidth = imgWidth;
+			mImageHeight = imgHeight;
+			mTextureWidth = mImageWidth;
+			mTextureHeight = mImageWidth;
+
+			mPixelFormat = GL_ALPHA;
+		}
+	}
 };

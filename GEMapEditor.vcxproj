@@ -182,6 +182,10 @@
     <None Include="ILU.dll" />
     <None Include="ILUT.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="res\arial.ttf" />
+    <Font Include="res\expressway.ttf" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

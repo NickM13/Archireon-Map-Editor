@@ -12,7 +12,6 @@ public:
 private:
 	struct SubList
 	{
-
 		std::string m_name;
 		bool m_subList;
 		std::vector<SubList> m_buttons;
