@@ -49,7 +49,7 @@ public:
 	void addItem(ListItem p_item)
 	{
 		m_itemList.push_back(p_item);
-		m_maxScroll = Sint16((m_itemList.size() - m_size.y + 1) * m_itemHeight) + (m_itemHeight - 1);
+		m_maxScroll = Sint16((m_itemList.size() - m_size.y + 1) * m_itemHeight);
 	}
 	void removeItem(Uint16 p_index)
 	{
@@ -82,15 +82,15 @@ public:
 		{
 			if(p_mouseStates[0] == 1)
 			{
-				if(Sint32((p_mousePos.y + floor(GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) <= Sint32(m_itemList.size()))
+				if(Sint32((p_mousePos.y + (GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) <= Sint32(m_itemList.size()))
 				{
-					if(Uint16((p_mousePos.y + floor(GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) != m_selectedItem)
+					if(Uint16((p_mousePos.y + (GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) != m_selectedItem)
 					{
-						m_selectedItem = Uint16((p_mousePos.y + floor(GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight);
+						m_selectedItem = Uint16((p_mousePos.y + (GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight);
 						m_update = 1;
 					}
 				}
-				if(Sint32((p_mousePos.y + floor(GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) == Sint32(m_itemList.size()))
+				if(Sint32((p_mousePos.y + (GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) == Sint32(m_itemList.size()))
 				{
 					addItem(ListItem(std::string("Item " + Util::numToString(m_itemList.size(), 0)), Uint16(m_itemList.size())));
 					m_update = 3;
@@ -121,7 +121,7 @@ public:
 		}
 
 		if(m_hover)
-			m_scroll = m_scroll - Globals::getInstance().m_mouseScroll * m_itemHeight;
+			m_scroll = m_scroll - Globals::getInstance().m_mouseScroll * 4;
 
 		if(m_scroll > m_maxScroll)
 			m_scroll = m_maxScroll;
@@ -139,7 +139,7 @@ public:
 		glPushMatrix();
 		{
 			glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
-
+			
 			glPushMatrix();
 			{
 				m_colorTheme.m_back.useColor();
@@ -152,15 +152,7 @@ public:
 				}
 				glEnd();
 
-				if(m_selected)
-					m_colorTheme.m_active.useColor();
-				else
-				{
-					if(m_hover)
-						Color((m_colorTheme.m_active + m_colorTheme.m_fore) / 2).useColor();
-					else
-						m_colorTheme.m_fore.useColor();
-				}
+				m_colorTheme.m_fore.useColor();
 				glBegin(GL_QUADS);
 				{
 					glVertex2f(-4, GLfloat(m_size.y * m_itemHeight + 4));
@@ -175,17 +167,27 @@ public:
 				Font::getInstance().setAlignment(ALIGN_CENTER);
 				Font::getInstance().print(m_title, m_size.x / 2, -20);
 
+				glEnable(GL_SCISSOR_TEST);
+				float mat[16];
+				glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+				glScissor(GLint(mat[12] + Globals::getInstance().m_screenSize.x / 2), GLint(-mat[13] + Globals::getInstance().m_screenSize.y / 2 - m_size.y * m_itemHeight), 2000, m_size.y * m_itemHeight);
+
+				glTranslatef(0, -GLfloat(m_scroll % m_itemHeight), 0);
+
 				glBindTexture(GL_TEXTURE_2D, 0);
+
 				glBegin(GL_QUADS);
 				{
-					for(Uint16 y = 0; y < Uint16(m_size.y); y++)
+					for(Uint16 y = 0; y < Uint16(m_size.y) + 1; y++)
 					{
 						if(m_scroll / m_itemHeight + y == m_selectedItem)
-							glColor3f(0.3f, 0.3f, 0.3f);
+						{
+							m_colorTheme.m_active.useColor(1.2f);
+						}
 						else
 						{
-							if(y % 2 == 0) glColor3f(0.175f, 0.175f, 0.175f);
-							else glColor3f(0.2f, 0.2f, 0.2f);
+							if((y + (m_scroll / m_itemHeight)) % 2 == 0) m_colorTheme.m_active.useColor(1.1f);
+							else m_colorTheme.m_active.useColor(1);
 						}
 						glVertex2f(0, GLfloat(y * m_itemHeight));
 						glVertex2f(GLfloat(m_size.x), GLfloat(y * m_itemHeight));
@@ -201,7 +203,7 @@ public:
 					glBindTexture(GL_TEXTURE_2D, m_tileSheet.getId());
 					glBegin(GL_QUADS);
 					{
-						for(Uint16 i = 0; i < Uint16(m_size.y); i++)
+						for(Uint16 i = 0; i < Uint16(m_size.y) + 1; i++)
 						{
 							if(i + round(m_scroll / m_itemHeight) < m_itemList.size())
 							{
@@ -223,7 +225,7 @@ public:
 				m_colorTheme.m_text.useColor();
 				Font::getInstance().setAlignment(ALIGN_LEFT);
 				Font::getInstance().setFontSize(16);
-				for(Uint16 i = 0; i < Uint16(m_size.y); i++)
+				for(Uint16 i = 0; i < Uint16(m_size.y) + 1; i++)
 				{
 					if(i + round(m_scroll / m_itemHeight) <= m_itemList.size())
 					{
@@ -263,6 +265,7 @@ public:
 				}
 				glEnd();
 			}
+			glDisable(GL_SCISSOR_TEST);
 		}
 		glPopMatrix();
 	}

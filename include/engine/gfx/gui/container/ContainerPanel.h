@@ -7,6 +7,7 @@ class ContainerPanel : public Container
 private:
 	Sint8 m_held;
 	Vector2<Sint32> m_mousePos;
+	Vector2<Sint32> m_contentSize;
 public:
 	ContainerPanel() {};
 	ContainerPanel(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, bool p_visible, Sint32 p_texture = -1, Sint8 p_textureStyle = 0)
@@ -21,6 +22,11 @@ public:
 		m_visible = p_visible;
 
 		m_borderThickness = 1;
+	}
+
+	Component* addComponent(Component* p_component, Sint8 p_alignment = PANEL_ALIGN_NONE)
+	{
+		return Container::addComponent(p_component, p_alignment);
 	}
 
 	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)

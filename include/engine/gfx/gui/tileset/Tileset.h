@@ -155,13 +155,20 @@ public:
 			}
 			glEnd();
 
+			glEnable(GL_SCISSOR_TEST);
+			float mat[16];
+			glGetFloatv(GL_MODELVIEW_MATRIX, mat);
+			glScissor(GLint(mat[12] + Globals::getInstance().m_screenSize.x / 2), GLint(-mat[13] + Globals::getInstance().m_screenSize.y / 2) - m_size.y, m_size.x, m_size.y);
+
+			glTranslatef(-GLfloat(m_scroll.x % m_tileSize), -GLfloat(m_scroll.y % m_tileSize), 0);
+
 			glBindTexture(GL_TEXTURE_2D, m_tileSheet.getId());
 			glBegin(GL_QUADS);
 			{
 				Vector2<GLfloat> m_tileRatio = m_tileSheet.getSize() / m_tileSize;
-				for(Uint16 x = 0; x < Uint16(min(ceil(GLfloat(m_size.x) / m_tileSize), m_tileSheet.getSize().x / m_tileSize)); x++)
+				for(Uint16 x = 0; x < Uint16(min(ceil(GLfloat(m_size.x) / m_tileSize), m_tileSheet.getSize().x / m_tileSize)) + 1; x++)
 				{
-					for(Uint16 y = 0; y < Uint16(min(ceil(GLfloat(m_size.y) / m_tileSize), m_tileSheet.getSize().y / m_tileSize)); y++)
+					for(Uint16 y = 0; y < Uint16(min(ceil(GLfloat(m_size.y) / m_tileSize), m_tileSheet.getSize().y / m_tileSize)) + 1; y++)
 					{
 						glTexCoord2f(GLfloat((x + floor(GLfloat(m_scroll.x) / m_tileSize)) / m_tileRatio.x), 1.f - (GLfloat((y + floor(GLfloat(m_scroll.y) / m_tileSize)) / m_tileRatio.y)));
 						glVertex2f(GLfloat(x * m_tileSize), GLfloat(y * m_tileSize));
@@ -175,7 +182,7 @@ public:
 				}
 			}
 			glEnd();
-
+			
 			glBindTexture(GL_TEXTURE_2D, m_selectTex.getId());
 			if(m_selectedTile.x >= floor(m_scroll.x / m_tileSize) && m_selectedTile.x < floor(m_scroll.x / m_tileSize) + ceil(GLfloat(m_size.x) / m_tileSize)
 				&& m_selectedTile.y >= floor(m_scroll.y / m_tileSize) && m_selectedTile.y < floor(m_scroll.y / m_tileSize) + ceil(GLfloat(m_size.y) / m_tileSize))
@@ -193,7 +200,12 @@ public:
 				}
 				glEnd();
 			}
+
+			glDisable(GL_SCISSOR_TEST);
+
 			glBindTexture(GL_TEXTURE_2D, 0);
+
+			glTranslatef(GLfloat(m_scroll.x % m_tileSize), GLfloat(m_scroll.y % m_tileSize), 0);
 
 			if(m_selected)
 				m_colorTheme.m_active.useColor();

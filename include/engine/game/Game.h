@@ -25,6 +25,8 @@
 #include "..\gfx\gui\tileset\Tileset.h"
 #include "..\gfx\gui\toolbar\Toolbar.h"
 
+#include <vector>
+
 class Game : public Singleton<Game>
 {
 public:
@@ -32,6 +34,8 @@ public:
 	void resize();
 
 	std::string getZoneName();
+	void unpause();
+	void setPauseState(std::string p_screen);
 
 	void input();
 	void update();
@@ -72,16 +76,20 @@ protected:
 
 	CToolbar* m_toolbarMenu;
 	Container* m_guiAll, *m_guiTop;
-	Container* m_guiPause;
 	ContainerPanel* m_guiLeft, *m_guiRight;
-	Container* m_guiSaveMap, *m_guiLoadMap, *m_guiClearMap, *m_guiResizeMap;
 	Container* m_guiLeftGround, *m_guiLeftWorld, *m_guiLeftEntity, *m_guiLeftSky, *m_guiLeftStamp;
 	Container* m_guiRightGround, *m_guiRightWorld, *m_guiRightEntity, *m_guiRightSky, *m_guiRightStamp;
 	Container* m_guiRightWorldSwitch, *m_guiRightWorldPortal;
-	Container* m_guiEntityTex, *m_guiEntityScript;
-	Container* m_guiExit;
 	CTileSet* m_tileSetGround, *m_tileSetWorld, *m_tileSetEntity, *m_tileSetSky, *m_tileSetStamps;
 	CList* m_listWorld, *m_listEntity, *m_listStamps;
 	CButtonRadio* m_selectLayer;
 	CDropDown* m_dropDownInteract;
+
+	//Pause screens
+	Container* m_guiPause;
+	Sint16 m_cPauseScreen;
+	std::vector<Container*> m_pauseScreens;
+	Container* m_guiSaveMap, *m_guiLoadMap, *m_guiClearMap, *m_guiResizeMap;
+	Container* m_guiEntityTex, *m_guiEntityScript, *m_guiEntityBoard;
+	Container* m_guiExit;
 };

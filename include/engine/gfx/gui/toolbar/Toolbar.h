@@ -7,9 +7,8 @@
 
 class CToolbar : public Component
 {
-public:
-	typedef void (*function)();
 private:
+	typedef void (*function)();
 	struct SubList
 	{
 

@@ -32,7 +32,7 @@ public:
 		m_visible = p_visible;
 	}
 
-	Component* addComponent(Component* p_component, Sint8 p_alignment = PANEL_ALIGN_NONE)
+	virtual Component* addComponent(Component* p_component, Sint8 p_alignment = PANEL_ALIGN_NONE)
 	{
 		switch(p_alignment)
 		{

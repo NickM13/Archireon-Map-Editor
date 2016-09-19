@@ -26,7 +26,6 @@ public:
 	void print(std::string p_msg, Sint32 p_x, Sint32 p_y);
 
 private:
-
 	GLuint m_fontSheet;
 
 	Alignment m_alignment;

@@ -7,15 +7,20 @@
 class CButton : public Component
 {
 private:
+
 	Sint32 m_fontSize;
 
 	Texture m_buttonTex;
 
 	bool m_hover;
 	bool m_stuck;
+
+	typedef void (*function)();
+	function m_function;
 public:
-	CButton(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme)
+	CButton(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, function p_function = 0)
 	{
+		m_selected = 0;
 		m_compName = p_compName;
 		m_title = p_title;
 		m_pos = p_pos;
@@ -25,9 +30,12 @@ public:
 
 		m_texture = LTexture::getInstance().loadImage("gui\\BarRect.png");
 		m_textureStyle = COMPONENT_TEXTURE_STYLE_SCALE;
+
+		m_function = p_function;
 	}
-	CButton(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme)
+	CButton(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, function p_function = 0)
 	{
+		m_selected = 0;
 		m_compName = p_compName;
 		m_title = p_title;
 		m_buttonTex = p_buttonTex;
@@ -38,6 +46,8 @@ public:
 
 		m_texture = LTexture::getInstance().loadImage("gui\\BarRect.png");
 		m_textureStyle = COMPONENT_TEXTURE_STYLE_SCALE;
+
+		m_function = p_function;
 	}
 	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
@@ -73,6 +83,8 @@ public:
 				else if(m_selected == 3)
 				{
 					m_selected = 0;
+					if(m_function)
+						m_function();
 					return;
 				}
 			}
