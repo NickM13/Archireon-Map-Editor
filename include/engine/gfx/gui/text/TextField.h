@@ -16,8 +16,10 @@ private:
 	Vector2<Sint32> m_scroll;
 	bool m_scrolling;
 	std::vector<std::string> m_text;
+
+	bool m_limited;
 public:
-	TextField(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_fontSize, Sint8 p_colorTheme = 0)
+	TextField(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_fontSize, Sint8 p_colorTheme = 0, bool p_limitField = true)
 	{
 		m_compName = p_compName;
 		m_blankField = p_title;
@@ -36,6 +38,8 @@ public:
 		m_selected = 0;
 
 		splitTitle();
+
+		m_limited = p_limitField;
 	}
 
 	void setScroll(Vector2<Sint32> p_scroll)
@@ -155,7 +159,7 @@ public:
 							}
 						}
 					}
-					else if((m_cursorPos.x < (m_size.x / m_fontSize) - 1 && m_cursorPos.y < (m_size.y / m_fontSize)) || m_scrolling)
+					else if((m_cursorPos.x < (m_size.x / m_fontSize) && m_cursorPos.y < (m_size.y / m_fontSize)) || m_scrolling)
 					{
 						if(_keyEvents[i].m_keyCode >= 65 && _keyEvents[i].m_keyCode <= 90)
 						{
@@ -304,6 +308,13 @@ public:
 									m_cursorPos.x = Sint32(m_text[m_cursorPos.y].length());
 								}
 							}
+						}
+						if(m_cursorPos.x == (m_size.x / m_fontSize) - 1 && m_cursorPos.y < (m_size.y / m_fontSize) - 1)
+						{
+							m_text.insert(m_text.begin() + m_cursorPos.y + 1, m_text[m_cursorPos.y].substr(m_cursorPos.x, m_text[m_cursorPos.y].length() - m_cursorPos.x));
+							m_text[m_cursorPos.y].erase(m_cursorPos.x, m_text[m_cursorPos.y].length() - m_cursorPos.x);
+							m_cursorPos.x = 0;
+							m_cursorPos.y += 1;
 						}
 					}
 				}

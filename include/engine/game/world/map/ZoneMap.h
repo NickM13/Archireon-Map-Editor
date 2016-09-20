@@ -34,6 +34,28 @@ public:
 		}
 	};
 
+	struct Board
+	{
+		Vector2<Uint16> m_size;
+		Uint8** m_boardData;
+		Texture m_background;
+
+		Board(Vector2<Uint16> p_size, Texture p_background)
+		{
+			m_size = p_size;
+			m_background = p_background;
+			m_boardData = new Uint8*[m_size.x];
+			for(Uint16 x = 0; x < m_size.x; x++)
+			{
+				m_boardData[x] = new Uint8[m_size.y];
+				for(Uint16 y = 0; y < m_size.y; y++)
+				{
+					m_boardData[x][y] = 0;
+				}
+			}
+		}
+	};
+
 	struct Entity
 	{
 		std::string m_name;
@@ -41,12 +63,21 @@ public:
 		Uint16 m_entityTexId;
 		std::string m_script;
 
+		Board* m_board;
+
 		Entity(std::string p_name = "", Texture p_entityTex = Texture())
 		{
 			m_name = p_name;
 			m_entityTex = p_entityTex;
 			m_entityTexId = 0;
 			m_script = "";
+
+			m_board = 0;
+		}
+
+		void setBoard(Vector2<Uint16> p_size, Texture p_background)
+		{
+			m_board = new Board(p_size, p_background);
 		}
 	};
 

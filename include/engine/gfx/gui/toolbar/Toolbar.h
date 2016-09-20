@@ -11,7 +11,6 @@ private:
 	typedef void (*function)();
 	struct SubList
 	{
-
 		std::string m_name;
 		bool m_subList;
 		std::vector<SubList> m_buttons;
@@ -132,7 +131,9 @@ public:
 			{
 				_subList = _subList->find(_splitDir[k]);
 			}
-			if(_subList->getFunction() != 0)
+			if(_splitDir.size() == 1 && m_currDir == m_selected)
+				m_currDir = "";
+			else if(_subList->getFunction() != 0)
 			{
 				m_currDir = "";
 				_subList->callFunction();

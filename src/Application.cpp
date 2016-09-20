@@ -16,10 +16,10 @@ bool Application::init()
 	for(Uint16 i = 0; i < 1024; i++)
 		Globals::getInstance().m_keyStates[i] = 0;
 
-	if(!glewInit())
+	if(!glfwInit())
 		return false;
 
-	if(!glfwInit())
+	if(!glewInit())
 		return false;
 
 	m_screenSize = Globals::getInstance().m_screenSize;
@@ -43,14 +43,14 @@ bool Application::init()
 	glfwMakeContextCurrent(m_mainWindow);
 	glClearColor(0.15f, 0.15f, 0.15f, 1);
 
-	Game::getInstance().init();
-
 	init2d();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	Game::getInstance().init();
 
 	return true;
 }

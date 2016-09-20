@@ -35,7 +35,8 @@ public:
 
 	std::string getZoneName();
 	void unpause();
-	void setPauseState(std::string p_screen);
+	void pause(std::string p_screen);
+	std::string getPause();
 
 	void input();
 	void update();
@@ -92,4 +93,12 @@ protected:
 	Container* m_guiSaveMap, *m_guiLoadMap, *m_guiClearMap, *m_guiResizeMap;
 	Container* m_guiEntityTex, *m_guiEntityScript, *m_guiEntityBoard;
 	Container* m_guiExit;
+
+	//Board variables
+	Rect m_boardArea;
+	bool m_mouseInBoardArea;
+	bool m_blmbDown, m_brmbDown;
+	Uint8** m_boardData;
+	Vector2<Uint16> m_boardSize;
+	Vector2<Sint32> m_boardScroll;
 };

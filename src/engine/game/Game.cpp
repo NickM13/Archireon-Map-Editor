@@ -28,54 +28,54 @@ bool Game::init()
 	m_guiPause = new Container("CONTAINER_PAUSE", {0, 0}, Globals::getInstance().m_screenSize, false);
 	m_guiTop = new Container("CONTAINER_TOP", {0, 0}, {Globals::getInstance().m_screenSize.x, 32}, true);
 	m_guiLeft = new ContainerPanel("CONTAINER_LEFT", "Layers", {16, 64}, {266, 149}, 0, true, LTexture::getInstance().loadImage("gui\\BarFlatRound.png"), COMPONENT_TEXTURE_STYLE_SCALE);
-	m_guiRight = new ContainerPanel("CONTAINER_RIGHT", "Pallet",  {16, 32}, {288, 640}, 0, true, LTexture::getInstance().loadImage("gui\\BarFlatRound.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+	m_guiRight = new ContainerPanel("CONTAINER_RIGHT", "Pallet", {16, 32}, {288, 640}, 0, true, LTexture::getInstance().loadImage("gui\\BarFlatRound.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 
 	m_guiAll->addComponent(m_guiPause, PANEL_ALIGN_TOP_LEFT)->setPriorityLayer(5);
 	m_guiPause->addComponent(new Panel("PANEL_BG", "", {0, 0}, Globals::getInstance().m_screenSize, 4, true), PANEL_ALIGN_CENTER);
 	m_guiAll->addComponent(m_guiLeft, PANEL_ALIGN_TOP_LEFT);
 	m_guiAll->addComponent(m_guiRight, PANEL_ALIGN_TOP_RIGHT);
 	m_guiAll->addComponent(m_guiTop, PANEL_ALIGN_TOP_LEFT)->setPriorityLayer(4);
-	
-	
+
+
 
 
 	m_toolbarMenu = new CToolbar("TOOLBAR_MENU", {0, 0}, {Globals::getInstance().m_screenSize.x, 24}, 0);
 	m_toolbarMenu->addButton("", "File");
 	{
-		m_toolbarMenu->addButton("File", "Save", [](){
+		m_toolbarMenu->addButton("File", "Save", []() {
 			Game::getInstance().m_guiSaveMap->setVisible(true);
 			Game::getInstance().m_guiPause->setVisible(true);
-			Game::getInstance().setPauseState("CONTAINER_SAVE_MAP");
+			Game::getInstance().pause("CONTAINER_SAVE_MAP");
 		});
-		m_toolbarMenu->addButton("File", "Load", [](){
+		m_toolbarMenu->addButton("File", "Load", []() {
 			Game::getInstance().m_guiLoadMap->setVisible(true);
 			Game::getInstance().m_guiPause->setVisible(true);
-			Game::getInstance().setPauseState("CONTAINER_LOAD_MAP");
+			Game::getInstance().pause("CONTAINER_LOAD_MAP");
 		});
-		m_toolbarMenu->addButton("File", "New", [](){
+		m_toolbarMenu->addButton("File", "New", []() {
 			Game::getInstance().m_guiClearMap->setVisible(true);
 			Game::getInstance().m_guiPause->setVisible(true);
-			Game::getInstance().setPauseState("CONTAINER_CLEAR_MAP");
+			Game::getInstance().pause("CONTAINER_CLEAR_MAP");
 		});
-		m_toolbarMenu->addButton("File", "Exit", [](){
+		m_toolbarMenu->addButton("File", "Exit", []() {
 			Globals::getInstance().m_exitting = 1;
-			Game::getInstance().setPauseState("CONTAINER_EXIT");
+			Game::getInstance().pause("CONTAINER_EXIT");
 		});
 	}
 	m_toolbarMenu->addButton("", "Edit");
 	{
-		m_toolbarMenu->addButton("Edit", "Resize", [](){
+		m_toolbarMenu->addButton("Edit", "Resize", []() {
 			Game::getInstance().m_guiResizeMap->findComponent("SLIDER_WIDTH")->setValue(Game::getInstance().m_zoneMap->getSize().x);
 			Game::getInstance().m_guiResizeMap->findComponent("SLIDER_HEIGHT")->setValue(Game::getInstance().m_zoneMap->getSize().y);
-			Game::getInstance().setPauseState("CONTAINER_RESIZE_MAP");
+			Game::getInstance().pause("CONTAINER_RESIZE_MAP");
 		});
 	}
 	m_toolbarMenu->addButton("", "View");
 	{
-		m_toolbarMenu->addButton("View", "Toggle Grid", [](){
+		m_toolbarMenu->addButton("View", "Toggle Grid", []() {
 			Game::getInstance().m_showGrid = !Game::getInstance().m_showGrid;
 		});
-		m_toolbarMenu->addButton("View", "Toggle Overlay", [](){
+		m_toolbarMenu->addButton("View", "Toggle Overlay", []() {
 			Game::getInstance().m_guiLeft->setVisible(!Game::getInstance().m_guiLeft->isVisible());
 			Game::getInstance().m_guiRight->setVisible(!Game::getInstance().m_guiRight->isVisible());
 		});
@@ -154,7 +154,7 @@ bool Game::init()
 	{
 		m_guiEntityTex->addComponent(new Panel("PANEL_BG2", "Set Texture", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiEntityTex->addComponent(new TextField("TEXTFIELD_TEXTURE", "Texture", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
-		m_guiEntityTex->addComponent(new CButton("BUTTON_SET", "Set", {-130, 24}, {252, 24}, 16, 1, [](){
+		m_guiEntityTex->addComponent(new CButton("BUTTON_SET", "Set", {-130, 24}, {252, 24}, 16, 1, []() {
 			if(Game::getInstance().m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->getTitle() != "")
 			{
 				Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex = MTexture::getInstance().getUnit(LTexture::getInstance().loadImage(Game::getInstance().m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->getTitle()));
@@ -163,25 +163,28 @@ bool Game::init()
 				Game::getInstance().unpause();
 			}
 		}), PANEL_ALIGN_CENTER);
-		m_guiEntityTex->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, [](){Game::getInstance().unpause();}), PANEL_ALIGN_CENTER);
+		m_guiEntityTex->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_CENTER);
 	}
 	m_guiEntityScript = new Container("CONTAINER_ENTITY_SCRIPT", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiEntityScript->addComponent(new Panel("PANEL_BG2", "Entity Script", {64, 32}, Globals::getInstance().m_screenSize - Vector2<Sint32>(128, 64), 0, true), PANEL_ALIGN_CENTER);
-		m_guiEntityScript->addComponent(new TextField("TEXTFIELD_SCRIPT", "Go to docs folder for script api", {0, -16}, Globals::getInstance().m_screenSize / 16 - Vector2<Sint32>(0, 5), 16, 1), PANEL_ALIGN_CENTER);
+		m_guiEntityScript->addComponent(new Panel("PANEL_BG2", "Entity Script", {0, -12}, Globals::getInstance().m_screenSize - Vector2<Sint32>(256, 128), 0, true), PANEL_ALIGN_CENTER);
+		m_guiEntityScript->addComponent(new TextField("TEXTFIELD_SCRIPT", "Go to docs folder for script api", {0, 0}, Globals::getInstance().m_screenSize / 16 - Vector2<Sint32>(17, 11), 16, 1, false), PANEL_ALIGN_CENTER);
 		m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setTitle("Test\nING\nSTuff");
-		m_guiEntityScript->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, [](){
+		m_guiEntityScript->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, []() {
 			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_script = Game::getInstance().m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->getTitle();
 			Game::getInstance().m_tileSetEntity->setTileSheet(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex);
 			Game::getInstance().unpause();
 		}), PANEL_ALIGN_BOTTOM);
-		m_guiEntityScript->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, [](){Game::getInstance().unpause();}), PANEL_ALIGN_BOTTOM);
+		m_guiEntityScript->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_BOTTOM);
 	}
 	m_guiEntityBoard = new Container("CONTAINER_ENTITY_BOARD", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiEntityBoard->addComponent(new Panel("PANEL_BG2", "Entity Script", {0, 0}, Globals::getInstance().m_screenSize - Vector2<Sint32>(256, 128), 0, true), PANEL_ALIGN_CENTER);
-		m_guiEntityBoard->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1), PANEL_ALIGN_BOTTOM);
-		m_guiEntityBoard->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, [](){Game::getInstance().unpause();}), PANEL_ALIGN_BOTTOM);
+		m_guiEntityBoard->addComponent(new Panel("PANEL_BG2", "Game Board", {0, 0}, Globals::getInstance().m_screenSize - Vector2<Sint32>(256, 128), 0, true), PANEL_ALIGN_CENTER);
+		m_guiEntityBoard->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, []() {
+			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_board->m_boardData = Game::getInstance().m_boardData;
+			Game::getInstance().unpause();
+		}), PANEL_ALIGN_BOTTOM);
+		m_guiEntityBoard->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_BOTTOM);
 	}
 
 	m_guiPause->addComponent(m_guiEntityTex, PANEL_ALIGN_CENTER);
@@ -233,7 +236,7 @@ bool Game::init()
 	{
 		m_guiSaveMap->addComponent(new Panel("PANEL_BG2", "Save Zone", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiSaveMap->addComponent(new TextField("TEXTFIELD_WORLD_NAME", "Zone Name", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
-		m_guiSaveMap->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, [](){
+		m_guiSaveMap->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, []() {
 			if(Game::getInstance().m_guiSaveMap->findComponent("TEXTFIELD_WORLD_NAME")->getTitle() != "")
 			{
 				Game::getInstance().m_zoneMap->save(Game::getInstance().m_guiSaveMap->findComponent("TEXTFIELD_WORLD_NAME")->getTitle());
@@ -241,13 +244,13 @@ bool Game::init()
 				Game::getInstance().m_guiSaveMap->findComponent("BUTTON_SAVE")->setState(0);
 			}
 		}), PANEL_ALIGN_CENTER);
-		m_guiSaveMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, [](){Game::getInstance().unpause();}), PANEL_ALIGN_CENTER);
+		m_guiSaveMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_CENTER);
 	}
 	m_guiLoadMap = new Container("CONTAINER_LOAD_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
 		m_guiLoadMap->addComponent(new Panel("PANEL_BG2", "Load Zone", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiLoadMap->addComponent(new TextField("TEXTFIELD_WORLD_NAME", "Zone Name", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
-		m_guiLoadMap->addComponent(new CButton("BUTTON_LOAD", "Load", {-130, 24}, {252, 24}, 16, 1, [](){
+		m_guiLoadMap->addComponent(new CButton("BUTTON_LOAD", "Load", {-130, 24}, {252, 24}, 16, 1, []() {
 			if(Game::getInstance().m_guiLoadMap->findComponent("TEXTFIELD_WORLD_NAME")->getTitle() != "")
 			{
 				Game::getInstance().m_zoneMap->load(Game::getInstance().m_guiLoadMap->findComponent("TEXTFIELD_WORLD_NAME")->getTitle());
@@ -260,46 +263,46 @@ bool Game::init()
 				Game::getInstance().unpause();
 			}
 		}), PANEL_ALIGN_CENTER);
-		m_guiLoadMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, [](){Game::getInstance().unpause();}), PANEL_ALIGN_CENTER);
+		m_guiLoadMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_CENTER);
 	}
 	m_guiClearMap = new Container("CONTAINER_CLEAR_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
 		m_guiClearMap->addComponent(new Panel("PANEL_BG2", "Clear Zone (Warning: No Undo)", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
-		
-		m_guiClearMap->addComponent(new CButton("BUTTON_CLEAR", "Clear", {-130, 24}, {252, 24}, 16, 1, [](){
+
+		m_guiClearMap->addComponent(new CButton("BUTTON_CLEAR", "Clear", {-130, 24}, {252, 24}, 16, 1, []() {
 			Game::getInstance().m_zoneMap->createNew();
 			Game::getInstance().unpause();
 		}), PANEL_ALIGN_CENTER);
-		m_guiClearMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, [](){Game::getInstance().unpause();}), PANEL_ALIGN_CENTER);
+		m_guiClearMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_CENTER);
 	}
 	m_guiResizeMap = new Container("CONTAINER_RESIZE_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
 		m_guiResizeMap->addComponent(new Panel("PANEL_BG2", "Resize Zone", {0, -12}, {1220, 112}, 0, true), PANEL_ALIGN_CENTER);
 		m_guiResizeMap->addComponent(new CSlider("SLIDER_WIDTH", "Width", {0, -16}, 1024, 1024, 10, 1), PANEL_ALIGN_CENTER);
 		m_guiResizeMap->addComponent(new CSlider("SLIDER_HEIGHT", "Height", {0, 4}, 1024, 1024, 10, 1), PANEL_ALIGN_CENTER);
-		m_guiResizeMap->addComponent(new CButton("BUTTON_RESIZE", "Resize", {-130, 24}, {252, 24}, 16, 1, [](){
+		m_guiResizeMap->addComponent(new CButton("BUTTON_RESIZE", "Resize", {-130, 24}, {252, 24}, 16, 1, []() {
 			if(Game::getInstance().m_guiResizeMap->findComponent("SLIDER_WIDTH")->getValue() != 0 && Game::getInstance().m_guiResizeMap->findComponent("SLIDER_HEIGHT")->getValue() != 0)
 			{
 				Game::getInstance().m_zoneMap->resize(Vector2<Uint16>(Game::getInstance().m_guiResizeMap->findComponent("SLIDER_WIDTH")->getValue(), Game::getInstance().m_guiResizeMap->findComponent("SLIDER_HEIGHT")->getValue()));
 				Game::getInstance().unpause();
 			}
 		}), PANEL_ALIGN_CENTER);
-		m_guiResizeMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, [](){Game::getInstance().unpause();}), PANEL_ALIGN_CENTER);
+		m_guiResizeMap->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_CENTER);
 	}
 	m_guiExit = new Container("CONTAINER_EXIT", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
 		m_guiExit->addComponent(new Panel("PANEL_BG2", "Exit Editor", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
 
 		m_guiExit->addComponent(new TextField("TEXTFIELD_WORLD_NAME", "Zone Name", {0, -24}, {32, 1}, 16, 1), PANEL_ALIGN_CENTER);
-		m_guiExit->addComponent(new CButton("BUTTON_SAVE", "Save", {-173, 24}, {166, 24}, 16, 1, [](){
+		m_guiExit->addComponent(new CButton("BUTTON_SAVE", "Save", {-173, 24}, {166, 24}, 16, 1, []() {
 			if(Game::getInstance().m_guiExit->findComponent("TEXTFIELD_WORLD_NAME")->getTitle() != "")
 			{
 				Game::getInstance().m_zoneMap->save(Game::getInstance().m_guiExit->findComponent("TEXTFIELD_WORLD_NAME")->getTitle());
 				Globals::getInstance().m_exitting = 2;
 			}
 		}), PANEL_ALIGN_CENTER);
-		m_guiExit->addComponent(new CButton("BUTTON_NO_SAVE", "Don't Save", {0, 24}, {166, 24}, 16, 1, [](){Globals::getInstance().m_exitting = 2;}), PANEL_ALIGN_CENTER);
-		m_guiExit->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {173, 24}, {166, 24}, 16, 1, [](){
+		m_guiExit->addComponent(new CButton("BUTTON_NO_SAVE", "Don't Save", {0, 24}, {166, 24}, 16, 1, []() {Globals::getInstance().m_exitting = 2; }), PANEL_ALIGN_CENTER);
+		m_guiExit->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {173, 24}, {166, 24}, 16, 1, []() {
 			Game::getInstance().unpause();
 			Globals::getInstance().m_exitting = 0;
 		}), PANEL_ALIGN_CENTER);
@@ -355,6 +358,7 @@ bool Game::init()
 void Game::resize()
 {
 	m_tileMapArea = Rect(-GLfloat(Globals::getInstance().m_screenSize.x / 2), -GLfloat(Globals::getInstance().m_screenSize.y / 2), GLfloat(Globals::getInstance().m_screenSize.x / 2), GLfloat(Globals::getInstance().m_screenSize.y / 2));
+	m_boardArea = Rect(-GLfloat(Globals::getInstance().m_screenSize.x / 2) + 136, -GLfloat(Globals::getInstance().m_screenSize.y / 2) + 96, GLfloat(Globals::getInstance().m_screenSize.x / 2) - 136, GLfloat(Globals::getInstance().m_screenSize.y / 2) - 72);
 }
 
 std::string Game::getZoneName()
@@ -372,7 +376,7 @@ void Game::unpause()
 	}
 }
 
-void Game::setPauseState(std::string p_screen)
+void Game::pause(std::string p_screen)
 {
 	Uint16 i = 0;
 	for(i = 0; i < m_pauseScreens.size(); i++)
@@ -388,6 +392,13 @@ void Game::setPauseState(std::string p_screen)
 	unpause();
 }
 
+std::string Game::getPause()
+{
+	if(m_cPauseScreen == -1)
+		return "";
+	return m_pauseScreens[m_cPauseScreen]->getName();
+}
+
 void Game::input()
 {
 	Vector2<Sint32> _mousePos = Globals::getInstance().m_mousePos;
@@ -397,25 +408,54 @@ void Game::input()
 	if((_rValue & 2) != 2 && Globals::getInstance().m_keyStates[GLFW_KEY_G] == 1)
 		m_showGrid = !m_showGrid;
 
-	if(m_mouseInArea && Globals::getInstance().m_mouseStates[0] == 1)
+	if(Globals::getInstance().m_mouseStates[0] == 1)
 	{
-		m_lmbDown = true;
-		if(m_selectLayer->getSelectedButton() == 4)
-			m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
+		if(getPause() == "CONTAINER_ENTITY_BOARD")
+			if(m_mouseInBoardArea)
+				m_blmbDown = true;
+			else if(m_mouseInArea)
+			{
+				m_lmbDown = true;
+				if(m_selectLayer->getSelectedButton() == 4)
+					m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
+			}
 	}
-	if(m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)) && Globals::getInstance().m_mouseStates[1] == 1)
+	if(Globals::getInstance().m_mouseStates[1] == 1)
 	{
-		m_rmbDown = true;
+		if(getPause() == "CONTAINER_ENTITY_BOARD")
+			if(m_boardArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)))
+				m_brmbDown = true;
+			else if(m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)))
+			{
+				m_rmbDown = true;
+			}
 	}
 	if(Globals::getInstance().m_mouseStates[0] == 0)
 	{
 		m_lmbDown = false;
+		m_blmbDown = false;
 	}
 	if(Globals::getInstance().m_mouseStates[1] == 0)
 	{
 		m_rmbDown = false;
+		m_brmbDown = false;
 	}
-	if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)
+	if(getPause() == "CONTAINER_ENTITY_BOARD")
+	{
+		if(m_blmbDown && !m_brmbDown && m_mouseInBoardArea)
+		{
+			m_boardData[Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 1;
+		}
+		else if(m_brmbDown)
+		{
+			m_boardScroll = m_boardScroll + (m_mouseBuffer - _mousePos);
+			if(m_boardScroll.x < -TILE_SIZE * 4)
+				m_boardScroll.x = -TILE_SIZE * 4;
+			if(m_boardScroll.y < -TILE_SIZE * 4)
+				m_boardScroll.y = -TILE_SIZE * 4;
+		}
+	}
+	else if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)
 	{
 		switch(m_selectLayer->getSelectedButton())
 		{
@@ -445,21 +485,13 @@ void Game::input()
 					for(Sint32 y = Sint32(ceil(-GLfloat(_selected.m_size.y) / 2)); y < Sint32(ceil(GLfloat(_selected.m_size.y) / 2)); y++)
 					{
 						if(m_guiRightStamp->findComponent("BUTTON_USE_GROUND")->isSelected() != 0)
-						{
 							m_zoneMap->setTile(0, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_ground[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						}
 						if(m_guiRightStamp->findComponent("BUTTON_USE_WORLD")->isSelected() != 0)
-						{
 							m_zoneMap->setTile(1, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_world[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						}
 						if(m_guiRightStamp->findComponent("BUTTON_USE_ENTITY")->isSelected() != 0)
-						{
 							m_zoneMap->setTile(2, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_entity[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						}
 						if(m_guiRightStamp->findComponent("BUTTON_USE_SKY")->isSelected() != 0)
-						{
 							m_zoneMap->setTile(3, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_sky[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						}
 					}
 				}
 			}
@@ -482,10 +514,14 @@ void Game::input()
 	}
 
 	m_mouseBuffer = _mousePos;
-	m_mouseInArea = ((_rValue & 1) == 0 
+	m_mouseInArea = ((_rValue & 1) == 0
 		&& m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y))
 		&& (m_mouseBuffer.x + m_camPos.x >= TILE_SIZE) && (m_mouseBuffer.y + m_camPos.y >= TILE_SIZE)
 		&& (m_mouseBuffer.x + m_camPos.x < TILE_SIZE * (m_zoneMap->getSize().x + 1)) && (m_mouseBuffer.y + m_camPos.y < TILE_SIZE * (m_zoneMap->getSize().y + 1)));
+
+	m_mouseInBoardArea = (m_boardArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y))
+		&& (m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x >= 0) && (m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y >= 0)
+		&& (m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x < TILE_SIZE * (m_boardSize.x)) && (m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y < TILE_SIZE * (m_boardSize.y)));
 
 	m_zoneMap->setLayerVisible(0, m_guiLeft->findComponent("BUTTON_GROUND_VISIBLE")->isSelected() != 0);
 	m_zoneMap->setLayerVisible(1, m_guiLeft->findComponent("BUTTON_WORLD_VISIBLE")->isSelected() != 0);
@@ -498,24 +534,16 @@ void Game::update()
 	if(Globals::getInstance().m_keyStates[GLFW_KEY_ESCAPE] == 3)
 	{
 		if(m_cPauseScreen != -1)
+		{
 			unpause();
+			if(Globals::getInstance().m_exitting == 1)
+				Globals::getInstance().m_exitting = 0;
+		}
 		else
 		{
-			if(Globals::getInstance().m_exitting == 1)
-			{
-				Globals::getInstance().m_exitting = 0;
-				unpause();
-			}
-			else if(Globals::getInstance().m_exitting == 0)
-			{
-				Globals::getInstance().m_exitting = 1;
-				setPauseState("CONTAINER_EXIT");
-			}
+			Globals::getInstance().m_exitting = 1;
+			pause("CONTAINER_EXIT");
 		}
-	}
-	if(Globals::getInstance().m_exitting == 1 && !m_guiExit->isVisible())
-	{
-		setPauseState("CONTAINER_EXIT");
 	}
 
 	m_deltaUpdate = GLfloat(glfwGetTime() - m_lastUpdate);
@@ -575,8 +603,9 @@ void Game::update()
 		}
 	}
 
-	if(m_selectLayer->getSelectedButton() == 1) // WORLD OBJECTS
+	switch(m_selectLayer->getSelectedButton())
 	{
+	case 1: // WORLD OBJECTS
 		if(m_listWorld->isUpdated() != 0)
 		{
 			m_guiRightWorld->setVisible(true);
@@ -634,15 +663,12 @@ void Game::update()
 			m_guiRightWorldSwitch->setVisible(m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Switch" ||
 				m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Solid Switch");
 		}
-	}
-	else if(m_selectLayer->getSelectedButton() == 2) // ENTITIES
-	{
+		break;
+	case 2: // ENTITIES
 		if(m_listEntity->isUpdated() != 0)
 		{
 			if((m_listEntity->isUpdated() & 2) == 2) // New item
-			{
 				m_zoneMap->addEntity(ZoneMap::Entity(m_listEntity->getItem(m_listEntity->getSelectedItem()).m_name));
-			}
 			if((m_listEntity->isUpdated() & 1) == 1) // Switch item
 			{
 				m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getItem(m_listEntity->getSelectedItem()).m_name);
@@ -667,26 +693,31 @@ void Game::update()
 			if(m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle() != "")
 				m_listEntity->getItem(m_listEntity->getSelectedItem()).m_name = m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle();
 			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId = m_tileSetEntity->getSelectedTile();
+			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_BOARD")->isSelected() == 3)
+			{
+				pause("CONTAINER_ENTITY_BOARD");
+				if(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board == 0)
+					m_zoneMap->getEntity(m_listEntity->getSelectedItem()).setBoard({16, 16}, Texture());
+				m_boardSize = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_size;
+				m_boardData = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_boardData;
+			}
+			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_TEXTURE")->isSelected() == 3)
+			{
+				pause("CONTAINER_ENTITY_TEXTURE");
+				m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->setTitle(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex.getName());
+			}
+			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_SCRIPT")->isSelected() == 3)
+			{
+				pause("CONTAINER_ENTITY_SCRIPT");
+				m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setTitle(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_script);
+				m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setState(1);
+			}
 		}
-		if(m_guiRightEntity->findComponent("BUTTON_ENTITY_BOARD")->isSelected() == 3)
-		{
-			setPauseState("CONTAINER_ENTITY_BOARD");
-			//m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->setTitle(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex.getName());
-		}
-		if(m_guiRightEntity->findComponent("BUTTON_ENTITY_TEXTURE")->isSelected() == 3)
-		{
-			setPauseState("CONTAINER_ENTITY_TEXTURE");
-			m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->setTitle(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex.getName());
-		}
-		if(m_guiRightEntity->findComponent("BUTTON_ENTITY_SCRIPT")->isSelected() == 3)
-		{
-			setPauseState("CONTAINER_ENTITY_SCRIPT");
-			m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setTitle(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_script);
-			m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setState(1);
-		}
-	}
-	else if(m_selectLayer->getSelectedButton() == 4) // STAMPS
-	{
+		break;
+	case 3:
+
+		break;
+	case 4: // STAMPS
 		if(m_listStamps->isUpdated() != 0)
 		{
 			if((m_listStamps->isUpdated() & 2) == 2) // New item
@@ -741,8 +772,9 @@ void Game::update()
 			m_stamps[m_stamps.size() - 1] = Stamp(_stampSize, _groundData, _worldData, _entityData, _skyData);
 			m_listStamps->addItem({std::string("Item ") + Util::numToString(m_listStamps->getListSize()), 0});
 		}
+		break;
 	}
-	
+
 	/*if(m_mouseInArea)
 		m_guiTop->findComponent("TEXT_POS")->setTitle("Select Pos\nX:" + Util::numToString(Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1)) + "\nY:" + Util::numToString(Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)));
 	else
@@ -850,4 +882,61 @@ void Game::render()
 	glPopMatrix();
 
 	m_guiAll->render();
+
+	if(getPause() == "CONTAINER_ENTITY_BOARD")
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(GLint(m_boardArea.x + Globals::getInstance().m_screenSize.x / 2), GLint(-m_boardArea.h + Globals::getInstance().m_screenSize.y / 2), GLsizei(m_boardArea.w - m_boardArea.x), GLsizei(m_boardArea.h - m_boardArea.y));
+		glPushMatrix();
+		{
+			glTranslatef(m_boardArea.x, m_boardArea.y, 0);
+			glTranslatef(-GLfloat(m_boardScroll.x % TILE_SIZE), -GLfloat(m_boardScroll.y % TILE_SIZE), 0);
+			glBegin(GL_QUADS);
+			{
+				for(Sint16 x = -1; x < ceil((m_boardArea.w - m_boardArea.x) / TILE_SIZE) + 1; x++)
+				{
+					for(Sint16 y = -1; y < ceil((m_boardArea.h - m_boardArea.y) / TILE_SIZE) + 1; y++)
+					{
+						if((x + ceil(m_boardScroll.x / TILE_SIZE)) > 0 && (x + ceil(m_boardScroll.x / TILE_SIZE)) < m_boardSize.x &&
+							(y + ceil(m_boardScroll.y / TILE_SIZE)) > 0 && (y + ceil(m_boardScroll.y / TILE_SIZE)) < m_boardSize.y &&
+							m_boardData[Sint32(x + ceil(m_boardScroll.x / TILE_SIZE))][Sint32(y + ceil(m_boardScroll.y / TILE_SIZE))] == 0)
+							glColor4f(0.02f, 0.08f, 0.2f, 0.6f);
+						else
+							glColor4f(0.02f, 0.08f, 0.2f, 0.1f);
+						glVertex2f(GLfloat(x * TILE_SIZE), GLfloat(y * TILE_SIZE));
+						glVertex2f((x + 1.0f) * TILE_SIZE, GLfloat(y * TILE_SIZE));
+						glVertex2f((x + 1.0f) * TILE_SIZE, (y + 1.0f) * TILE_SIZE);
+						glVertex2f(GLfloat(x * TILE_SIZE), (y + 1.0f) * TILE_SIZE);
+					}
+				}
+			}
+			glEnd();
+			if(m_showGrid)
+			{
+				glBegin(GL_LINES);
+				{
+					for(Sint16 x = -1; x < ceil((m_boardArea.w - m_boardArea.x) / TILE_SIZE) + 1; x++)
+					{
+						if((x + ceil(m_boardScroll.x / TILE_SIZE)) > 0 && (x + ceil(m_boardScroll.x / TILE_SIZE)) <= m_boardSize.x)
+						{
+							glVertex2f(GLfloat(x * TILE_SIZE), -m_boardScroll.y + (m_boardScroll.y % TILE_SIZE) + TILE_SIZE);
+							glVertex2f(GLfloat(x * TILE_SIZE), -m_boardScroll.y + (m_boardScroll.y % TILE_SIZE) + m_boardSize.y * TILE_SIZE);
+						}
+					}
+					for(Sint16 y = -1; y < ceil((m_boardArea.h - m_boardArea.y) / TILE_SIZE) + 1; y++)
+					{
+						if((y + ceil(m_boardScroll.y / TILE_SIZE)) > 0 && (y + ceil(m_boardScroll.y / TILE_SIZE)) <= m_boardSize.y)
+						{
+							glVertex2f(-m_boardScroll.x + (m_boardScroll.x % TILE_SIZE) + TILE_SIZE, GLfloat(y * TILE_SIZE));
+							glVertex2f(-m_boardScroll.x + (m_boardScroll.x % TILE_SIZE) + m_boardSize.x * TILE_SIZE, GLfloat(y * TILE_SIZE));
+						}
+					}
+				}
+				glEnd();
+			}
+		}
+		glPopMatrix();
+		glDisable(GL_SCISSOR_TEST);
+	}
 }
