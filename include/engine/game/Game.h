@@ -84,7 +84,6 @@ protected:
 	CTileSet* m_tileSetGround, *m_tileSetWorld, *m_tileSetEntity, *m_tileSetSky, *m_tileSetStamps;
 	CList* m_listWorld, *m_listEntity, *m_listStamps;
 	CButtonRadio* m_selectLayer;
-	CDropDown* m_dropDownInteract;
 
 	//Pause screens
 	Container* m_guiPause;
@@ -98,7 +97,7 @@ protected:
 	Rect m_boardArea;
 	bool m_mouseInBoardArea;
 	bool m_blmbDown, m_brmbDown;
-	Uint8** m_boardData;
+	Uint8** m_boardData[2];
 	Vector2<Uint16> m_boardSize;
 	Vector2<Sint32> m_boardScroll;
 };

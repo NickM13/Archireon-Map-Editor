@@ -135,13 +135,12 @@ bool Game::init()
 	m_guiRightWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_X", "X:", {0, 440}, {0, 500}, 1, 0));
 	m_guiRightWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_Y", "Y:", {0, 460}, {0, 500}, 1, 0));
 
-	m_dropDownInteract = new CDropDown("DROPDOWN_INTERACT", "Interaction Type", {0, 296}, {264, 32}, 16, 1);
-	m_dropDownInteract->addItem("None");
-	m_dropDownInteract->addItem("Solid");
-	m_dropDownInteract->addItem("Switch");
-	m_dropDownInteract->addItem("Solid Switch");
-	m_dropDownInteract->addItem("Portal");
-	m_guiRightWorld->addComponent(m_dropDownInteract, PANEL_ALIGN_TOP);
+	m_guiRightWorld->addComponent(new CDropDown("DROPDOWN_INTERACT", "Interaction Type", {0, 296}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
+	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
+	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
+	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
+	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
 	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->setPriorityLayer(5);
 
 	m_guiRightWorldSwitch->addComponent(new CCounter("COUNTER_SWITCH_FREQUENCY", "Freq.", {0, 440}, {0, 255}, 1, 0));
@@ -179,9 +178,19 @@ bool Game::init()
 	}
 	m_guiEntityBoard = new Container("CONTAINER_ENTITY_BOARD", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiEntityBoard->addComponent(new Panel("PANEL_BG2", "Game Board", {0, 0}, Globals::getInstance().m_screenSize - Vector2<Sint32>(256, 128), 0, true), PANEL_ALIGN_CENTER);
+		m_guiEntityBoard->addComponent(new Panel("PANEL_BG2", "Game Board", {0, 0}, Globals::getInstance().m_screenSize - Vector2<Sint32>(64, 128), 0, true), PANEL_ALIGN_CENTER);
+		m_guiEntityBoard->addComponent(new Panel("PANEL_EDIT", "Tile Selector", {32, 0}, {256, Globals::getInstance().m_screenSize.y - 128}, 0, true), PANEL_ALIGN_RIGHT);
+		m_guiEntityBoard->addComponent(new Container("CONTAINER_FOG", {32, 48}, {256, Globals::getInstance().m_screenSize.y - 104}, true), PANEL_ALIGN_RIGHT);
+		m_guiEntityBoard->addComponent(new Container("CONTAINER_TILE", {32, 48}, {256, Globals::getInstance().m_screenSize.y - 104}, true), PANEL_ALIGN_RIGHT);
+		m_guiEntityBoard->addComponent(new CButtonRadio("RADIO_EDIT", "test", {0, 0}, {256, 32}, 1), PANEL_ALIGN_TOP_RIGHT);
+		m_guiEntityBoard->findComponent("CONTAINER_FOG")->addComponent(new CDropDown("DROPDOWN_FOG_TYPE", "", {0, 0}, {144, 32}, 16, 1), PANEL_ALIGN_TOP);
+		m_guiEntityBoard->findComponent("CONTAINER_FOG")->findComponent("DROPDOWN_FOG_TYPE")->addItem("Player");
+		m_guiEntityBoard->findComponent("CONTAINER_FOG")->findComponent("DROPDOWN_FOG_TYPE")->addItem("Neutral");
+		m_guiEntityBoard->findComponent("CONTAINER_FOG")->findComponent("DROPDOWN_FOG_TYPE")->addItem("Opponent");
+		
 		m_guiEntityBoard->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, []() {
-			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_board->m_boardData = Game::getInstance().m_boardData;
+			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_board->m_boardData[0] = Game::getInstance().m_boardData[0];
+			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_board->m_boardData[1] = Game::getInstance().m_boardData[1];
 			Game::getInstance().unpause();
 		}), PANEL_ALIGN_BOTTOM);
 		m_guiEntityBoard->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_BOTTOM);
@@ -358,7 +367,7 @@ bool Game::init()
 void Game::resize()
 {
 	m_tileMapArea = Rect(-GLfloat(Globals::getInstance().m_screenSize.x / 2), -GLfloat(Globals::getInstance().m_screenSize.y / 2), GLfloat(Globals::getInstance().m_screenSize.x / 2), GLfloat(Globals::getInstance().m_screenSize.y / 2));
-	m_boardArea = Rect(-GLfloat(Globals::getInstance().m_screenSize.x / 2) + 136, -GLfloat(Globals::getInstance().m_screenSize.y / 2) + 96, GLfloat(Globals::getInstance().m_screenSize.x / 2) - 136, GLfloat(Globals::getInstance().m_screenSize.y / 2) - 72);
+	m_boardArea = Rect(-GLfloat(Globals::getInstance().m_screenSize.x / 2) + 40, -GLfloat(Globals::getInstance().m_screenSize.y / 2) + 96, GLfloat(Globals::getInstance().m_screenSize.x / 2) - 296, GLfloat(Globals::getInstance().m_screenSize.y / 2) - 72);
 }
 
 std::string Game::getZoneName()
@@ -411,24 +420,28 @@ void Game::input()
 	if(Globals::getInstance().m_mouseStates[0] == 1)
 	{
 		if(getPause() == "CONTAINER_ENTITY_BOARD")
+		{
 			if(m_mouseInBoardArea)
 				m_blmbDown = true;
-			else if(m_mouseInArea)
-			{
-				m_lmbDown = true;
-				if(m_selectLayer->getSelectedButton() == 4)
-					m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
-			}
+		}
+		else if(m_mouseInArea)
+		{
+			m_lmbDown = true;
+			if(m_selectLayer->getSelectedButton() == 4)
+				m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
+		}
 	}
 	if(Globals::getInstance().m_mouseStates[1] == 1)
 	{
 		if(getPause() == "CONTAINER_ENTITY_BOARD")
+		{
 			if(m_boardArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)))
 				m_brmbDown = true;
-			else if(m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)))
-			{
-				m_rmbDown = true;
-			}
+		}
+		else if(m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)))
+		{
+			m_rmbDown = true;
+		}
 	}
 	if(Globals::getInstance().m_mouseStates[0] == 0)
 	{
@@ -444,7 +457,21 @@ void Game::input()
 	{
 		if(m_blmbDown && !m_brmbDown && m_mouseInBoardArea)
 		{
-			m_boardData[Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 1;
+			switch(m_guiEntityBoard->findComponent("CONTAINER_FOG")->findComponent("DROPDOWN_FOG_TYPE")->getSelectedItem())
+			{
+			case 0:
+				m_boardData[0][Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 0;
+				break;
+			case 1:
+				m_boardData[0][Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 1;
+				break;
+			case 2:
+				m_boardData[0][Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 2;
+				break;
+			default:
+
+				break;
+			}
 		}
 		else if(m_brmbDown)
 		{
@@ -540,11 +567,11 @@ void Game::update()
 				Globals::getInstance().m_exitting = 0;
 		}
 		else
-		{
 			Globals::getInstance().m_exitting = 1;
-			pause("CONTAINER_EXIT");
-		}
 	}
+
+	if(Globals::getInstance().m_exitting == 1 && getPause() != "CONTAINER_EXIT")
+		pause("CONTAINER_EXIT");
 
 	m_deltaUpdate = GLfloat(glfwGetTime() - m_lastUpdate);
 	m_lastUpdate = GLfloat(glfwGetTime());
@@ -611,12 +638,12 @@ void Game::update()
 			m_guiRightWorld->setVisible(true);
 			if((m_listWorld->isUpdated() & 2) == 2) // New item
 			{
-				m_zoneMap->addWorldObject({m_listWorld->getItem(m_listWorld->getSelectedItem()).m_name, 1, m_listWorld->getItem(m_listWorld->getSelectedItem()).m_texId});
+				m_zoneMap->addWorldObject({m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name, 1, m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_texId});
 			}
 			if((m_listWorld->isUpdated() & 1) == 1) // Switch item
 			{
-				m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getItem(m_listWorld->getSelectedItem()).m_name);
-				m_dropDownInteract->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
+				m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
+				m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
 				m_tileSetWorld->setSelectedTile(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
 
 				m_guiRightWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
@@ -630,8 +657,8 @@ void Game::update()
 			m_listWorld->removeItem(m_listWorld->getSelectedItem());
 			m_zoneMap->removeWorldObject(m_listWorld->getSelectedItem() + 1);
 
-			m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getItem(m_listWorld->getSelectedItem()).m_name);
-			m_dropDownInteract->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
+			m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
+			m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
 			m_tileSetWorld->setSelectedTile(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
 
 			m_guiRightWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
@@ -642,36 +669,36 @@ void Game::update()
 		if(m_listWorld->getSelectedItem() != 0)
 		{
 			if(m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle() != "")
-				m_listWorld->getItem(m_listWorld->getSelectedItem()).m_name = m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle();
-			m_listWorld->getItem(m_listWorld->getSelectedItem()).m_texId = m_tileSetWorld->getSelectedTile();
-			m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType = m_dropDownInteract->getSelectedItem();
+				m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name = m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle();
+			m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_texId = m_tileSetWorld->getSelectedTile();
+			m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType = m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
 			m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex = m_tileSetWorld->getSelectedTile();
-			if(m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Portal")
+			if(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal")
 			{
 				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest = m_guiRightWorldPortal->findComponent("TEXTFIELD_PORTAL")->getTitle();
 				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destX = m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_X")->getValue();
 				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destY = m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_Y")->getValue();
 			}
-			else if(m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Switch" || m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Solid Switch")
+			else if(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" || m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch")
 			{
 				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_frequency = m_guiRightWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->getValue();
 			}
 		}
-		if(m_dropDownInteract->isUpdated())
+		if(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->isUpdated())
 		{
-			m_guiRightWorldPortal->setVisible(m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Portal");
-			m_guiRightWorldSwitch->setVisible(m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Switch" ||
-				m_dropDownInteract->getItem(m_dropDownInteract->getSelectedItem()) == "Solid Switch");
+			m_guiRightWorldPortal->setVisible(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal");
+			m_guiRightWorldSwitch->setVisible(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" ||
+				m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch");
 		}
 		break;
 	case 2: // ENTITIES
 		if(m_listEntity->isUpdated() != 0)
 		{
 			if((m_listEntity->isUpdated() & 2) == 2) // New item
-				m_zoneMap->addEntity(ZoneMap::Entity(m_listEntity->getItem(m_listEntity->getSelectedItem()).m_name));
+				m_zoneMap->addEntity(ZoneMap::Entity(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name));
 			if((m_listEntity->isUpdated() & 1) == 1) // Switch item
 			{
-				m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getItem(m_listEntity->getSelectedItem()).m_name);
+				m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name);
 				if(m_listEntity->getSelectedItem() != 0)
 					m_tileSetEntity->setTileSheet(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex);
 				else
@@ -684,22 +711,23 @@ void Game::update()
 			m_listEntity->removeItem(m_listEntity->getSelectedItem());
 			m_zoneMap->removeEntity(m_listEntity->getSelectedItem() + 1);
 
-			m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getItem(m_listEntity->getSelectedItem()).m_name);
+			m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name);
 			m_tileSetEntity->setTileSheet(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex);
 			m_tileSetEntity->setSelectedTile(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId);
 		}
 		if(m_listEntity->getSelectedItem() != 0)
 		{
 			if(m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle() != "")
-				m_listEntity->getItem(m_listEntity->getSelectedItem()).m_name = m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle();
+				m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name = m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle();
 			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId = m_tileSetEntity->getSelectedTile();
 			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_BOARD")->isSelected() == 3)
 			{
 				pause("CONTAINER_ENTITY_BOARD");
 				if(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board == 0)
-					m_zoneMap->getEntity(m_listEntity->getSelectedItem()).setBoard({16, 16}, Texture());
+					m_zoneMap->getEntity(m_listEntity->getSelectedItem()).setBoard({30, 18}, Texture());
 				m_boardSize = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_size;
-				m_boardData = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_boardData;
+				m_boardData[0] = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_boardData[0];
+				m_boardData[1] = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_boardData[1];
 			}
 			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_TEXTURE")->isSelected() == 3)
 			{
@@ -726,7 +754,7 @@ void Game::update()
 			}
 			if((m_listStamps->isUpdated() & 1) == 1) // Switch item
 			{
-				m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getItem(m_listStamps->getSelectedItem()).m_name);
+				m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name);
 				m_selectStart = {-1, -1};
 			}
 			m_guiRightStamp->setVisible(m_listStamps->getSelectedItem() != 0);
@@ -736,7 +764,7 @@ void Game::update()
 			m_stamps.erase(m_stamps.begin() + m_listStamps->getSelectedItem());
 			m_listStamps->removeItem(m_listStamps->getSelectedItem());
 
-			m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getItem(m_listStamps->getSelectedItem()).m_name);
+			m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name);
 			m_selectStart = {-1, -1};
 
 			m_guiRightStamp->setVisible(m_listStamps->getSelectedItem() != 0);
@@ -744,7 +772,7 @@ void Game::update()
 		else if(m_listStamps->getSelectedItem() != 0)
 		{
 			if(m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle() != "")
-				m_listStamps->getItem(m_listStamps->getSelectedItem()).m_name = m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle();
+				m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name = m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle();
 		}
 		if(m_listStamps->getSelectedItem() == 0 && (Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] || Globals::getInstance().m_keyStates[GLFW_KEY_RIGHT_CONTROL]) && Globals::getInstance().m_keyStates[GLFW_KEY_C] == 1)
 		{
@@ -899,21 +927,52 @@ void Game::render()
 					for(Sint16 y = -1; y < ceil((m_boardArea.h - m_boardArea.y) / TILE_SIZE) + 1; y++)
 					{
 						if((x + ceil(m_boardScroll.x / TILE_SIZE)) > 0 && (x + ceil(m_boardScroll.x / TILE_SIZE)) < m_boardSize.x &&
-							(y + ceil(m_boardScroll.y / TILE_SIZE)) > 0 && (y + ceil(m_boardScroll.y / TILE_SIZE)) < m_boardSize.y &&
-							m_boardData[Sint32(x + ceil(m_boardScroll.x / TILE_SIZE))][Sint32(y + ceil(m_boardScroll.y / TILE_SIZE))] == 0)
-							glColor4f(0.02f, 0.08f, 0.2f, 0.6f);
+							(y + ceil(m_boardScroll.y / TILE_SIZE)) > 0 && (y + ceil(m_boardScroll.y / TILE_SIZE)) < m_boardSize.y)
+						{
+							switch(m_boardData[1][Sint32(x + ceil(m_boardScroll.x / TILE_SIZE))][Sint32(y + ceil(m_boardScroll.y / TILE_SIZE))])
+							{
+							case 0:
+								glColor4f(0.02f, 0.08f, 0.2f, 0.1f);
+								break;
+							case 1:
+								glColor4f(0.02f, 0.08f, 0.2f, 0.6f);
+								break;
+							}
+						}
 						else
 							glColor4f(0.02f, 0.08f, 0.2f, 0.1f);
 						glVertex2f(GLfloat(x * TILE_SIZE), GLfloat(y * TILE_SIZE));
 						glVertex2f((x + 1.0f) * TILE_SIZE, GLfloat(y * TILE_SIZE));
 						glVertex2f((x + 1.0f) * TILE_SIZE, (y + 1.0f) * TILE_SIZE);
 						glVertex2f(GLfloat(x * TILE_SIZE), (y + 1.0f) * TILE_SIZE);
+
+						if((x + ceil(m_boardScroll.x / TILE_SIZE)) > 0 && (x + ceil(m_boardScroll.x / TILE_SIZE)) < m_boardSize.x &&
+							(y + ceil(m_boardScroll.y / TILE_SIZE)) > 0 && (y + ceil(m_boardScroll.y / TILE_SIZE)) < m_boardSize.y)
+						{
+							switch(m_boardData[0][Sint32(x + ceil(m_boardScroll.x / TILE_SIZE))][Sint32(y + ceil(m_boardScroll.y / TILE_SIZE))])
+							{
+							case 0:
+								glColor4f(0.f, 0.f, 1.f, 0.1f);
+								break;
+							case 1:
+								glColor4f(0.f, 0.f, 0.f, 0.1f);
+								break;
+							case 2:
+								glColor4f(1.f, 0.f, 0.f, 0.1f);
+								break;
+							}
+							glVertex2f(GLfloat(x * TILE_SIZE), GLfloat(y * TILE_SIZE));
+							glVertex2f((x + 1.0f) * TILE_SIZE, GLfloat(y * TILE_SIZE));
+							glVertex2f((x + 1.0f) * TILE_SIZE, (y + 1.0f) * TILE_SIZE);
+							glVertex2f(GLfloat(x * TILE_SIZE), (y + 1.0f) * TILE_SIZE);
+						}
 					}
 				}
 			}
 			glEnd();
-			if(m_showGrid)
+			//if(m_showGrid)
 			{
+				glColor4f(0.02f, 0.08f, 0.2f, 1);
 				glBegin(GL_LINES);
 				{
 					for(Sint16 x = -1; x < ceil((m_boardArea.w - m_boardArea.x) / TILE_SIZE) + 1; x++)

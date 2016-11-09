@@ -37,20 +37,23 @@ public:
 	struct Board
 	{
 		Vector2<Uint16> m_size;
-		Uint8** m_boardData;
+		Uint8** m_boardData[2];
 		Texture m_background;
 
 		Board(Vector2<Uint16> p_size, Texture p_background)
 		{
 			m_size = p_size;
 			m_background = p_background;
-			m_boardData = new Uint8*[m_size.x];
+			m_boardData[0] = new Uint8*[m_size.x];
+			m_boardData[1] = new Uint8*[m_size.x];
 			for(Uint16 x = 0; x < m_size.x; x++)
 			{
-				m_boardData[x] = new Uint8[m_size.y];
+				m_boardData[0][x] = new Uint8[m_size.y];
+				m_boardData[1][x] = new Uint8[m_size.y];
 				for(Uint16 y = 0; y < m_size.y; y++)
 				{
-					m_boardData[x][y] = 0;
+					m_boardData[0][x][y] = 0;
+					m_boardData[1][x][y] = 0;
 				}
 			}
 		}

@@ -20,6 +20,34 @@ Component::Component(std::string p_compName, std::string p_title, Vector2<Sint32
 
 	m_colorTheme = m_colorThemes[p_colorTheme];
 }
+Component* Component::addComponent(Component* p_comp, Sint8 p_align)
+{
+	return 0;
+}
+Component* Component::findComponent(std::string p_compName)
+{
+	return 0;
+}
+std::string Component::getItem(Uint16 p_index)
+{
+	return "";
+}
+void Component::addItem(std::string p_item)
+{
+	
+}
+void Component::setSelectedItem(Uint16 p_selectedItem)
+{
+	
+}
+Uint8 Component::isUpdated()
+{
+	return 0;
+}
+Uint16 Component::getSelectedItem()
+{
+	return 0;
+}
 std::string Component::getName()
 {
 	return m_compName;

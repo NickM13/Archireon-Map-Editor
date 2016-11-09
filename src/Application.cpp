@@ -24,7 +24,7 @@ bool Application::init()
 
 	m_screenSize = Globals::getInstance().m_screenSize;
 
-	m_mainWindow = glfwCreateWindow(m_screenSize.x, m_screenSize.y, "Map Editor - Indev", 0, 0);
+	m_mainWindow = glfwCreateWindow(m_screenSize.x, m_screenSize.y, "ArchMapEditor v0.1", 0, 0);
 
 	if(!m_mainWindow)
 	{
@@ -162,6 +162,7 @@ void Application::input()
 	{
 		glfwSetWindowShouldClose(m_mainWindow, false);
 		Globals::getInstance().m_exitting = 1;
+		std::cout << "test" << std::endl;
 	}
 
 	Globals::getInstance().m_keyEvents.clear();
@@ -192,7 +193,7 @@ void Application::update()
 			Globals::getInstance().m_mouseStates[i] = 0;
 	}
 
-	glfwSetWindowTitle(m_mainWindow, ("Map Editor - Indev - Map: " + Game::getInstance().getZoneName()).c_str());
+	glfwSetWindowTitle(m_mainWindow, ("ArchMapEditor v0.1 - Map: \"" + Game::getInstance().getZoneName() + "\"").c_str());
 }
 
 void Application::render()

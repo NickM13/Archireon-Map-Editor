@@ -49,6 +49,13 @@ protected:
 public:
 	Component();
 	Component(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme = 0);
+	virtual Component* addComponent(Component* p_comp, Sint8 p_alignment = 0);
+	virtual Component* findComponent(std::string p_compName);
+	virtual std::string getItem(Uint16 p_index);
+	virtual void addItem(std::string p_item);
+	virtual void setSelectedItem(Uint16 p_selectedItem);
+	virtual Uint8 isUpdated();
+	virtual Uint16 getSelectedItem();
 	std::string getName();
 	virtual std::string getTitle();
 

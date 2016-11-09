@@ -182,7 +182,7 @@ public:
 		glPopMatrix();
 	}
 
-	bool isUpdated()
+	Uint8 isUpdated()
 	{
 		return m_update;
 	}

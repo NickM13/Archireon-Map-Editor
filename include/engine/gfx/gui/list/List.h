@@ -56,7 +56,7 @@ public:
 		m_itemList.erase(m_itemList.begin() + p_index);
 		m_selectedItem--;
 	}
-	ListItem& getItem(Uint16 p_index)
+	ListItem& getListItem(Uint16 p_index)
 	{
 		return m_itemList[p_index];
 	}
