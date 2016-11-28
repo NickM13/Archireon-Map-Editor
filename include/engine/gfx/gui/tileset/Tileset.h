@@ -30,8 +30,8 @@ public:
 		m_tileSheet = p_tileSheet;
 		m_colorTheme = m_colorThemes[p_colorTheme];
 
-		m_transparentTex = MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Transparent.png"));
-		m_selectTex = MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("TileSelect.png"));
+		m_transparentTex = MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Transparent.png"));
+		m_selectTex = MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\TileSelect.png"));
 
 		m_tileCount = m_tileSheet.getSize() / m_tileSize;
 

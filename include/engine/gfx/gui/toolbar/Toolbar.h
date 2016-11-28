@@ -72,8 +72,8 @@ public:
 		m_pos = p_pos;
 		m_size = p_size;
 		m_colorTheme = m_colorThemes[p_colorTheme];
-		m_panelMain = new Panel("", "", {0, 0}, p_size, 0, true, LTexture::getInstance().loadImage("gui\\BarRect.png"), COMPONENT_TEXTURE_STYLE_SCALE);
-		m_panelSub = new Panel("", "", {0, 0}, {0, 0}, 0, true, LTexture::getInstance().loadImage("gui\\BarRoundDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+		m_panelMain = new Panel("", "", {0, 0}, p_size, 0, true, LTexture::getInstance().loadImage("gui\\BarUnderline.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+		m_panelSub = new Panel("", "", {0, 0}, {0, 0}, 0, true, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 
 		m_slideCounter = 0;
 	}
