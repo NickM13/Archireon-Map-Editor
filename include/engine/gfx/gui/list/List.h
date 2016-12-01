@@ -139,6 +139,7 @@ public:
 		glPushMatrix();
 		{
 			glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
+			Math::pushScissor(Rect(-5, -25, GLfloat(m_size.x) + 10, GLfloat(m_size.y * m_itemHeight + 30)));
 			
 			glPushMatrix();
 			{
@@ -167,10 +168,8 @@ public:
 				Font::getInstance().setAlignment(ALIGN_CENTER);
 				Font::getInstance().print(m_title, m_size.x / 2, -20);
 
-				glEnable(GL_SCISSOR_TEST);
-				float mat[16];
-				glGetFloatv(GL_MODELVIEW_MATRIX, mat);
-				glScissor(GLint(mat[12] + Globals::getInstance().m_screenSize.x / 2), GLint(-mat[13] + Globals::getInstance().m_screenSize.y / 2 - m_size.y * m_itemHeight), 2000, m_size.y * m_itemHeight);
+				Math::popScissor();
+				Math::pushScissor(Rect(0, 0, GLfloat(m_size.x), GLfloat(m_size.y * m_itemHeight)));
 
 				glTranslatef(0, -GLfloat(m_scroll % m_itemHeight), 0);
 
@@ -265,7 +264,7 @@ public:
 				}
 				glEnd();
 			}
-			glDisable(GL_SCISSOR_TEST);
+			Math::popScissor();
 		}
 		glPopMatrix();
 	}

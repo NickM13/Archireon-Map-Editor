@@ -78,9 +78,9 @@ protected:
 	CToolbar* m_toolbarMenu;
 	Container* m_guiAll, *m_guiTop;
 	Container* m_guiLeft, *m_guiRight;
-	Container* m_guiLeftLayer, *m_guiLeftDetail;
-	Container* m_guiRightGround, *m_guiRightWorld, *m_guiRightEntity, *m_guiRightSky, *m_guiRightStamp;
-	Container* m_guiRightWorldSwitch, *m_guiRightWorldPortal;
+	Container* m_guiLeftLayer, *m_guiLeftDetail; // Layer panel
+	ContainerPanel* m_guiGround, *m_guiWorld, *m_guiEntity, *m_guiSky, *m_guiStamp;
+	Container* m_guiWorldSwitch, *m_guiWorldPortal;
 	CTileSet* m_tileSetGround, *m_tileSetWorld, *m_tileSetEntity, *m_tileSetSky, *m_tileSetStamps;
 	CList* m_listWorld, *m_listEntity, *m_listStamps;
 	CButtonRadio* m_selectLayer;

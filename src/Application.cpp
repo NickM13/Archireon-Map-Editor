@@ -152,7 +152,6 @@ void Application::init2d()
 	glOrtho(-m_screenSize.x / 2, m_screenSize.x / 2, m_screenSize.y / 2, -m_screenSize.y / 2, -2000.f, 2000.f);
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_SCISSOR_TEST);
 	glLoadIdentity();
 }
 

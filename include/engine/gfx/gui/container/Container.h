@@ -22,6 +22,8 @@ class Container : public Component
 {
 private:
 	std::vector<Component*> m_componentList;
+protected:
+	Vector4<Sint32> m_contentArea;
 public:
 	Container() {};
 	Container(std::string p_compName, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, bool p_visible)
@@ -68,6 +70,10 @@ public:
 			break;
 		}
 		m_componentList.push_back({p_component});
+		if(m_componentList.empty())
+			m_contentArea = Vector4<Sint32>(p_component->getRealPosition().x, p_component->getRealPosition().y, p_component->getRealPosition().x + p_component->getSize().x, p_component->getRealPosition().y + p_component->getSize().y);
+		else
+			m_contentArea = Vector4<Sint32>(min(p_component->getRealPosition().x, m_contentArea.x), min(p_component->getRealPosition().y, m_contentArea.y), max(p_component->getRealPosition().x + p_component->getRealSize().x, m_contentArea.z), max(p_component->getRealPosition().y + p_component->getRealSize().y, m_contentArea.w));
 		return p_component;
 	}
 	Component* findComponent(std::string p_compName)

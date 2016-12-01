@@ -64,6 +64,8 @@ public:
 	void setSize(Vector2<Sint32> p_size);
 	Vector2<Sint32> getPosition();
 	Vector2<Sint32> getSize();
+	virtual Vector2<Sint32> getRealPosition();
+	virtual Vector2<Sint32> getRealSize();
 
 	virtual void setVisible(bool p_visible);
 	bool isVisible();

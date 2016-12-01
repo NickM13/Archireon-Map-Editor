@@ -42,10 +42,18 @@ public:
 		m_tileSheet = p_tileSheet;
 		m_tileCount = m_tileSheet.getSize() / m_tileSize;
 	}
+	Vector2<Sint32> getRealPosition()
+	{
+		return Vector2<Sint32>(m_pos - Vector2<Sint32>(m_borderThickness, 20 + m_borderThickness));
+	}
+	Vector2<Sint32> getRealSize()
+	{
+		return Vector2<Sint32>(m_size + Vector2<Sint32>(m_borderThickness * 2, 20 + m_borderThickness * 2));
+	}
 	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 	{
-		if(p_mousePos.x >= m_pos.x - 4 && p_mousePos.x <= m_pos.x + m_size.x + 4 &&
-			p_mousePos.y >= m_pos.y - 24 && p_mousePos.y <= m_pos.y + m_size.y + 4)
+		if(p_mousePos.x >= m_pos.x - (m_borderThickness - 1) && p_mousePos.x <= m_pos.x + m_size.x + (m_borderThickness - 1) &&
+			p_mousePos.y >= m_pos.y - 20 - (m_borderThickness - 1) && p_mousePos.y <= m_pos.y + m_size.y + (m_borderThickness - 1))
 			m_hover = true;
 		else
 			m_hover = false;
@@ -106,6 +114,8 @@ public:
 		glPushMatrix();
 		{
 			glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
+			Math::pushScissor(Rect(-GLfloat(m_borderThickness), -GLfloat(m_borderThickness + 20), GLfloat(m_size.x + m_borderThickness * 2), GLfloat(m_size.y + m_borderThickness * 2 + 20)));
+
 			m_colorTheme.m_back.useColor();
 			glBegin(GL_QUADS);
 			{
@@ -116,21 +126,13 @@ public:
 			}
 			glEnd();
 
-			if(m_selected)
-				m_colorTheme.m_active.useColor();
-			else
-			{
-				if(m_hover)
-					Color((m_colorTheme.m_active + m_colorTheme.m_fore) / 2).useColor();
-				else
-					m_colorTheme.m_fore.useColor();
-			}
+			m_colorTheme.m_fore.useColor();
 			glBegin(GL_QUADS);
 			{
-				glVertex2f(-4, GLfloat(m_size.y + 4));
-				glVertex2f(GLfloat(m_size.x + 4), GLfloat(m_size.y + 4));
-				glVertex2f(GLfloat(m_size.x + 4), -24);
-				glVertex2f(-4, -24);
+				glVertex2f(-GLfloat(m_borderThickness - 1), GLfloat(m_size.y + (m_borderThickness - 1)));
+				glVertex2f(GLfloat(m_size.x + (m_borderThickness - 1)), GLfloat(m_size.y + (m_borderThickness - 1)));
+				glVertex2f(GLfloat(m_size.x + (m_borderThickness - 1)), -20 - GLfloat(m_borderThickness - 1));
+				glVertex2f(-GLfloat(m_borderThickness - 1), -20 - GLfloat(m_borderThickness - 1));
 			}
 			glEnd();
 
@@ -140,6 +142,10 @@ public:
 			Font::getInstance().print(m_title, m_size.x / 2, -20);
 
 			glColor3f(1, 1, 1);
+
+			Math::popScissor();
+
+			Math::pushScissor(Rect(0, 0, GLfloat(m_size.x), GLfloat(m_size.y)));
 
 			glBindTexture(GL_TEXTURE_2D, m_transparentTex.getId());
 			glBegin(GL_QUADS);
@@ -154,11 +160,6 @@ public:
 				glVertex2f(0, GLfloat(m_size.y));
 			}
 			glEnd();
-
-			glEnable(GL_SCISSOR_TEST);
-			float mat[16];
-			glGetFloatv(GL_MODELVIEW_MATRIX, mat);
-			glScissor(GLint(mat[12] + Globals::getInstance().m_screenSize.x / 2), GLint(-mat[13] + Globals::getInstance().m_screenSize.y / 2) - m_size.y, m_size.x, m_size.y);
 
 			glTranslatef(-GLfloat(m_scroll.x % m_tileSize), -GLfloat(m_scroll.y % m_tileSize), 0);
 
@@ -201,24 +202,13 @@ public:
 				glEnd();
 			}
 
-			glDisable(GL_SCISSOR_TEST);
-
 			glBindTexture(GL_TEXTURE_2D, 0);
 
 			glTranslatef(GLfloat(m_scroll.x % m_tileSize), GLfloat(m_scroll.y % m_tileSize), 0);
 
-			if(m_selected)
-				m_colorTheme.m_active.useColor();
-			else
+			if(m_hover || m_dragging)
 			{
-				if(m_hover)
-					Color((m_colorTheme.m_active + m_colorTheme.m_fore) / 2).useColor();
-				else
-					m_colorTheme.m_fore.useColor();
-			}
-
-			if(m_hover)
-			{
+				m_colorTheme.m_back.useColor();
 				glBegin(GL_QUADS);
 				{
 					glVertex2f((GLfloat(m_scroll.x) / (m_tileSheet.getSize().x - m_size.x + m_tileSize - 1)) * (m_size.x - 80) + 4, GLfloat(m_size.y - 12));
@@ -232,7 +222,23 @@ public:
 					glVertex2f(GLfloat(m_size.x - 12), (GLfloat(m_scroll.y) / (m_tileSheet.getSize().y - m_size.y + m_tileSize - 1)) * (m_size.y - 80) + 60);
 				}
 				glEnd();
+				m_colorTheme.m_fore.useColor();
+				glBegin(GL_QUADS);
+				{
+					glVertex2f((GLfloat(m_scroll.x) / (m_tileSheet.getSize().x - m_size.x + m_tileSize - 1)) * (m_size.x - 80) + 5, GLfloat(m_size.y - 11));
+					glVertex2f((GLfloat(m_scroll.x) / (m_tileSheet.getSize().x - m_size.x + m_tileSize - 1)) * (m_size.x - 80) + 59, GLfloat(m_size.y - 11));
+					glVertex2f((GLfloat(m_scroll.x) / (m_tileSheet.getSize().x - m_size.x + m_tileSize - 1)) * (m_size.x - 80) + 59, GLfloat(m_size.y - 5));
+					glVertex2f((GLfloat(m_scroll.x) / (m_tileSheet.getSize().x - m_size.x + m_tileSize - 1)) * (m_size.x - 80) + 5, GLfloat(m_size.y - 5));
+
+					glVertex2f(GLfloat(m_size.x - 11), (GLfloat(m_scroll.y) / (m_tileSheet.getSize().y - m_size.y + m_tileSize - 1)) * (m_size.y - 80) + 5);
+					glVertex2f(GLfloat(m_size.x - 5), (GLfloat(m_scroll.y) / (m_tileSheet.getSize().y - m_size.y + m_tileSize - 1)) * (m_size.y - 80) + 5);
+					glVertex2f(GLfloat(m_size.x - 5), (GLfloat(m_scroll.y) / (m_tileSheet.getSize().y - m_size.y + m_tileSize - 1)) * (m_size.y - 80) + 59);
+					glVertex2f(GLfloat(m_size.x - 11), (GLfloat(m_scroll.y) / (m_tileSheet.getSize().y - m_size.y + m_tileSize - 1)) * (m_size.y - 80) + 59);
+				}
+				glEnd();
 			}
+
+			Math::popScissor();
 		}
 		glPopMatrix();
 	}

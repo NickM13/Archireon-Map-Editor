@@ -27,9 +27,9 @@ bool Game::init()
 	m_guiAll = new Container("CONTAINER_ALL", Globals::getInstance().m_screenSize / -2, Globals::getInstance().m_screenSize, true);
 	m_guiPause = new Container("CONTAINER_PAUSE", {0, 0}, Globals::getInstance().m_screenSize, false);
 	m_guiTop = new Container("CONTAINER_TOP", {0, 0}, {Globals::getInstance().m_screenSize.x, 32}, true);
-	m_guiLeft = new Container("CONTAINER_LEFT", {-1, 24}, {273, Globals::getInstance().m_screenSize.y - 24}, true);
+	m_guiLeft = new Container("CONTAINER_LEFT", {-1, 24}, {281, Globals::getInstance().m_screenSize.y - 23}, true);
 	m_guiLeftLayer = new Container("CONTAINER_LEFT_LAYER", {0, 0}, {m_guiLeft->getSize().x, 125}, true);
-	m_guiLeftDetail = new Container("CONTAINER_LEFT_DETAIL", {0, m_guiLeftLayer->getSize().y}, {m_guiLeft->getSize().x, m_guiLeft->getSize().y - 266}, true);
+	m_guiLeftDetail = new Container("CONTAINER_LEFT_DETAIL", {0, m_guiLeftLayer->getSize().y}, {m_guiLeft->getSize().x, m_guiLeft->getSize().y - m_guiLeftLayer->getSize().y}, true);
 	//m_guiRight = new Container("CONTAINER_RIGHT", "Pallet", {16, 32}, {288, 640}, 0, true, LTexture::getInstance().loadImage("gui\\BarFlatRound.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 
 	m_guiAll->addComponent(m_guiPause, PANEL_ALIGN_TOP_LEFT)->setPriorityLayer(5);
@@ -40,11 +40,7 @@ bool Game::init()
 	//m_guiAll->addComponent(m_guiRight, PANEL_ALIGN_TOP_RIGHT);
 	m_guiAll->addComponent(m_guiTop, PANEL_ALIGN_TOP_LEFT)->setPriorityLayer(4);
 
-
-	m_guiLeftLayer->addComponent(new Panel("PANEL_LAYER", "", Vector2<Sint32>(0, 0), Vector2<Sint32>(m_guiLeft->getSize().x, 125), 0, true, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE));
-	m_guiLeftDetail->addComponent(new Panel("PANEL_PALLET", "", Vector2<Sint32>(0, 0), Vector2<Sint32>(m_guiLeft->getSize().x, m_guiLeft->getSize().y - m_guiLeftLayer->getSize().y), 0, true, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE));
-
-
+	m_guiLeftLayer->addComponent(new Panel("PANEL_BG", "", {0, 0}, m_guiLeftLayer->getSize(), 0, true, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE));
 
 	m_toolbarMenu = new CToolbar("TOOLBAR_MENU", {0, 0}, {Globals::getInstance().m_screenSize.x, 24}, 0);
 	m_toolbarMenu->addButton("", "File");
@@ -116,45 +112,45 @@ bool Game::init()
 
 
 
-	m_guiRightGround = new Container("CONTAINER_RIGHT_GROUND", {0, 0}, m_guiLeftDetail->getSize(), true);
-	m_guiRightWorld = new Container("CONTAINER_RIGHT_WORLD", {0, 0}, m_guiLeftDetail->getSize(), false);
-	m_guiRightEntity = new Container("CONTAINER_RIGHT_ENTITY", {0, 0}, m_guiLeftDetail->getSize(), false);
-	m_guiRightSky = new Container("CONTAINER_RIGHT_SKY", {0, 0}, m_guiLeftDetail->getSize(), false);
-	m_guiRightStamp = new Container("CONTAINER_RIGHT_STAMP", {0, 0}, m_guiLeftDetail->getSize(), false);
+	m_guiGround = new ContainerPanel("CONTAINER_LEFT_GROUND", "", {0, 0}, m_guiLeftDetail->getSize(), 0, true, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+	m_guiWorld = new ContainerPanel("CONTAINER_LEFT_WORLD", "", {0, 0}, m_guiLeftDetail->getSize(), 0, false, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+	m_guiEntity = new ContainerPanel("CONTAINER_LEFT_ENTITY", "", {0, 0}, m_guiLeftDetail->getSize(), 0, false, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+	m_guiSky = new ContainerPanel("CONTAINER_LEFT_SKY", "", {0, 0}, m_guiLeftDetail->getSize(), 0, false, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
+	m_guiStamp = new ContainerPanel("CONTAINER_LEFT_STAMP", "", {0, 0}, m_guiLeftDetail->getSize(), 0, false, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 
-	m_guiLeftDetail->addComponent(m_guiRightGround);
-	m_guiLeftDetail->addComponent(m_guiRightWorld);
-	m_guiLeftDetail->addComponent(m_guiRightEntity);
-	m_guiLeftDetail->addComponent(m_guiRightSky);
-	m_guiLeftDetail->addComponent(m_guiRightStamp);
+	m_guiWorldSwitch = new Container("CONTAINER_RIGHT_WORLD_SWITCH", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, false);
+	m_guiWorldPortal = new Container("CONTAINER_RIGHT_WORLD_PORTAL", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, false);
 
-	m_guiRightWorldSwitch = new Container("CONTAINER_RIGHT_WORLD_SWITCH", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, false);
-	m_guiRightWorldPortal = new Container("CONTAINER_RIGHT_WORLD_PORTAL", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, false);
+	//m_guiWorld->addComponent(m_guiWorldSwitch); Keeping these containers for reference, because some of their data is saved in the map file
+	//m_guiWorld->addComponent(m_guiWorldPortal);
 
-	m_guiRightWorld->addComponent(m_guiRightWorldSwitch);
-	m_guiRightWorld->addComponent(m_guiRightWorldPortal);
+	m_guiLeftDetail->addComponent(m_guiGround);
+	m_guiLeftDetail->addComponent(m_guiWorld);
+	m_guiLeftDetail->addComponent(m_guiEntity);
+	m_guiLeftDetail->addComponent(m_guiSky);
+	m_guiLeftDetail->addComponent(m_guiStamp);
 
 
 
-	//m_guiRightGround->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp1", Vector2<Sint32>(16, 324), Vector2<Sint32>(16, 1), 16, 1));
+	//m_guiGround->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp1", Vector2<Sint32>(16, 324), Vector2<Sint32>(16, 1), 16, 1));
 
-	m_guiRightWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>((m_guiRightWorld->getSize().x - (16 * 16)) / 2, 204), Vector2<Sint32>(16, 1), 16, 1));
+	m_guiWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>((m_guiWorld->getSize().x - (16 * 16)) / 2, 204), Vector2<Sint32>(16, 1), 16, 1));
 
-	m_guiRightWorldPortal->addComponent(new TextField("TEXTFIELD_PORTAL", "Destination Zone", {(m_guiRightWorldPortal->getSize().x - (16 * 16)) / 2, 416}, {17, 1}, 16, 1));
-	m_guiRightWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_X", "X:", {0, 440}, {0, 500}, 1, 0));
-	m_guiRightWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_Y", "Y:", {0, 460}, {0, 500}, 1, 0));
+	m_guiWorldPortal->addComponent(new TextField("TEXTFIELD_PORTAL", "Destination Zone", {(m_guiWorldPortal->getSize().x - (16 * 16)) / 2, 416}, {17, 1}, 16, 1));
+	m_guiWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_X", "X:", {0, 440}, {0, 500}, 1, 0));
+	m_guiWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_Y", "Y:", {0, 460}, {0, 500}, 1, 0));
 
-	m_guiRightWorld->addComponent(new CDropDown("DROPDOWN_INTERACT", "Interaction Type", {0, 296}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
-	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
-	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
-	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
-	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
-	m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->setPriorityLayer(5);
+	m_guiWorld->addComponent(new CDropDown("DROPDOWN_INTERACT", "Interaction Type", {0, 296}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setPriorityLayer(5);
 
-	m_guiRightWorldSwitch->addComponent(new CCounter("COUNTER_SWITCH_FREQUENCY", "Freq.", {0, 440}, {0, 255}, 1, 0));
+	m_guiWorldSwitch->addComponent(new CCounter("COUNTER_SWITCH_FREQUENCY", "Freq.", {0, 440}, {0, 255}, 1, 0));
 
-	m_guiRightWorld->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {0, 0}, {32, 32}, 16, 1), PANEL_ALIGN_BOTTOM_LEFT);
+	m_guiWorld->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {0, 0}, {32, 32}, 16, 1), PANEL_ALIGN_TOP);
 
 
 
@@ -215,24 +211,24 @@ bool Game::init()
 
 
 
-	m_guiRightEntity->addComponent(new TextField("TEXTFIELD_ENTITY_NAME", "Entity Name", Vector2<Sint32>((m_guiRightEntity->getSize().x - (16 * 16)) / 2, 204), Vector2<Sint32>(16, 1), 16, 1));
+	m_guiEntity->addComponent(new TextField("TEXTFIELD_ENTITY_NAME", "Entity Name", Vector2<Sint32>((m_guiEntity->getSize().x - (16 * 16)) / 2, 204), Vector2<Sint32>(16, 1), 16, 1));
 
-	m_guiRightEntity->addComponent(new CButton("BUTTON_ENTITY_BOARD", "Edit Board", {0, 228}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiRightEntity->addComponent(new CButton("BUTTON_ENTITY_TEXTURE", "Set Texture", {0, 264}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
-	m_guiRightEntity->addComponent(new CButton("BUTTON_ENTITY_SCRIPT", "Edit Script", {0, 300}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_BOARD", "Edit Board", {0, 228}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_TEXTURE", "Set Texture", {0, 264}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
+	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_SCRIPT", "Edit Script", {0, 300}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
 
-	m_guiRightEntity->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {0, 0}, {32, 32}, 16, 1), PANEL_ALIGN_BOTTOM_LEFT);
+	m_guiEntity->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {0, 0}, {32, 32}, 16, 1), PANEL_ALIGN_TOP);
 
 
 
-	m_guiRightStamp->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp Name", Vector2<Sint32>((m_guiRightStamp->getSize().x - (16 * 16)) / 2, 20), Vector2<Sint32>(17, 1), 16, 1));
+	m_guiStamp->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp Name", Vector2<Sint32>((m_guiStamp->getSize().x - (16 * 16)) / 2, 20), Vector2<Sint32>(17, 1), 16, 1));
 
-	m_guiRightStamp->addComponent(new CButtonToggle("BUTTON_USE_GROUND", "Use Ground", Vector2<Sint32>(0, 360), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
-	m_guiRightStamp->addComponent(new CButtonToggle("BUTTON_USE_WORLD", "Use World", Vector2<Sint32>(0, 400), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
-	m_guiRightStamp->addComponent(new CButtonToggle("BUTTON_USE_ENTITY", "Use Entity", Vector2<Sint32>(0, 440), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
-	m_guiRightStamp->addComponent(new CButtonToggle("BUTTON_USE_SKY", "Use Sky", Vector2<Sint32>(0, 480), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
+	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_GROUND", "Use Ground", Vector2<Sint32>(0, 360), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
+	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_WORLD", "Use World", Vector2<Sint32>(0, 400), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
+	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_ENTITY", "Use Entity", Vector2<Sint32>(0, 440), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
+	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_SKY", "Use Sky", Vector2<Sint32>(0, 480), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
 
-	m_guiRightStamp->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {0, 0}, {32, 32}, 16, 1), PANEL_ALIGN_BOTTOM_LEFT);
+	m_guiStamp->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {0, 0}, {32, 32}, 16, 1), PANEL_ALIGN_TOP);
 
 
 
@@ -326,31 +322,31 @@ bool Game::init()
 
 
 
-	m_listEntity = new CList("LIST_ENTITY", "Entity List", {8, 32}, {m_guiRightEntity->getSize().x - 16, 4}, 32, Texture(), 1);
+	m_listEntity = new CList("LIST_ENTITY", "Entity List", {8, 32}, {m_guiEntity->getSize().x - 16, 4}, 32, Texture(), 1);
 	m_listEntity->addItem({"None", 0});
 	m_zoneMap->addEntity(ZoneMap::Entity("None", Texture()));
-	m_guiRightEntity->addComponent(m_listEntity);
+	m_guiEntity->addComponent(m_listEntity);
 
-	m_listStamps = new CList("LIST_STAMPS", "Stamp List", {8, 208}, {m_guiRightStamp->getSize().x - 16, 4}, 32, Texture(), 1);
+	m_listStamps = new CList("LIST_STAMPS", "Stamp List", {8, 208}, {m_guiStamp->getSize().x - 16, 4}, 32, Texture(), 1);
 	m_listStamps->addItem({"None", 0});
 	m_stamps.push_back(Stamp());
-	m_guiRightStamp->addComponent(m_listStamps);
+	m_guiStamp->addComponent(m_listStamps);
 
-	m_tileSetGround = new CTileSet("TILESET_GROUND", "Ground Tile Set", {0, 32}, {256, 256}, 32, m_zoneMap->getTextureGround(), 1);
+	m_tileSetGround = new CTileSet("TILESET_GROUND", "Ground Tile Set", {0, 34}, {256, 256}, 32, m_zoneMap->getTextureGround(), 1);
 	m_tileSetWorld = new CTileSet("TILESET_WORLD", "World Tile Set", {0, 360}, {256, 256}, 32, m_zoneMap->getTextureWorld(), 1);
 	m_tileSetEntity = new CTileSet("TILESET_ENTITY", "Sprite Sheet", {0, 360}, {256, 256}, 32, Texture(), 1);
 	m_tileSetSky = new CTileSet("TILESET_SKY", "Sky Tile Set", {0, 32}, {256, 256}, 32, m_zoneMap->getTextureSky(), 1);
 	m_tileSetStamps = new CTileSet("TILESET_WORLD", "TODO: Preview", {0, 88}, {256, 256}, 32, Texture(), 1);
-	m_guiRightGround->addComponent(m_tileSetGround, PANEL_ALIGN_TOP);
-	m_guiRightWorld->addComponent(m_tileSetWorld, PANEL_ALIGN_TOP);
-	m_guiRightEntity->addComponent(m_tileSetEntity, PANEL_ALIGN_TOP);
-	m_guiRightSky->addComponent(m_tileSetSky, PANEL_ALIGN_TOP);
-	m_guiRightStamp->addComponent(m_tileSetStamps, PANEL_ALIGN_TOP);
+	m_guiGround->addComponent(m_tileSetGround, PANEL_ALIGN_TOP);
+	m_guiWorld->addComponent(m_tileSetWorld, PANEL_ALIGN_TOP);
+	m_guiEntity->addComponent(m_tileSetEntity, PANEL_ALIGN_TOP);
+	m_guiSky->addComponent(m_tileSetSky, PANEL_ALIGN_TOP);
+	m_guiStamp->addComponent(m_tileSetStamps, PANEL_ALIGN_TOP);
 
-	m_listWorld = new CList("LIST_WORLD", "World Obj List", {8, 32}, {m_guiRightWorld->getSize().x - 16, 4}, 32, m_zoneMap->getTextureWorld(), 1);
+	m_listWorld = new CList("LIST_WORLD", "World Obj List", {8, 32}, {m_guiWorld->getSize().x - 16, 4}, 32, m_zoneMap->getTextureWorld(), 1);
 	m_listWorld->addItem({"None", 0});
 	m_zoneMap->addWorldObject(ZoneMap::WorldObject("None", 0, 0));
-	m_guiRightWorld->addComponent(m_listWorld);
+	m_guiWorld->addComponent(m_listWorld);
 
 	m_guiTop->addComponent(new CText("TEXT_POS", "1", {m_guiLeft->getSize().x, m_guiTop->getSize().y}, {100, 100}, 16, ALIGN_LEFT, Color(255, 255, 255, 255)))->setPriorityLayer(-1);
 
@@ -406,7 +402,7 @@ std::string Game::getPause()
 void Game::input()
 {
 	Vector2<Sint32> _mousePos = Globals::getInstance().m_mousePos;
-	Sint8 _rValue = 0;
+	Sint8 _rValue = 0; // input flags: 1 = mouse click, 2 = key press
 	m_guiAll->input(_rValue, Globals::getInstance().m_keyStates, Globals::getInstance().m_mouseStates, _mousePos);
 
 	if((_rValue & 2) != 2 && Globals::getInstance().m_keyStates[GLFW_KEY_G] == 1)
@@ -506,13 +502,13 @@ void Game::input()
 				{
 					for(Sint32 y = Sint32(ceil(-GLfloat(_selected.m_size.y) / 2)); y < Sint32(ceil(GLfloat(_selected.m_size.y) / 2)); y++)
 					{
-						if(m_guiRightStamp->findComponent("BUTTON_USE_GROUND")->isSelected() != 0)
+						if(m_guiStamp->findComponent("BUTTON_USE_GROUND")->isSelected() != 0)
 							m_zoneMap->setTile(0, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_ground[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						if(m_guiRightStamp->findComponent("BUTTON_USE_WORLD")->isSelected() != 0)
+						if(m_guiStamp->findComponent("BUTTON_USE_WORLD")->isSelected() != 0)
 							m_zoneMap->setTile(1, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_world[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						if(m_guiRightStamp->findComponent("BUTTON_USE_ENTITY")->isSelected() != 0)
+						if(m_guiStamp->findComponent("BUTTON_USE_ENTITY")->isSelected() != 0)
 							m_zoneMap->setTile(2, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_entity[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						if(m_guiRightStamp->findComponent("BUTTON_USE_SKY")->isSelected() != 0)
+						if(m_guiStamp->findComponent("BUTTON_USE_SKY")->isSelected() != 0)
 							m_zoneMap->setTile(3, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_sky[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
 					}
 				}
@@ -578,38 +574,38 @@ void Game::update()
 		switch(m_selectLayer->getSelectedButton())
 		{
 		case 0:
-			m_guiRightGround->setVisible(true);
+			m_guiGround->setVisible(true);
 			break;
 		case 1:
-			m_guiRightWorld->setVisible(true);
+			m_guiWorld->setVisible(true);
 			break;
 		case 2:
-			m_guiRightEntity->setVisible(true);
+			m_guiEntity->setVisible(true);
 			break;
 		case 3:
-			m_guiRightSky->setVisible(true);
+			m_guiSky->setVisible(true);
 			break;
 		case 4:
-			m_guiRightStamp->setVisible(m_listStamps->getSelectedItem() != 0);
+			m_guiStamp->setVisible(m_listStamps->getSelectedItem() != 0);
 			break;
 		}
 
 		switch(m_selectLayer->getPrevSelectedButton())
 		{
 		case 0:
-			m_guiRightGround->setVisible(false);
+			m_guiGround->setVisible(false);
 			break;
 		case 1:
-			m_guiRightWorld->setVisible(false);
+			m_guiWorld->setVisible(false);
 			break;
 		case 2:
-			m_guiRightEntity->setVisible(false);
+			m_guiEntity->setVisible(false);
 			break;
 		case 3:
-			m_guiRightSky->setVisible(false);
+			m_guiSky->setVisible(false);
 			break;
 		case 4:
-			m_guiRightStamp->setVisible(false);
+			m_guiStamp->setVisible(false);
 			m_selectStart = {-1, -1};
 			break;
 		}
@@ -620,60 +616,60 @@ void Game::update()
 	case 1: // WORLD OBJECTS
 		if(m_listWorld->isUpdated() != 0)
 		{
-			m_guiRightWorld->setVisible(true);
+			m_guiWorld->setVisible(true);
 			if((m_listWorld->isUpdated() & 2) == 2) // New item
 			{
 				m_zoneMap->addWorldObject({m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name, 1, m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_texId});
 			}
 			if((m_listWorld->isUpdated() & 1) == 1) // Switch item
 			{
-				m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
-				m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
+				m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
+				m_guiWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
 				m_tileSetWorld->setSelectedTile(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
 
-				m_guiRightWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
-				m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_X")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
-				m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_Y")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
-				m_guiRightWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
+				m_guiWorldPortal->findComponent("COUNTER_PORTAL_X")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
+				m_guiWorldPortal->findComponent("COUNTER_PORTAL_Y")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
+				m_guiWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
 			}
 		}
-		else if(m_guiRightWorld->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listWorld->getSelectedItem() != 0 && m_listWorld->getSelectedItem() < m_listWorld->getListSize())
+		else if(m_guiWorld->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listWorld->getSelectedItem() != 0 && m_listWorld->getSelectedItem() < m_listWorld->getListSize())
 		{
 			m_listWorld->removeItem(m_listWorld->getSelectedItem());
 			m_zoneMap->removeWorldObject(m_listWorld->getSelectedItem() + 1);
 
-			m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
-			m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
+			m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
+			m_guiWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
 			m_tileSetWorld->setSelectedTile(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
 
-			m_guiRightWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
-			m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_X")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
-			m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_Y")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
-			m_guiRightWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
+			m_guiWorldPortal->findComponent("COUNTER_PORTAL_X")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
+			m_guiWorldPortal->findComponent("COUNTER_PORTAL_Y")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
+			m_guiWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->setValue(m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
 		}
 		if(m_listWorld->getSelectedItem() != 0)
 		{
-			if(m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle() != "")
-				m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name = m_guiRightWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle();
+			if(m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle() != "")
+				m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name = m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle();
 			m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_texId = m_tileSetWorld->getSelectedTile();
-			m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType = m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
+			m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType = m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
 			m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex = m_tileSetWorld->getSelectedTile();
-			if(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal")
+			if(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal")
 			{
-				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest = m_guiRightWorldPortal->findComponent("TEXTFIELD_PORTAL")->getTitle();
-				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destX = m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_X")->getValue();
-				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destY = m_guiRightWorldPortal->findComponent("COUNTER_PORTAL_Y")->getValue();
+				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest = m_guiWorldPortal->findComponent("TEXTFIELD_PORTAL")->getTitle();
+				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destX = m_guiWorldPortal->findComponent("COUNTER_PORTAL_X")->getValue();
+				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_destY = m_guiWorldPortal->findComponent("COUNTER_PORTAL_Y")->getValue();
 			}
-			else if(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" || m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch")
+			else if(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" || m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch")
 			{
-				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_frequency = m_guiRightWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->getValue();
+				m_zoneMap->getWorldObject(m_listWorld->getSelectedItem()).m_frequency = m_guiWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->getValue();
 			}
 		}
-		if(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->isUpdated())
+		if(m_guiWorld->findComponent("DROPDOWN_INTERACT")->isUpdated())
 		{
-			m_guiRightWorldPortal->setVisible(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal");
-			m_guiRightWorldSwitch->setVisible(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" ||
-				m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiRightWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch");
+			m_guiWorldPortal->setVisible(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal");
+			m_guiWorldSwitch->setVisible(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" ||
+				m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch");
 		}
 		break;
 	case 2: // ENTITIES
@@ -683,7 +679,7 @@ void Game::update()
 				m_zoneMap->addEntity(ZoneMap::Entity(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name));
 			if((m_listEntity->isUpdated() & 1) == 1) // Switch item
 			{
-				m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name);
+				m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name);
 				if(m_listEntity->getSelectedItem() != 0)
 					m_tileSetEntity->setTileSheet(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex);
 				else
@@ -691,21 +687,21 @@ void Game::update()
 				m_tileSetEntity->setSelectedTile(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId);
 			}
 		}
-		else if(m_guiRightEntity->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listEntity->getSelectedItem() != 0 && m_listEntity->getSelectedItem() < m_listEntity->getListSize())
+		else if(m_guiEntity->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listEntity->getSelectedItem() != 0 && m_listEntity->getSelectedItem() < m_listEntity->getListSize())
 		{
 			m_listEntity->removeItem(m_listEntity->getSelectedItem());
 			m_zoneMap->removeEntity(m_listEntity->getSelectedItem() + 1);
 
-			m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name);
+			m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name);
 			m_tileSetEntity->setTileSheet(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex);
 			m_tileSetEntity->setSelectedTile(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId);
 		}
 		if(m_listEntity->getSelectedItem() != 0)
 		{
-			if(m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle() != "")
-				m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name = m_guiRightEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle();
+			if(m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle() != "")
+				m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name = m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle();
 			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId = m_tileSetEntity->getSelectedTile();
-			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_BOARD")->isSelected() == 3)
+			if(m_guiEntity->findComponent("BUTTON_ENTITY_BOARD")->isSelected() == 3)
 			{
 				pause("CONTAINER_ENTITY_BOARD");
 				if(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board == 0)
@@ -714,12 +710,12 @@ void Game::update()
 				m_boardData[0] = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_boardData[0];
 				m_boardData[1] = m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_board->m_boardData[1];
 			}
-			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_TEXTURE")->isSelected() == 3)
+			if(m_guiEntity->findComponent("BUTTON_ENTITY_TEXTURE")->isSelected() == 3)
 			{
 				pause("CONTAINER_ENTITY_TEXTURE");
 				m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->setTitle(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTex.getName());
 			}
-			if(m_guiRightEntity->findComponent("BUTTON_ENTITY_SCRIPT")->isSelected() == 3)
+			if(m_guiEntity->findComponent("BUTTON_ENTITY_SCRIPT")->isSelected() == 3)
 			{
 				pause("CONTAINER_ENTITY_SCRIPT");
 				m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setTitle(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_script);
@@ -739,25 +735,25 @@ void Game::update()
 			}
 			if((m_listStamps->isUpdated() & 1) == 1) // Switch item
 			{
-				m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name);
+				m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name);
 				m_selectStart = {-1, -1};
 			}
-			m_guiRightStamp->setVisible(m_listStamps->getSelectedItem() != 0);
+			m_guiStamp->setVisible(m_listStamps->getSelectedItem() != 0);
 		}
-		else if(m_guiRightStamp->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listStamps->getSelectedItem() != 0 && m_listStamps->getSelectedItem() < m_listStamps->getListSize())
+		else if(m_guiStamp->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listStamps->getSelectedItem() != 0 && m_listStamps->getSelectedItem() < m_listStamps->getListSize())
 		{
 			m_stamps.erase(m_stamps.begin() + m_listStamps->getSelectedItem());
 			m_listStamps->removeItem(m_listStamps->getSelectedItem());
 
-			m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name);
+			m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name);
 			m_selectStart = {-1, -1};
 
-			m_guiRightStamp->setVisible(m_listStamps->getSelectedItem() != 0);
+			m_guiStamp->setVisible(m_listStamps->getSelectedItem() != 0);
 		}
 		else if(m_listStamps->getSelectedItem() != 0)
 		{
-			if(m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle() != "")
-				m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name = m_guiRightStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle();
+			if(m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle() != "")
+				m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name = m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle();
 		}
 		if(m_listStamps->getSelectedItem() == 0 && (Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] || Globals::getInstance().m_keyStates[GLFW_KEY_RIGHT_CONTROL]) && Globals::getInstance().m_keyStates[GLFW_KEY_C] == 1)
 		{
@@ -805,13 +801,13 @@ void Game::render()
 	glBegin(GL_QUADS);
 	{
 		glTexCoord2f(0, 1);
-		glVertex2f(0, 0);
+		glVertex2f(-GLfloat(Globals::getInstance().m_screenSize.x) / 2, -GLfloat(Globals::getInstance().m_screenSize.y) / 2);
 		glTexCoord2f(1, 1);
-		glVertex2f(Globals::getInstance().m_screenSize.x, 0);
+		glVertex2f(GLfloat(Globals::getInstance().m_screenSize.x) / 2, -GLfloat(Globals::getInstance().m_screenSize.y) / 2);
 		glTexCoord2f(1, 0);
-		glVertex2f(Globals::getInstance().m_screenSize.x, Globals::getInstance().m_screenSize.y);
+		glVertex2f(GLfloat(Globals::getInstance().m_screenSize.x) / 2, GLfloat(Globals::getInstance().m_screenSize.y) / 2);
 		glTexCoord2f(0, 0);
-		glVertex2f(0, Globals::getInstance().m_screenSize.y);
+		glVertex2f(-GLfloat(Globals::getInstance().m_screenSize.x) / 2, GLfloat(Globals::getInstance().m_screenSize.y) / 2);
 	}
 	glEnd();
 
@@ -898,8 +894,21 @@ void Game::render()
 	if(getPause() == "CONTAINER_ENTITY_BOARD")
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glEnable(GL_SCISSOR_TEST);
-		glScissor(GLint(m_boardArea.x + Globals::getInstance().m_screenSize.x / 2), GLint(-m_boardArea.h + Globals::getInstance().m_screenSize.y / 2), GLsizei(m_boardArea.w - m_boardArea.x), GLsizei(m_boardArea.h - m_boardArea.y));
+		bool _sci = (glIsEnabled(GL_SCISSOR_TEST) != 0);
+		int _scissorBox[4];
+		if(!_sci)
+		{
+			glEnable(GL_SCISSOR_TEST);
+			glScissor(GLint(m_boardArea.x + Globals::getInstance().m_screenSize.x / 2), GLint(-m_boardArea.h + Globals::getInstance().m_screenSize.y / 2), GLsizei(m_boardArea.w - m_boardArea.x), GLsizei(m_boardArea.h - m_boardArea.y));
+		}
+		else
+		{
+			glGetIntegerv(GL_SCISSOR_BOX, _scissorBox);
+			glScissor(GLint(max(m_boardArea.x + Globals::getInstance().m_screenSize.x / 2, _scissorBox[0])), 
+				GLint(max(-m_boardArea.h + Globals::getInstance().m_screenSize.y / 2, _scissorBox[1])), 
+				GLsizei(min(m_boardArea.w - m_boardArea.x, _scissorBox[2])), 
+				GLsizei(min(m_boardArea.h - m_boardArea.y, _scissorBox[3])));
+		}
 		glPushMatrix();
 		{
 			glTranslatef(m_boardArea.x, m_boardArea.y, 0);
@@ -980,6 +989,9 @@ void Game::render()
 			}
 		}
 		glPopMatrix();
-		glDisable(GL_SCISSOR_TEST);
+		if(!_sci)
+			glDisable(GL_SCISSOR_TEST);
+		else
+			glScissor(_scissorBox[0], _scissorBox[1], _scissorBox[2], _scissorBox[3]);
 	}
 }

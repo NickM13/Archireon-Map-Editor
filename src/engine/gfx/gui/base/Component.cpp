@@ -78,6 +78,14 @@ Vector2<Sint32> Component::getSize()
 {
 	return m_size;
 }
+Vector2<Sint32> Component::getRealPosition()
+{
+	return m_pos;
+}
+Vector2<Sint32> Component::getRealSize()
+{
+	return m_size;
+}
 
 void Component::setState(Sint8 p_selected)
 {
