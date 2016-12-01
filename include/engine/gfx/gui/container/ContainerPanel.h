@@ -29,7 +29,7 @@ public:
 		m_scroll = {0, 0};
 		m_minScroll = m_maxScroll = {0, 0};
 
-		m_draggable = false; // currently disabled
+		m_draggable = false; //currently disabled
 	}
 
 	Component* addComponent(Component* p_component, Sint8 p_alignment = PANEL_ALIGN_NONE)
