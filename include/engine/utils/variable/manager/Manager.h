@@ -3,14 +3,13 @@
 #include "..\..\Utilities.h"
 #include <vector>
 
-template< class T >
-class Manager : public Singleton< Manager< T > >
+template<class T>
+class Manager : public Singleton<Manager<T>>
 {
+protected:
+	std::vector<T> m_unitList;
 public:
-	Manager()
-	{
-
-	};
+	Manager() {};
 	Manager(const Manager&) {};
 	Manager operator=(const Manager&) {};
 
@@ -33,7 +32,7 @@ public:
 		return m_unitList.at(p_guid);
 	}
 
-	std::vector< T > getUnitList()
+	std::vector<T> getUnitList()
 	{
 		return m_unitList;
 	}
@@ -45,35 +44,30 @@ public:
 				return i;
 		return addUnit(p_unit);
 	}
-
-protected:
-	std::vector< T > m_unitList;
 };
 
 
 
-
-template< class T >
-class ManagerEntity : public Singleton< ManagerEntity< T > >
+template<class T>
+class ManagerEntity : public Singleton<ManagerEntity<T>>
 {
+protected:
+	std::vector<T> m_unitList;
 public:
-	ManagerEntity()
-	{
-
-	}
+	ManagerEntity()	{}
 	Uint16 addUnit(T& p_unit)
 	{
 		m_unitList.push_back(p_unit);
 		return Uint16(m_unitList.size());
 	}
-	virtual void update(Vector3< GLfloat > pos, GLfloat radius, GLfloat p_updateTime)
+	virtual void update(Vector3<GLfloat> pos, GLfloat radius, GLfloat p_updateTime)
 	{
 		for(Uint16 i = 0; i < Uint16(m_unitList.size()); i++)
 		{
 			//m_unitList[i].update();
 		}
 	};
-	virtual void render(Vector3< GLfloat > pos, GLfloat radius, GLfloat p_updateTime)
+	virtual void render(Vector3<GLfloat> pos, GLfloat radius, GLfloat p_updateTime)
 	{
 		for(Uint16 i = 0; i < Uint16(m_unitList.size()); i++)
 		{
@@ -84,6 +78,4 @@ public:
 	{
 		return m_unitList[guid - 1];
 	}
-protected:
-	std::vector< T > m_unitList;
 };

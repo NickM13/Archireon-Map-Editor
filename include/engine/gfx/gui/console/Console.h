@@ -14,7 +14,7 @@ struct Console
 private:
 	Uint16 m_fontsize;
 
-	Vector2< GLfloat > m_dimensions;
+	Vector2<GLfloat> m_dimensions;
 
 	Uint32 m_scroll;
 
@@ -23,7 +23,7 @@ private:
 		std::string m_message;
 		Color m_color;
 
-		Message( std::string p_msg, Color p_color )
+		Message(std::string p_msg, Color p_color)
 		{
 			m_message = p_msg;
 			m_color = p_color;
@@ -33,8 +33,8 @@ private:
 public:
 	Console();
 
-	void setDimensions( Vector2< GLfloat > p_dimensions );
-	void print( std::string p_msg, Color p_color = Color() );
+	void setDimensions(Vector2<GLfloat> p_dimensions);
+	void print(std::string p_msg, Color p_color = Color());
 	Uint32 getMessageCount();
 
 	void render();

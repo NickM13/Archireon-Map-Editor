@@ -44,61 +44,6 @@ namespace Math
 		xdist = xdist * sind((p_rotation.y - 90));
 		return Vector3< GLfloat >(zdist, ydist, xdist).getNormal();
 	}
-
-	static std::vector<Rect> m_scissorStack;
-
-	static Rect pushScissor(Rect p_area)
-	{
-		Rect _rect;
-		float _mat[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, _mat);
-		bool _sci = (glIsEnabled(GL_SCISSOR_TEST) != 0);
-		int _scissorBox[4];
-
-		if(m_scissorStack.empty())
-		{
-			_rect = p_area;
-			_rect.x += _mat[12] + Globals::getInstance().m_screenSize.x / 2;
-			_rect.y = Globals::getInstance().m_screenSize.y - (p_area.y + _mat[13] + Globals::getInstance().m_screenSize.y / 2 + p_area.h);
-			glEnable(GL_SCISSOR_TEST);
-		}
-		else
-		{
-			glGetIntegerv(GL_SCISSOR_BOX, _scissorBox);
-			_rect.x = GLfloat(max(GLint(_mat[12] + p_area.x + Globals::getInstance().m_screenSize.x / 2), _scissorBox[0]));
-			_rect.y = GLfloat(max(GLint(Globals::getInstance().m_screenSize.y - (p_area.y + _mat[13] + Globals::getInstance().m_screenSize.y / 2 + p_area.h)), _scissorBox[1]));
-			if((_mat[12] + p_area.x + Globals::getInstance().m_screenSize.x / 2) + p_area.w <= _scissorBox[0] + _scissorBox[2])
-				_rect.w = p_area.w;
-			else
-				_rect.w = max(0, p_area.w - (((_mat[12] + p_area.x + Globals::getInstance().m_screenSize.x / 2) + p_area.w) - (_scissorBox[0] + _scissorBox[2])));
-			if((Globals::getInstance().m_screenSize.y - (p_area.y + _mat[13] + Globals::getInstance().m_screenSize.y / 2 + p_area.h)) + p_area.h < _scissorBox[1] + _scissorBox[3])
-				_rect.h = p_area.h;
-			else
-				_rect.h = max(0, p_area.h - (((Globals::getInstance().m_screenSize.y - (p_area.y + _mat[13] + Globals::getInstance().m_screenSize.y / 2 + p_area.h)) + p_area.h) - (_scissorBox[1] + _scissorBox[3])));
-		}
-		glScissor(GLint(_rect.x), GLint(_rect.y), GLsizei(_rect.w), GLsizei(_rect.h));
-		m_scissorStack.push_back(_rect);
-		return _rect;
-	}
-
-	static void popScissor()
-	{
-		m_scissorStack.pop_back();
-		if(!m_scissorStack.empty())
-		{
-			Rect _rect = m_scissorStack[m_scissorStack.size() - 1];
-			glScissor(GLint(_rect.x), GLint(_rect.y), GLsizei(_rect.w), GLsizei(_rect.h));
-		}
-		else
-			glDisable(GL_SCISSOR_TEST);
-	}
-
-	static Rect getScissor()
-	{
-		if(!m_scissorStack.empty())
-			return m_scissorStack[m_scissorStack.size() - 1];
-		return Rect();
-	}
 };
 
 class Util

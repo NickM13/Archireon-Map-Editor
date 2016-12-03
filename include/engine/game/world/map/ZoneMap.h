@@ -62,8 +62,10 @@ public:
 	struct Entity
 	{
 		std::string m_name;
+		Vector2<Uint16> m_pos;
 		Texture m_entityTex;
 		Uint16 m_entityTexId;
+		Uint8 m_entityType; // 0=Neutral, 1=Opponent, 2=Trader
 		std::string m_script;
 
 		Board* m_board;
@@ -74,6 +76,8 @@ public:
 			m_entityTex = p_entityTex;
 			m_entityTexId = 0;
 			m_script = "";
+			m_pos = {};
+			m_entityType = 0;
 
 			m_board = 0;
 		}

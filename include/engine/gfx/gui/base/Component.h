@@ -5,11 +5,9 @@
 #define COMPONENT_TEXTURE_STYLE_WRAP 1
 #define COMPONENT_TEXTURE_STYLE_SCALE 2
 
-#include "engine\utils\Utilities.h"
-
 #include "..\..\LTexture.h"
-
-
+#include "engine\utils\Utilities.h"
+#include "engine\utils\variable\manager\ScissorManager.h"
 
 class Component
 {

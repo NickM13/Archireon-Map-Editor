@@ -134,7 +134,16 @@ Vector2<Uint16> ZoneMap::getSize()
 void ZoneMap::setTile(Sint8 p_layer, Sint32 x, Sint32 y, Uint16 p_tile)
 {
 	if(x >= 0 && x < m_zoneSize.x && y >= 0 && y < m_zoneSize.y)
-		m_tileData[p_layer][x][y] = p_tile;
+	{
+		if(p_layer != 2)
+		{
+			m_tileData[p_layer][x][y] = p_tile;
+		}
+		else
+		{
+
+		}
+	}
 }
 Uint16 ZoneMap::getTile(Sint8 p_layer, Sint32 x, Sint32 y)
 {
