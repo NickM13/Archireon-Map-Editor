@@ -63,11 +63,10 @@ public:
 		{
 			if(p_mouseStates[0] == 1)
 			{
-				if(Sint16(GLfloat(p_mousePos.x - m_pos.x + floor(GLfloat(m_scroll.x) / m_tileSize) * m_tileSize) < m_tileSheet.getSize().x) &&
-					Sint16(GLfloat(p_mousePos.y - m_pos.y + floor(GLfloat(m_scroll.y) / m_tileSize) * m_tileSize) < m_tileSheet.getSize().y))
-					m_selectedTile = {Sint16(GLfloat(p_mousePos.x - m_pos.x + floor(GLfloat(m_scroll.x) / m_tileSize) * m_tileSize) / m_tileSize),
-									  Sint16(GLfloat(p_mousePos.y - m_pos.y + floor(GLfloat(m_scroll.y) / m_tileSize) * m_tileSize) / m_tileSize)};
-
+				if(Sint16(GLfloat(p_mousePos.x - m_pos.x + (GLfloat(m_scroll.x) / m_tileSize) * m_tileSize) < m_tileSheet.getSize().x) &&
+					Sint16(GLfloat(p_mousePos.y - m_pos.y + (GLfloat(m_scroll.y) / m_tileSize) * m_tileSize) < m_tileSheet.getSize().y))
+					m_selectedTile = {Sint16(GLfloat(p_mousePos.x - m_pos.x + m_scroll.x) / m_tileSize),
+									  Sint16(GLfloat(p_mousePos.y - m_pos.y + m_scroll.y) / m_tileSize)};
 				m_dragging = false;
 				if((p_interactFlags & 1) == 0)
 					p_interactFlags += 1;
@@ -93,12 +92,12 @@ public:
 					m_scroll.y -= (p_mousePos.y - m_mouseBuffer.y);
 				if(m_scroll.x <= 0)
 					m_scroll.x = 0;
-				else if(m_scroll.x > m_tileSheet.getSize().x - m_size.x + m_tileSize - 1)
-					m_scroll.x = m_tileSheet.getSize().x - m_size.x + m_tileSize - 1;
+				else if(m_scroll.x > m_tileSheet.getSize().x - m_size.x - 1)
+					m_scroll.x = m_tileSheet.getSize().x - m_size.x - 1;
 				if(m_scroll.y <= 0)
 					m_scroll.y = 0;
-				else if(m_scroll.y > m_tileSheet.getSize().y - m_size.y + m_tileSize - 1)
-					m_scroll.y = m_tileSheet.getSize().y - m_size.y + m_tileSize - 1;
+				else if(m_scroll.y > m_tileSheet.getSize().y - m_size.y - 1)
+					m_scroll.y = m_tileSheet.getSize().y - m_size.y - 1;
 				m_mouseBuffer = p_mousePos;
 			}
 		}
@@ -161,6 +160,8 @@ public:
 			}
 			glEnd();
 
+			Vector2<GLfloat> _scroll = m_scroll;
+
 			glTranslatef(-GLfloat(m_scroll.x % m_tileSize), -GLfloat(m_scroll.y % m_tileSize), 0);
 
 			glBindTexture(GL_TEXTURE_2D, m_tileSheet.getId());
@@ -185,8 +186,8 @@ public:
 			glEnd();
 			
 			glBindTexture(GL_TEXTURE_2D, m_selectTex.getId());
-			if(m_selectedTile.x >= floor(m_scroll.x / m_tileSize) && m_selectedTile.x < floor(m_scroll.x / m_tileSize) + ceil(GLfloat(m_size.x) / m_tileSize)
-				&& m_selectedTile.y >= floor(m_scroll.y / m_tileSize) && m_selectedTile.y < floor(m_scroll.y / m_tileSize) + ceil(GLfloat(m_size.y) / m_tileSize))
+			if(m_selectedTile.x >= floor(m_scroll.x / m_tileSize) && m_selectedTile.x <= ceil(m_scroll.x / m_tileSize) + ceil(GLfloat(m_size.x) / m_tileSize)
+				&& m_selectedTile.y >= floor(m_scroll.y / m_tileSize) && m_selectedTile.y <= ceil(m_scroll.y / m_tileSize) + ceil(GLfloat(m_size.y) / m_tileSize))
 			{
 				glBegin(GL_QUADS);
 				{

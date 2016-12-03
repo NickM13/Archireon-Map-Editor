@@ -38,6 +38,8 @@ public:
 	void pause(std::string p_screen);
 	std::string getPause();
 
+	void setBoard(ZoneMap::Board *p_board);
+
 	void input();
 	void update();
 	void render();

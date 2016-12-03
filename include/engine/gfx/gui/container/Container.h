@@ -20,9 +20,15 @@
 
 class Container : public Component
 {
-private:
-	std::vector<Component*> m_componentList;
 protected:
+	struct Comp
+	{
+		Sint8 m_alignment;
+		Component* m_component;
+		Comp(Sint8 p_align, Component* p_comp) : m_alignment(p_align), m_component(p_comp)
+		{}
+	};
+	std::vector<Comp> m_componentList;
 	Vector4<Sint32> m_contentArea;
 public:
 	Container() {};
@@ -69,7 +75,7 @@ public:
 			p_component->setPosition(p_component->getPosition() + Vector2<Sint32>(Sint32(m_size.x - p_component->getSize().x), Sint32(m_size.y - p_component->getSize().y)) + Vector2<Sint32>(Sint32(p_component->getPosition().x * -2), Sint32(p_component->getPosition().y * -2)));
 			break;
 		}
-		m_componentList.push_back({p_component});
+		m_componentList.push_back({p_alignment, p_component});
 		if(m_componentList.empty())
 			m_contentArea = Vector4<Sint32>(p_component->getRealPosition().x, p_component->getRealPosition().y, p_component->getRealPosition().x + p_component->getSize().x, p_component->getRealPosition().y + p_component->getSize().y);
 		else
@@ -79,8 +85,8 @@ public:
 	Component* findComponent(std::string p_compName)
 	{
 		for(Uint16 i = 0; i < m_componentList.size(); i++)
-			if(m_componentList[i]->getName() == p_compName)
-				return m_componentList[i];
+			if(m_componentList[i].m_component->getName() == p_compName)
+				return m_componentList[i].m_component;
 		return 0;
 	}
 
@@ -89,7 +95,7 @@ public:
 		m_visible = p_visible;
 		if(p_visible == false)
 			for(Uint16 i = 0; i < m_componentList.size(); i++)
-				m_componentList[i]->update(0);
+				m_componentList[i].m_component->update(0);
 	}
 
 	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
@@ -99,10 +105,10 @@ public:
 		{
 			for(Sint32 i = m_componentList.size() - 1; i >= 0; i--)
 			{
-				if(!m_componentList[i]->isVisible())
+				if(!m_componentList[i].m_component->isVisible())
 					continue;
 				_mousePos = p_mousePos - m_pos;
-				m_componentList[i]->input(p_interactFlags, p_keyStates, p_mouseStates, _mousePos);
+				m_componentList[i].m_component->input(p_interactFlags, p_keyStates, p_mouseStates, _mousePos);
 			}
 		}
 	}
@@ -110,21 +116,21 @@ public:
 	{
 		if(m_visible)
 			for(Uint16 i = 0; i < m_componentList.size(); i++)
-				if(m_componentList[i]->isVisible())
+				if(m_componentList[i].m_component->isVisible())
 				{
-					if(m_componentList[i]->getPriorityLayer())
+					if(m_componentList[i].m_component->getPriorityLayer())
 					{
 						m_componentList.push_back(m_componentList[i]);
 						m_componentList.erase(m_componentList.begin() + i);
 					}
-					m_componentList[i]->update(p_updateTime);
+					m_componentList[i].m_component->update(p_updateTime);
 				}
 
 		struct
 		{
-			bool operator()(Component* a, Component* b)
+			bool operator()(Comp a, Comp b)
 			{
-				return (a->getPriorityLayer() < b->getPriorityLayer());
+				return (a.m_component->getPriorityLayer() < b.m_component->getPriorityLayer());
 			}
 		} sortPriority;
 		std::sort(m_componentList.begin(), m_componentList.end(), sortPriority);
@@ -138,11 +144,11 @@ public:
 				glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 				for(Uint16 i = 0; i < m_componentList.size(); i++)
 				{
-					if(m_componentList[i]->isVisible())
+					if(m_componentList[i].m_component->isVisible())
 					{
 						glPushMatrix();
 						{
-							m_componentList[i]->render();
+							m_componentList[i].m_component->render();
 						}
 						glPopMatrix();
 					}

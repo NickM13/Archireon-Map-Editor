@@ -55,6 +55,7 @@ public:
 	{
 		m_itemList.erase(m_itemList.begin() + p_index);
 		m_selectedItem--;
+		m_maxScroll = Sint16((m_itemList.size() - m_size.y + 1) * m_itemHeight);
 	}
 	ListItem& getListItem(Uint16 p_index)
 	{

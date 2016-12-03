@@ -1,0 +1,15 @@
+Entity Idle Syntax
+If you have any suggestions, please email them to NickMead0313@outlook.com
+
+Keyword					        ---	Function
+---------General-----------
+#                       ---	Comment
+GoTo <x> <y>	          ---	Say <msg> and wait for <num> seconds to continue
+
+---------Neutral-----------
+
+
+---------Opponent----------
+
+
+----------Trader-----------

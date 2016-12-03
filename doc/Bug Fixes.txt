@@ -1,0 +1,2 @@
+This file contains all bugs fixed that were pointed out by the community during the last release, or if the bug is something big it will have a status note.
+If you find any bugs, please report them to NickMead0313@outlook.com.  Thank you for your support!
