@@ -4,11 +4,11 @@
 Component::Component()
 {
 	//						   BACK							FORE						ACTIVE						TEXT
-	m_colorThemes.push_back({ Color(128, 128, 128, 255),	Color(200, 206, 210, 255),	Color(240, 240, 240, 255),	Color(24, 24, 24, 255) });		// 0
-	m_colorThemes.push_back({ Color(64, 64, 64, 255),		Color(170, 174, 177, 255),	Color(150, 150, 150, 255),	Color(24, 24, 24, 255) });		// 1
-	m_colorThemes.push_back({ Color(192, 128, 64, 255),		Color(255, 242, 204, 255),	Color(128, 128, 192, 255),	Color(32, 32, 32, 255) });			// 2
-	m_colorThemes.push_back({ Color(255, 242, 204, 255),	Color(120, 63, 4, 255),		Color(164, 92, 16, 255),	Color(32, 32, 32, 255) });			// 3
-	m_colorThemes.push_back({ Color(192, 192, 192, 128),	Color(32, 32, 32, 128),		Color(48, 48, 48, 128),		Color(255, 255, 255, 128) });		// 4
+	m_colorThemes.push_back({Color(128, 128, 128, 255),		Color(200, 206, 210, 255),	Color(240, 240, 240, 255),	Color(24, 24, 24, 255)});			// 0
+	m_colorThemes.push_back({Color(64, 64, 64, 255),		Color(170, 174, 177, 255),	Color(135, 135, 135, 255),	Color(24, 24, 24, 255)});			// 1
+	m_colorThemes.push_back({Color(192, 128, 64, 255),		Color(255, 242, 204, 255),	Color(128, 128, 192, 255),	Color(32, 32, 32, 255)});			// 2
+	m_colorThemes.push_back({Color(255, 242, 204, 255),		Color(120, 63, 4, 255),		Color(164, 92, 16, 255),	Color(32, 32, 32, 255)});			// 3
+	m_colorThemes.push_back({Color(192, 192, 192, 128),		Color(32, 32, 32, 128),		Color(48, 48, 48, 128),		Color(255, 255, 255, 128)});		// 4
 }
 
 Component::Component(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme)
@@ -115,12 +115,19 @@ void Component::renderBack()
 	{
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 		m_colorTheme.m_back.useColor();
-		glBegin(GL_QUADS);
+		glBegin(GL_LINES);
 		{
 			glVertex2f(-GLfloat(m_borderThickness), -GLfloat(m_borderThickness));
 			glVertex2f(GLfloat(m_size.x + m_borderThickness), -GLfloat(m_borderThickness));
+
+			glVertex2f(GLfloat(m_size.x + m_borderThickness), -GLfloat(m_borderThickness));
+			glVertex2f(GLfloat(m_size.x + m_borderThickness), GLfloat(m_size.y + m_borderThickness));
+
 			glVertex2f(GLfloat(m_size.x + m_borderThickness), GLfloat(m_size.y + m_borderThickness));
 			glVertex2f(-GLfloat(m_borderThickness), GLfloat(m_size.y + m_borderThickness));
+
+			glVertex2f(-GLfloat(m_borderThickness), GLfloat(m_size.y + m_borderThickness));
+			glVertex2f(-GLfloat(m_borderThickness), -GLfloat(m_borderThickness));
 		}
 		glEnd();
 	}

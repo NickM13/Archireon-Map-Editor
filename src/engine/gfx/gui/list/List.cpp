@@ -37,8 +37,8 @@ void CList::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStat
 {
 	p_mousePos = p_mousePos - m_pos;
 	if(((p_interactFlags & 1) == 0) &&
-		p_mousePos.x >= -4 && p_mousePos.x <= m_size.x + 4 &&
-		p_mousePos.y >= -24 && p_mousePos.y <= m_size.y * m_itemHeight + 4)
+		p_mousePos.x >= 0 && p_mousePos.x <= m_size.x &&
+		p_mousePos.y >= 0 && p_mousePos.y <= m_size.y * m_itemHeight)
 		m_hover = true;
 	else
 		m_hover = false;
@@ -67,13 +67,10 @@ void CList::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStat
 			}
 
 			m_dragging = false;
-			p_interactFlags += 1;
 		}
 		else if(p_mouseStates[1] == 1 || p_mouseStates[1] == 2 && m_dragging)
-		{
 			m_dragging = true;
-			p_interactFlags += 1;
-		}
+		p_interactFlags += 1;
 	}
 
 	if(m_dragging)
@@ -87,9 +84,11 @@ void CList::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStat
 				p_interactFlags += 1;
 		}
 	}
-
-	if(m_hover)
+	if((p_interactFlags & 4) == 0 && m_hover)
+	{
 		m_scroll = m_scroll - Globals::getInstance().m_mouseScroll * 4;
+		p_interactFlags += 4;
+	}
 
 	if(m_scroll > m_maxScroll)
 		m_scroll = m_maxScroll;

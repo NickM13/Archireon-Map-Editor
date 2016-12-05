@@ -28,7 +28,9 @@ Component* ContainerPanel::addComponent(Component* p_component, Sint8 p_alignmen
 	m_minScroll.y = min(m_minScroll.y, m_contentArea.y - (m_title != "" ? 20 : 0));
 
 	m_maxScroll.x = max(m_maxScroll.x, m_contentArea.z - m_size.x);
-	m_maxScroll.y = max(m_maxScroll.y, m_contentArea.w - m_size.y + 2);
+	m_maxScroll.y = max(m_maxScroll.y, m_contentArea.w - m_size.y + 4);
+	if(m_maxScroll.y > 10000)
+		std::cout << "Something went wrong! Tell Nick: " << m_maxScroll.y << ", " << m_contentArea.w << std::endl;
 
 	m_scroll = m_minScroll;
 
@@ -91,35 +93,54 @@ void ContainerPanel::setScrollY(bool p_state)
 
 void ContainerPanel::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 {
-	Container::input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos + m_scroll);
+	if(p_mousePos.x - m_pos.x >= 0 && p_mousePos.x - m_pos.x <= m_size.x + (m_scrollY ? 10 : 0) && 
+		p_mousePos.y - m_pos.y >= 0 && p_mousePos.y - m_pos.y <= m_size.y)
+		Container::input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos + m_scroll);
+	else
+	{
+		bool _1 = (p_interactFlags & 1) == 0, _4 = (p_interactFlags & 4) == 0;
+		if(_1)
+			p_interactFlags += 1;
+		if(_4)
+			p_interactFlags += 4;
+		Container::input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos + m_scroll);
+		if(_1)
+			p_interactFlags -= 1;
+		if(_4)
+			p_interactFlags -= 4;
+	}
 
 	m_moveToFront = (m_lHeld != 0);
 
 	// Scroll window
-	if((p_interactFlags & 1) == 0)
+	if((p_interactFlags & 4) == 0 &&
+		p_mousePos.x - m_pos.x >= 0 && p_mousePos.x - m_pos.x <= m_size.x + 10 &&
+		p_mousePos.y - m_pos.y >= 0 && p_mousePos.y - m_pos.y <= m_size.y)
 	{
-		if(m_rHeld != 0)
-		{
-			if(m_minScroll.x != 0 || m_maxScroll.x != 0)
-				m_scroll.x += p_mousePos.x - m_mousePos.x;
-			if(m_minScroll.y != 0 || m_maxScroll.y != 0)
-				m_scroll.y += p_mousePos.y - m_mousePos.y;
-
-			if(m_scroll.x < m_minScroll.x)
-				m_scroll.x = m_minScroll.x;
-			if(m_scroll.y < m_minScroll.y)
-				m_scroll.y = m_minScroll.y;
-
-			if(m_scroll.x > m_maxScroll.x)
-				m_scroll.x = m_maxScroll.x;
-			if(m_scroll.y > m_maxScroll.y)
-				m_scroll.y = m_maxScroll.y;
-		}
+		m_scroll.y -= Globals::getInstance().m_mouseScroll * 4;
+		p_interactFlags += 4;
+	}
+	if(m_rHeld != 0)
+	{
+		if(m_minScroll.x != 0 || m_maxScroll.x != 0)
+			m_scroll.x += p_mousePos.x - m_mousePos.x;
+		if(m_minScroll.y != 0 || m_maxScroll.y != 0)
+			m_scroll.y += p_mousePos.y - m_mousePos.y;
 	}
 
-	if(p_mousePos.x - m_pos.x >= 0 && p_mousePos.x - m_pos.x <= m_size.x && 
-		p_mousePos.y - m_pos.y >= 0 && p_mousePos.y - m_pos.y <= m_size.y &&
-		(p_interactFlags & 1) == 0)
+	if(m_scroll.x < m_minScroll.x)
+		m_scroll.x = m_minScroll.x;
+	if(m_scroll.y < m_minScroll.y)
+		m_scroll.y = m_minScroll.y;
+
+	if(m_scroll.x > m_maxScroll.x)
+		m_scroll.x = m_maxScroll.x;
+	if(m_scroll.y > m_maxScroll.y)
+		m_scroll.y = m_maxScroll.y;
+
+	if((p_interactFlags & 1) == 0 &&
+		p_mousePos.x - m_pos.x >= 0 && p_mousePos.x - m_pos.x <= m_size.x &&
+		p_mousePos.y - m_pos.y >= 0 && p_mousePos.y - m_pos.y <= m_size.y)
 		p_interactFlags += 1;
 
 	// Drag window -- disabled
@@ -171,9 +192,6 @@ void ContainerPanel::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_
 				m_rHeld = 2;
 			else if(p_mouseStates[0] == 0 || p_mouseStates[0] == 3)
 				m_rHeld = 0;
-
-			if((p_interactFlags & 1) == 0)
-				p_interactFlags += 1;
 		}
 		if((p_interactFlags & 1) == 0)
 			p_interactFlags += 1;
@@ -257,8 +275,8 @@ void ContainerPanel::render()
 					//((m_size.y / GLfloat(_scrollDist.y + m_size.y)) * m_size.y) - 1
 					glVertex2f(GLfloat(m_size.x + 1), (GLfloat(m_scroll.y - m_minScroll.y) / _scrollDist.y) * (m_size.y * _scrollDist.y) / (m_size.y + _scrollDist.y) + 1);
 					glVertex2f(GLfloat(m_size.x + 9), (GLfloat(m_scroll.y - m_minScroll.y) / _scrollDist.y) * (m_size.y * _scrollDist.y) / (m_size.y + _scrollDist.y) + 1);
-					glVertex2f(GLfloat(m_size.x + 9), (GLfloat(m_scroll.y - m_minScroll.y) / _scrollDist.y) * (m_size.y * _scrollDist.y) / (m_size.y + _scrollDist.y) + (powf(m_size.y, 2) / (m_size.y + _scrollDist.y)) - 1);
-					glVertex2f(GLfloat(m_size.x + 1), (GLfloat(m_scroll.y - m_minScroll.y) / _scrollDist.y) * (m_size.y * _scrollDist.y) / (m_size.y + _scrollDist.y) + (powf(m_size.y, 2) / (m_size.y + _scrollDist.y)) - 1);
+					glVertex2f(GLfloat(m_size.x + 9), (GLfloat(m_scroll.y - m_minScroll.y) / _scrollDist.y) * (m_size.y * _scrollDist.y) / (m_size.y + _scrollDist.y) + ((m_size.y * m_size.y) / (m_size.y + _scrollDist.y)) - 1);
+					glVertex2f(GLfloat(m_size.x + 1), (GLfloat(m_scroll.y - m_minScroll.y) / _scrollDist.y) * (m_size.y * _scrollDist.y) / (m_size.y + _scrollDist.y) + ((m_size.y * m_size.y) / (m_size.y + _scrollDist.y)) - 1);
 				}
 				glEnd();
 			}

@@ -39,8 +39,7 @@ void CButton::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseSt
 		p_mousePos.y >= m_pos.y && p_mousePos.y <= m_pos.y + m_size.y)
 	{
 		m_hover = true;
-		if((p_interactFlags & 1) == 0)
-			p_interactFlags += 1;
+		p_interactFlags += 1;
 	}
 	else
 		m_hover = false;
@@ -197,8 +196,8 @@ void CButtonToggle::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_m
 		{
 			m_numValue = 1;
 			m_selected = !m_selected;
-			p_interactFlags += 1;
 		}
+		p_interactFlags += 1;
 	}
 	else
 		m_hover = false;
@@ -304,8 +303,6 @@ void CButtonRadio::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mo
 					m_selectedButton = i;
 				}
 				m_buttonList[m_selectedButton]->setState(1);
-				if((p_interactFlags & 1) == 0)
-					p_interactFlags += 1;
 				return;
 			}
 		}

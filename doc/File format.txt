@@ -21,7 +21,6 @@ World.tmf:	Includes information of the World layer, in the following format:
 		Uint16 objectId
 		Uint16 objectCount
 
-**TO BE IMPLEMENTED**
 Entity.tmf:	Entity layer
 *Note: Entities have different saved variables depending on the entity type.
 	Repeated:
@@ -30,7 +29,6 @@ Entity.tmf:	Entity layer
 		Uint16 x
 		Uint16 y
 
-**TO BE IMPLEMENTED**
 The entities folder will include folders with information of the entities.
 entities//<entityName>//Info.cfg
 *Note: Info.cfg will not change outside of the map editor
@@ -39,12 +37,17 @@ entities//<entityName>//Info.cfg
 		1: Opponent
 		2: Trader
 
-**TO BE IMPLEMENTED**
-entities//<entityName>//Script
-*Note: Script contains the text and actions an npc will loop through when interacted with.
-	*For documentation on syntax, go to Script.txt
+entities//<entityName>//Interact
+*Note: Interact contains the text and actions an npc will loop through when interacted with.
+	*For documentation on syntax, go to Interact.txt
 
-**TO BE IMPLEMENTED**
 entities//<entityName>//Idle
 *Note: Idle contains the actions an npc will loop through while idle.  For now these actions are walking in circles, pacing, or standing still.
 	*For documentation on syntax, go to Idle.txt
+
+**NOT YET IMPLEMENTED**
+entities//<entityName>//Inventory
+*Note: Inventory contains card or item id's that the NPC has.
+	*If NEUTRAL, the item(s) is given at giveItem command
+	*If OPPONENT, the item(s) is given at the end of a successful battle
+	*If TRADER, the item(s) are shown in a trade window and may be purchased

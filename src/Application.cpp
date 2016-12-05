@@ -161,7 +161,6 @@ void Application::input()
 	{
 		glfwSetWindowShouldClose(m_mainWindow, false);
 		Globals::getInstance().m_exitting = 1;
-		std::cout << "test" << std::endl;
 	}
 
 	Globals::getInstance().m_keyEvents.clear();

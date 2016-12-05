@@ -1,4 +1,4 @@
-Entity Idle Syntax
+Entity Idle Script Syntax
 If you have any suggestions, please email them to NickMead0313@outlook.com
 
 Keyword					        ---	Function

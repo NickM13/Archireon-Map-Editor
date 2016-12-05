@@ -38,7 +38,7 @@ void CTileSet::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 	else
 		m_hover = false;
 	if((((p_interactFlags & 1) == 0) || m_dragging) && 
-		p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
+		p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x + 10 &&
 		p_mousePos.y >= m_pos.y && p_mousePos.y <= m_pos.y + m_size.y)
 	{
 		if(p_mouseStates[0] == 1)
@@ -79,6 +79,8 @@ void CTileSet::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 			else if(m_scroll.y > m_tileSheet.getSize().y - m_size.y - 1)
 				m_scroll.y = m_tileSheet.getSize().y - m_size.y - 1;
 			m_mouseBuffer = p_mousePos;
+			if((p_interactFlags & 1) == 0)
+				p_interactFlags += 1;
 		}
 	}
 
@@ -226,7 +228,7 @@ void CTileSet::render()
 
 void CTileSet::setSelectedTile(Uint16 p_index)
 {
-	if(m_tileSheet.getId() > 0)
+	if(m_tileSheet.getId() > 0 && m_tileCount.x > 0)
 	{
 		m_selectedTile.x = p_index % m_tileCount.x;
 		m_selectedTile.y = Sint16(floor(GLfloat(p_index) / m_tileCount.x));

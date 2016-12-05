@@ -92,7 +92,7 @@ protected:
 	Sint16 m_cPauseScreen;
 	std::vector<Container*> m_pauseScreens;
 	Container* m_guiSaveMap, *m_guiLoadMap, *m_guiClearMap, *m_guiResizeMap;
-	Container* m_guiEntityTex, *m_guiEntityScript, *m_guiEntityBoard;
+	Container* m_guiEntityTex, *m_guiEntityInteract, *m_guiEntityIdle, *m_guiEntityBoard;
 	Container* m_guiExit;
 
 	//Board variables

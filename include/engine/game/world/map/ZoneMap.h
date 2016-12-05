@@ -44,8 +44,8 @@ public:
 		{
 			m_size = p_size;
 			m_background = p_background;
-			m_boardData[0] = new Uint8*[m_size.x];
-			m_boardData[1] = new Uint8*[m_size.x];
+			m_boardData[0] = new Uint8*[m_size.x]; // Fog Type -- 0=Neutral, 1=Enemy, 2=Friendly
+			m_boardData[1] = new Uint8*[m_size.x]; // TODO Tile type -- 0=Air, 1=Solid, ...
 			for(Uint16 x = 0; x < m_size.x; x++)
 			{
 				m_boardData[0][x] = new Uint8[m_size.y];
@@ -66,7 +66,7 @@ public:
 		Texture m_entityTex;
 		Uint16 m_entityTexId;
 		Uint8 m_entityType; // 0=Neutral, 1=Opponent, 2=Trader
-		std::string m_script;
+		std::string m_interact, m_idle;
 
 		Board* m_board;
 
@@ -75,7 +75,7 @@ public:
 			m_name = p_name;
 			m_entityTex = p_entityTex;
 			m_entityTexId = 0;
-			m_script = "";
+			m_interact = m_idle = "";
 			m_pos = {};
 			m_entityType = 0;
 
@@ -98,7 +98,7 @@ private:
 	std::vector<Entity> m_entities;
 
 	bool m_layerVisible[4];
-	Uint16** m_tileData[4]; // Is called tile data but also accounts for entity id
+	Uint16** m_tileData[3]; // Is called tile data but also accounts for entity id
 
 	Texture m_tileSheetGround, m_tileSheetWorld, m_tileSheetSky;
 
@@ -141,7 +141,7 @@ public:
 	Uint16 getEntitySize();
 	void removeEntity(Uint16 p_index);
 
-	void render(Vector2<Sint32> p_camPos);
+	void render(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
 
 	void save();
 	void save(std::string p_zoneName);

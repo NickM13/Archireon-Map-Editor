@@ -13,14 +13,14 @@ bool Game::init()
 
 	m_zoneMap = new ZoneMap(Vector2<Uint16>(64, 64));
 
-	m_zoneMap->setTextureGround(MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("TilesheetGround.png")));
-	m_zoneMap->setTextureWorld(MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("TilesheetWorld.png")));
-	m_zoneMap->setTextureSky(MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("TilesheetSky.png")));
+	m_zoneMap->setTextureGround(LTexture::getInstance().getImage("TilesheetGround.png"));
+	m_zoneMap->setTextureWorld(LTexture::getInstance().getImage("TilesheetWorld.png"));
+	m_zoneMap->setTextureSky(LTexture::getInstance().getImage("TilesheetSky.png"));
 
-	m_zoom = 1;
-	m_camPos = Vector2<Sint32>(Sint32(m_zoneMap->getSize().x / 2 * TILE_SIZE), Sint32(m_zoneMap->getSize().y / 2 * TILE_SIZE));
+	m_zoom = 0;
+	m_camPos = Vector2<GLfloat>((m_zoneMap->getSize().x / 2), (m_zoneMap->getSize().y / 2));
 
-	m_backTexId = MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("Background.png"));
+	m_backTexId = LTexture::getInstance().getImage("Background.png");
 
 	resize();
 
@@ -28,7 +28,7 @@ bool Game::init()
 	m_guiPause = new Container("CONTAINER_PAUSE", {0, 0}, Globals::getInstance().m_screenSize, false);
 	m_guiTop = new Container("CONTAINER_TOP", {0, 0}, {Globals::getInstance().m_screenSize.x, 32}, true);
 	m_guiLeft = new Container("CONTAINER_LEFT", {-1, 24}, {300, Globals::getInstance().m_screenSize.y - 23}, true);
-	m_guiLeftLayer = new Container("CONTAINER_LEFT_LAYER", {0, 0}, {m_guiLeft->getSize().x, 125}, true);
+	m_guiLeftLayer = new Container("CONTAINER_LEFT_LAYER", {0, 0}, {m_guiLeft->getSize().x, 131}, true);
 	m_guiLeftDetail = new Container("CONTAINER_LEFT_DETAIL", {0, m_guiLeftLayer->getSize().y}, {m_guiLeft->getSize().x, m_guiLeft->getSize().y - m_guiLeftLayer->getSize().y}, true);
 	//m_guiRight = new Container("CONTAINER_RIGHT", "Pallet", {16, 32}, {288, 640}, 0, true, LTexture::getInstance().loadImage("gui\\BarFlatRound.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 
@@ -39,8 +39,6 @@ bool Game::init()
 	m_guiLeft->addComponent(m_guiLeftDetail, PANEL_ALIGN_TOP_LEFT);
 	//m_guiAll->addComponent(m_guiRight, PANEL_ALIGN_TOP_RIGHT);
 	m_guiAll->addComponent(m_guiTop, PANEL_ALIGN_TOP_LEFT)->setPriorityLayer(4);
-
-	m_guiLeftLayer->addComponent(new Panel("PANEL_BG", "", {0, 0}, m_guiLeftLayer->getSize(), 0, true, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE));
 
 	m_toolbarMenu = new CToolbar("TOOLBAR_MENU", {0, 0}, {Globals::getInstance().m_screenSize.x, 24}, 0);
 	m_toolbarMenu->addButton("", "File");
@@ -80,7 +78,6 @@ bool Game::init()
 		});
 		m_toolbarMenu->addButton("View", "Toggle Overlay", []() {
 			Game::getInstance().m_guiLeft->setVisible(!Game::getInstance().m_guiLeft->isVisible());
-			//Game::getInstance().m_guiRight->setVisible(!Game::getInstance().m_guiRight->isVisible());
 		});
 	}
 	m_toolbarMenu->addButton("", "Help");
@@ -92,22 +89,22 @@ bool Game::init()
 
 
 
-	m_selectLayer = new CButtonRadio("RADIO_LAYER", "Layer", {-1, 0}, {m_guiLeftLayer->getSize().x, 200}, 1);
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_GROUND", "Ground", {0, 0}, {m_selectLayer->getSize().x, 24}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_WORLD", "World", {0, 25}, {m_selectLayer->getSize().x, 24}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_ENTITY", "Entity", {0, 50}, {m_selectLayer->getSize().x, 24}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_SKY", "Sky", {0, 75}, {m_selectLayer->getSize().x, 24}, 16, 1));
-	m_selectLayer->addButton(new CButtonToggle("RBUTTON_STAMPS", "Stamps", {0, 100}, {m_selectLayer->getSize().x, 24}, 16, 1));
+	m_selectLayer = new CButtonRadio("RADIO_LAYER", "Layer", {-1, 0}, {m_guiLeftLayer->getSize().x, 128}, 1);
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_GROUND", "Ground", {0, 0}, {m_selectLayer->getSize().x, 26}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_WORLD", "World", {0, 26}, {m_selectLayer->getSize().x, 26}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_ENTITY", "Entity", {0, 52}, {m_selectLayer->getSize().x, 26}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_SKY", "Sky", {0, 78}, {m_selectLayer->getSize().x, 26}, 16, 1));
+	m_selectLayer->addButton(new CButtonToggle("RBUTTON_STAMPS", "Stamps", {0, 104}, {m_selectLayer->getSize().x, 26}, 16, 1));
 	m_guiLeftLayer->addComponent(m_selectLayer, PANEL_ALIGN_TOP);
 
 	m_guiLeftLayer->addComponent(new CButtonToggle("BUTTON_GROUND_VISIBLE", LTexture::getInstance().getImage("gui\\Visible.png"),
 		LTexture::getInstance().getImage("gui\\Invisible.png"), {-(m_selectLayer->getSize().x - 32) / 2, 0}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 	m_guiLeftLayer->addComponent(new CButtonToggle("BUTTON_WORLD_VISIBLE", LTexture::getInstance().getImage("gui\\Visible.png"),
-		LTexture::getInstance().getImage("gui\\Invisible.png"), {-(m_selectLayer->getSize().x - 32) / 2, 25}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
+		LTexture::getInstance().getImage("gui\\Invisible.png"), {-(m_selectLayer->getSize().x - 32) / 2, 26}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 	m_guiLeftLayer->addComponent(new CButtonToggle("BUTTON_ENTITY_VISIBLE", LTexture::getInstance().getImage("gui\\Visible.png"),
-		LTexture::getInstance().getImage("gui\\Invisible.png"), {-(m_selectLayer->getSize().x - 32) / 2, 50}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
+		LTexture::getInstance().getImage("gui\\Invisible.png"), {-(m_selectLayer->getSize().x - 32) / 2, 52}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 	m_guiLeftLayer->addComponent(new CButtonToggle("BUTTON_SKY_VISIBLE", LTexture::getInstance().getImage("gui\\Visible.png"),
-		LTexture::getInstance().getImage("gui\\Invisible.png"), {-(m_selectLayer->getSize().x - 32) / 2, 75}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
+		LTexture::getInstance().getImage("gui\\Invisible.png"), {-(m_selectLayer->getSize().x - 32) / 2, 78}, {24, 24}, 16, 1, 1), PANEL_ALIGN_TOP);
 
 
 
@@ -132,9 +129,7 @@ bool Game::init()
 
 
 
-	//m_guiGround->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp1", Vector2<Sint32>(16, 324), Vector2<Sint32>(16, 1), 16, 1));
-
-	m_guiWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>((m_guiWorld->getSize().x - (16 * 16)) / 2, 204), Vector2<Sint32>(16, 1), 16, 1));
+	m_guiWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>(0, 204), Vector2<Sint32>(16, 1), 16, 1), PANEL_ALIGN_TOP);
 
 	m_guiWorldPortal->addComponent(new TextField("TEXTFIELD_PORTAL", "Destination Zone", {(m_guiWorldPortal->getSize().x - (16 * 16)) / 2, 416}, {17, 1}, 16, 1));
 	m_guiWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_X", "X:", {0, 440}, {0, 500}, 1, 0));
@@ -147,10 +142,10 @@ bool Game::init()
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setPriorityLayer(5);
-
+	
 	m_guiWorldSwitch->addComponent(new CCounter("COUNTER_SWITCH_FREQUENCY", "Freq.", {0, 440}, {0, 255}, 1, 0));
 
-	m_guiWorld->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {3, 646}, {24, 24}, 16, 1), PANEL_ALIGN_TOP_RIGHT);
+	m_guiWorld->addComponent(new CButton("BUTTON_DELETE", "", LTexture::getInstance().getImage("gui\\Trash.png"), {3, 646}, {24, 24}, 16, 1), PANEL_ALIGN_TOP_RIGHT);
 
 	m_guiEntityTex = new Container("CONTAINER_ENTITY_TEXTURE", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
@@ -159,7 +154,7 @@ bool Game::init()
 		m_guiEntityTex->addComponent(new CButton("BUTTON_SET", "Set", {-130, 24}, {252, 24}, 16, 1, []() {
 			if(Game::getInstance().m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->getTitle() != "")
 			{
-				Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex = MTexture::getInstance().getUnit(LTexture::getInstance().loadImage(Game::getInstance().m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->getTitle()));
+				Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex = LTexture::getInstance().getImage(Game::getInstance().m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->getTitle());
 				Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex.setName(Game::getInstance().m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->getTitle());
 				Game::getInstance().m_tileSetEntity->setTileSheet(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex);
 				Game::getInstance().unpause();
@@ -167,17 +162,27 @@ bool Game::init()
 		}), PANEL_ALIGN_CENTER);
 		m_guiEntityTex->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_CENTER);
 	}
-	m_guiEntityScript = new Container("CONTAINER_ENTITY_SCRIPT", {0, 0}, Globals::getInstance().m_screenSize, false);
+	m_guiEntityInteract = new Container("CONTAINER_ENTITY_INTERACT_SCRIPT", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
-		m_guiEntityScript->addComponent(new Panel("PANEL_BG2", "Entity Script", {0, -12}, Globals::getInstance().m_screenSize - Vector2<Sint32>(256, 128), 0, true), PANEL_ALIGN_CENTER);
-		m_guiEntityScript->addComponent(new TextField("TEXTFIELD_SCRIPT", "Go to docs folder for script api", {0, 0}, Globals::getInstance().m_screenSize / 16 - Vector2<Sint32>(17, 11), 16, 1, false), PANEL_ALIGN_CENTER);
-		m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setTitle("Test\nING\nSTuff");
-		m_guiEntityScript->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, []() {
-			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_script = Game::getInstance().m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->getTitle();
+		m_guiEntityInteract->addComponent(new Panel("PANEL_BG2", "Interact Script", {0, -12}, Globals::getInstance().m_screenSize - Vector2<Sint32>(256, 128), 0, true), PANEL_ALIGN_CENTER);
+		m_guiEntityInteract->addComponent(new TextField("TEXTFIELD_SCRIPT", "Go to docs folder for interact script api", {0, 0}, Globals::getInstance().m_screenSize / 16 - Vector2<Sint32>(17, 11), 16, 1, false), PANEL_ALIGN_CENTER);
+		m_guiEntityInteract->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, []() {
+			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_interact = Game::getInstance().m_guiEntityInteract->findComponent("TEXTFIELD_SCRIPT")->getTitle();
 			Game::getInstance().m_tileSetEntity->setTileSheet(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex);
 			Game::getInstance().unpause();
 		}), PANEL_ALIGN_BOTTOM);
-		m_guiEntityScript->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_BOTTOM);
+		m_guiEntityInteract->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_BOTTOM);
+	}
+	m_guiEntityIdle = new Container("CONTAINER_ENTITY_IDLE_SCRIPT", {0, 0}, Globals::getInstance().m_screenSize, false);
+	{
+		m_guiEntityIdle->addComponent(new Panel("PANEL_BG2", "Idle Script", {0, -12}, Globals::getInstance().m_screenSize - Vector2<Sint32>(256, 128), 0, true), PANEL_ALIGN_CENTER);
+		m_guiEntityIdle->addComponent(new TextField("TEXTFIELD_SCRIPT", "Go to docs folder for interact script api", {0, 0}, Globals::getInstance().m_screenSize / 16 - Vector2<Sint32>(17, 11), 16, 1, false), PANEL_ALIGN_CENTER);
+		m_guiEntityIdle->addComponent(new CButton("BUTTON_SAVE", "Save", {-130, 24}, {252, 24}, 16, 1, []() {
+			Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_interact = Game::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->getTitle();
+			Game::getInstance().m_tileSetEntity->setTileSheet(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex);
+			Game::getInstance().unpause();
+		}), PANEL_ALIGN_BOTTOM);
+		m_guiEntityIdle->addComponent(new CButton("BUTTON_CANCEL", "Don't Save", {130, 24}, {252, 24}, 16, 1, []() {Game::getInstance().unpause(); }), PANEL_ALIGN_BOTTOM);
 	}
 	m_guiEntityBoard = new Container("CONTAINER_ENTITY_BOARD", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
@@ -200,16 +205,18 @@ bool Game::init()
 	}
 
 	m_guiPause->addComponent(m_guiEntityTex, PANEL_ALIGN_CENTER);
-	m_guiPause->addComponent(m_guiEntityScript, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiEntityInteract, PANEL_ALIGN_CENTER);
+	m_guiPause->addComponent(m_guiEntityIdle, PANEL_ALIGN_CENTER);
 	m_guiPause->addComponent(m_guiEntityBoard, PANEL_ALIGN_CENTER);
 
 	m_pauseScreens.push_back(m_guiEntityTex);
-	m_pauseScreens.push_back(m_guiEntityScript);
+	m_pauseScreens.push_back(m_guiEntityInteract);
+	m_pauseScreens.push_back(m_guiEntityIdle);
 	m_pauseScreens.push_back(m_guiEntityBoard);
 
 
 
-	m_guiEntity->addComponent(new TextField("TEXTFIELD_ENTITY_NAME", "Entity Name", Vector2<Sint32>((m_guiEntity->getSize().x - (16 * 16)) / 2, 170), Vector2<Sint32>(16, 1), 16, 1));
+	m_guiEntity->addComponent(new TextField("TEXTFIELD_ENTITY_NAME", "Entity Name", Vector2<Sint32>(0, 170), Vector2<Sint32>(16, 1), 16, 1), PANEL_ALIGN_TOP);
 
 	m_guiEntity->addComponent(new CDropDown("DROPDOWN_TYPE", "Entity Type", {0, 500}, {264, 32}, 16, 1), PANEL_ALIGN_TOP);
 	m_guiEntity->findComponent("DROPDOWN_TYPE")->addItem("Neutral");
@@ -222,13 +229,19 @@ bool Game::init()
 		Game::getInstance().pause("CONTAINER_ENTITY_TEXTURE");
 		Game::getInstance().m_guiEntityTex->findComponent("TEXTFIELD_TEXTURE")->setTitle(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_entityTex.getName());
 	}), PANEL_ALIGN_TOP);
-	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_SCRIPT", "Edit Script", {0, 572}, {264, 32}, 16, 1, []()
+	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_INTERACT_SCRIPT", "Edit Interaction", {0, 572}, {264, 32}, 16, 1, []()
 	{
-		Game::getInstance().pause("CONTAINER_ENTITY_SCRIPT");
-		Game::getInstance().m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setTitle(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_script);
-		Game::getInstance().m_guiEntityScript->findComponent("TEXTFIELD_SCRIPT")->setState(1);
+		Game::getInstance().pause("CONTAINER_ENTITY_INTERACT_SCRIPT");
+		Game::getInstance().m_guiEntityInteract->findComponent("TEXTFIELD_SCRIPT")->setTitle(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_interact);
+		Game::getInstance().m_guiEntityInteract->findComponent("TEXTFIELD_SCRIPT")->setState(1);
 	}), PANEL_ALIGN_TOP);
-	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_BOARD", "Edit Board", {0, 608}, {264, 32}, 16, 1, []()
+	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_IDLE_SCRIPT", "Edit Idle", {0, 608}, {264, 32}, 16, 1, []()
+	{
+		Game::getInstance().pause("CONTAINER_ENTITY_INTERACT_SCRIPT");
+		Game::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setTitle(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_interact);
+		Game::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setState(1);
+	}), PANEL_ALIGN_TOP);
+	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_BOARD", "Edit Board", {0, 644}, {264, 32}, 16, 1, []()
 	{
 		Game::getInstance().pause("CONTAINER_ENTITY_BOARD");
 		if(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_board == 0)
@@ -236,18 +249,18 @@ bool Game::init()
 		Game::getInstance().setBoard(Game::getInstance().m_zoneMap->getEntity(Game::getInstance().m_listEntity->getSelectedItem()).m_board);
 	}), PANEL_ALIGN_TOP);
 
-	m_guiEntity->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {3, 646}, {24, 24}, 16, 1), PANEL_ALIGN_TOP_RIGHT);
+	m_guiEntity->addComponent(new CButton("BUTTON_DELETE", "", LTexture::getInstance().getImage("gui\\Trash.png"), {3, 690}, {24, 24}, 16, 1), PANEL_ALIGN_TOP_RIGHT);
 
 
 
-	m_guiStamp->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp Name", Vector2<Sint32>((m_guiStamp->getSize().x - (16 * 16)) / 2, 20), Vector2<Sint32>(17, 1), 16, 1));
+	m_guiStamp->addComponent(new TextField("TEXTFIELD_STAMP_NAME", "Stamp Name", Vector2<Sint32>(0, 20), Vector2<Sint32>(17, 1), 16, 1), PANEL_ALIGN_TOP);
 
 	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_GROUND", "Use Ground", Vector2<Sint32>(0, 360), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
 	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_WORLD", "Use World", Vector2<Sint32>(0, 400), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
 	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_ENTITY", "Use Entity", Vector2<Sint32>(0, 440), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
 	m_guiStamp->addComponent(new CButtonToggle("BUTTON_USE_SKY", "Use Sky", Vector2<Sint32>(0, 480), Vector2<Sint32>(264, 32), 16, 1), PANEL_ALIGN_TOP)->setState(1);
 
-	m_guiStamp->addComponent(new CButton("BUTTON_DELETE", "", MTexture::getInstance().getUnit(LTexture::getInstance().loadImage("gui\\Trash.png")), {3, 646}, {24, 24}, 16, 1), PANEL_ALIGN_TOP_RIGHT);
+	m_guiStamp->addComponent(new CButton("BUTTON_DELETE", "", LTexture::getInstance().getImage("gui\\Trash.png"), {3, 646}, {24, 24}, 16, 1), PANEL_ALIGN_TOP_RIGHT);
 
 
 
@@ -367,7 +380,7 @@ bool Game::init()
 	m_zoneMap->addWorldObject(ZoneMap::WorldObject("None", 0, 0));
 	m_guiWorld->addComponent(m_listWorld, PANEL_ALIGN_TOP);
 
-	m_guiTop->addComponent(new CText("TEXT_POS", "1", {m_guiLeft->getSize().x, m_guiTop->getSize().y}, {100, 100}, 16, ALIGN_LEFT, Color(255, 255, 255, 255)))->setPriorityLayer(-1);
+	m_guiLeft->addComponent(new CText("TEXT_CURSOR_POS", "1", {m_guiLeft->getSize().x + 2, 2}, {100, 100}, 16, ALIGN_LEFT, Color(255, 255, 255, 255)))->setPriorityLayer(-1);
 
 	m_selectStart = {-1, -1};
 
@@ -428,11 +441,28 @@ void Game::setBoard(ZoneMap::Board *p_board)
 void Game::input()
 {
 	Vector2<Sint32> _mousePos = Globals::getInstance().m_mousePos;
-	Sint8 _rValue = 0; // input flags: 1 = mouse click, 2 = key press
+	Sint8 _rValue = 0; // input flags: 1 = mouse click, 2 = key press, 4 = mouse scroll
+	Vector2<GLfloat> _camPos = m_camPos * (TILE_SIZE + m_zoom);
+
 	m_guiAll->input(_rValue, Globals::getInstance().m_keyStates, Globals::getInstance().m_mouseStates, _mousePos);
 
-	if((_rValue & 2) != 2 && Globals::getInstance().m_keyStates[GLFW_KEY_G] == 1)
+	if((_rValue & 2) == 0 && Globals::getInstance().m_keyStates[GLFW_KEY_G] == 1)
 		m_showGrid = !m_showGrid;
+
+	if((_rValue & 1) == 0 && Globals::getInstance().m_mouseScroll != 0)
+	{
+		GLfloat _zoom = m_zoom;
+		m_zoom += (Globals::getInstance().m_mouseScroll);
+		if(m_zoom <= -TILE_SIZE + 6)
+			m_zoom = -TILE_SIZE + 6;
+		if(m_zoom > 0)
+			m_zoom = 0;
+
+		m_camPos.x += (m_mouseBuffer.x / (TILE_SIZE + _zoom) - m_mouseBuffer.x / (TILE_SIZE + m_zoom));
+		m_camPos.y += (m_mouseBuffer.y / (TILE_SIZE + _zoom) - m_mouseBuffer.y / (TILE_SIZE + m_zoom));
+
+		_camPos = m_camPos * (TILE_SIZE + m_zoom);
+	}
 
 	if(Globals::getInstance().m_mouseStates[0] == 1)
 	{
@@ -477,13 +507,13 @@ void Game::input()
 			switch(m_guiEntityBoard->findComponent("CONTAINER_FOG")->findComponent("DROPDOWN_FOG_TYPE")->getSelectedItem())
 			{
 			case 0:
-				m_boardData[0][Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 0;
+				m_boardData[0][Sint32((m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / (TILE_SIZE + m_zoom))][Sint32((m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / (TILE_SIZE + m_zoom))] = 0;
 				break;
 			case 1:
-				m_boardData[0][Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 1;
+				m_boardData[0][Sint32((m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / (TILE_SIZE + m_zoom))][Sint32((m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / (TILE_SIZE + m_zoom))] = 1;
 				break;
 			case 2:
-				m_boardData[0][Sint32(m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / TILE_SIZE][Sint32(m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / TILE_SIZE] = 2;
+				m_boardData[0][Sint32((m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x) / (TILE_SIZE + m_zoom))][Sint32((m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y) / (TILE_SIZE + m_zoom))] = 2;
 				break;
 			default:
 
@@ -493,10 +523,10 @@ void Game::input()
 		else if(m_brmbDown)
 		{
 			m_boardScroll = m_boardScroll + (m_mouseBuffer - _mousePos);
-			if(m_boardScroll.x < -TILE_SIZE * 4)
-				m_boardScroll.x = -TILE_SIZE * 4;
-			if(m_boardScroll.y < -TILE_SIZE * 4)
-				m_boardScroll.y = -TILE_SIZE * 4;
+			if(m_boardScroll.x < -Sint32(TILE_SIZE + m_zoom) * 4)
+				m_boardScroll.x = -Sint32(TILE_SIZE + m_zoom) * 4;
+			if(m_boardScroll.y < -Sint32(TILE_SIZE + m_zoom) * 4)
+				m_boardScroll.y = -Sint32(TILE_SIZE + m_zoom) * 4;
 		}
 	}
 	else if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)
@@ -504,21 +534,21 @@ void Game::input()
 		switch(m_selectLayer->getSelectedButton())
 		{
 		case 0:
-			m_zoneMap->setTile(0, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1), m_tileSetGround->getSelectedTile());
+			m_zoneMap->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetGround->getSelectedTile());
 			break;
 		case 1:
-			m_zoneMap->setTile(1, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1), m_listWorld->getSelectedItem());
+			m_zoneMap->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_listWorld->getSelectedItem());
 			break;
 		case 2:
-			m_zoneMap->setTile(2, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1), m_listEntity->getSelectedItem());
+			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_pos = Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))));
 			break;
 		case 3:
-			m_zoneMap->setTile(3, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1), m_tileSetSky->getSelectedTile());
+			m_zoneMap->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetSky->getSelectedTile());
 			break;
 		case 4:
 			if(m_listStamps->getSelectedItem() == 0)
 			{
-				m_selectEnd = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
+				m_selectEnd = {Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))};
 			}
 			else
 			{
@@ -529,13 +559,13 @@ void Game::input()
 					for(Sint32 y = Sint32(ceil(-GLfloat(_selected.m_size.y) / 2)); y < Sint32(ceil(GLfloat(_selected.m_size.y) / 2)); y++)
 					{
 						if(m_guiStamp->findComponent("BUTTON_USE_GROUND")->isSelected() != 0)
-							m_zoneMap->setTile(0, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_ground[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							m_zoneMap->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_ground[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
 						if(m_guiStamp->findComponent("BUTTON_USE_WORLD")->isSelected() != 0)
-							m_zoneMap->setTile(1, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_world[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							m_zoneMap->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_world[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
 						if(m_guiStamp->findComponent("BUTTON_USE_ENTITY")->isSelected() != 0)
-							m_zoneMap->setTile(2, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_entity[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							m_zoneMap->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_entity[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
 						if(m_guiStamp->findComponent("BUTTON_USE_SKY")->isSelected() != 0)
-							m_zoneMap->setTile(3, Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1) + x, Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1) + y, _selected.m_sky[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							m_zoneMap->setTile(3, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_sky[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
 					}
 				}
 			}
@@ -544,28 +574,29 @@ void Game::input()
 	}
 	else if(m_rmbDown && (_rValue & 1) == 0)
 	{
-		m_camPos = m_camPos + (m_mouseBuffer - _mousePos);
-		if(m_camPos.x < TILE_SIZE)
-			m_camPos.x = TILE_SIZE;
-		if(m_camPos.y < TILE_SIZE)
-			m_camPos.y = TILE_SIZE;
+		m_camPos = m_camPos + Vector2<GLfloat>(m_mouseBuffer - _mousePos) / (TILE_SIZE + m_zoom);
 
-		if(m_camPos.x > m_zoneMap->getSize().x * TILE_SIZE + TILE_SIZE)
-			m_camPos.x = GLfloat(m_zoneMap->getSize().x * TILE_SIZE + TILE_SIZE);
-
-		if(m_camPos.y > m_zoneMap->getSize().y * TILE_SIZE + TILE_SIZE)
-			m_camPos.y = GLfloat(m_zoneMap->getSize().y * TILE_SIZE + TILE_SIZE);
+		if(m_camPos.x < 0)
+			m_camPos.x = 0;
+		if(m_camPos.y < 0)
+			m_camPos.y = 0;
+		if(m_camPos.x > (m_zoneMap->getSize().x))
+			m_camPos.x = GLfloat((m_zoneMap->getSize().x));
+		if(m_camPos.y > (m_zoneMap->getSize().y))
+			m_camPos.y = GLfloat((m_zoneMap->getSize().y));
 	}
+
+	_camPos = m_camPos;
 
 	m_mouseBuffer = _mousePos;
 	m_mouseInArea = ((_rValue & 1) == 0
 		&& m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y))
-		&& (m_mouseBuffer.x + m_camPos.x >= TILE_SIZE) && (m_mouseBuffer.y + m_camPos.y >= TILE_SIZE)
-		&& (m_mouseBuffer.x + m_camPos.x < TILE_SIZE * (m_zoneMap->getSize().x + 1)) && (m_mouseBuffer.y + m_camPos.y < TILE_SIZE * (m_zoneMap->getSize().y + 1)));
+		&& ((m_mouseBuffer.x / (TILE_SIZE + m_zoom) + m_camPos.x) >= 0) && ((m_mouseBuffer.y / (TILE_SIZE + m_zoom) + m_camPos.y) >= 0)
+		&& ((m_mouseBuffer.x / (TILE_SIZE + m_zoom) + m_camPos.x) < m_zoneMap->getSize().x) && ((m_mouseBuffer.y / (TILE_SIZE + m_zoom) + m_camPos.y) < m_zoneMap->getSize().y));
 
 	m_mouseInBoardArea = (m_boardArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y))
 		&& (m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x >= 0) && (m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y >= 0)
-		&& (m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x < TILE_SIZE * (m_boardSize.x)) && (m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y < TILE_SIZE * (m_boardSize.y)));
+		&& (m_mouseBuffer.x + m_boardScroll.x - m_boardArea.x < (TILE_SIZE + m_zoom) * (m_boardSize.x)) && (m_mouseBuffer.y + m_boardScroll.y - m_boardArea.y < (TILE_SIZE + m_zoom) * (m_boardSize.y)));
 
 	m_zoneMap->setLayerVisible(0, m_guiLeftLayer->findComponent("BUTTON_GROUND_VISIBLE")->isSelected() != 0);
 	m_zoneMap->setLayerVisible(1, m_guiLeftLayer->findComponent("BUTTON_WORLD_VISIBLE")->isSelected() != 0);
@@ -702,7 +733,9 @@ void Game::update()
 		if(m_listEntity->isUpdated() != 0)
 		{
 			if((m_listEntity->isUpdated() & 2) == 2) // New item
+			{
 				m_zoneMap->addEntity(ZoneMap::Entity(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name));
+			}
 			if((m_listEntity->isUpdated() & 1) == 1) // Switch item
 			{
 				m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name);
@@ -711,6 +744,7 @@ void Game::update()
 				else
 					m_tileSetEntity->setTileSheet(Texture());
 				m_tileSetEntity->setSelectedTile(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId);
+				m_guiEntity->findComponent("DROPDOWN_TYPE")->setSelectedItem(m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityType);
 			}
 		}
 		else if(m_guiEntity->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listEntity->getSelectedItem() != 0 && m_listEntity->getSelectedItem() < m_listEntity->getListSize())
@@ -726,6 +760,7 @@ void Game::update()
 		{
 			if(m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle() != "")
 				m_listEntity->getListItem(m_listEntity->getSelectedItem()).m_name = m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle();
+			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityType = Uint8(m_guiEntity->findComponent("DROPDOWN_TYPE")->getSelectedItem());
 			m_zoneMap->getEntity(m_listEntity->getSelectedItem()).m_entityTexId = m_tileSetEntity->getSelectedTile();
 		}
 		break;
@@ -736,9 +771,7 @@ void Game::update()
 		if(m_listStamps->isUpdated() != 0)
 		{
 			if((m_listStamps->isUpdated() & 2) == 2) // New item
-			{
 				m_stamps.push_back(Stamp());
-			}
 			if((m_listStamps->isUpdated() & 1) == 1) // Switch item
 			{
 				m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getListItem(m_listStamps->getSelectedItem()).m_name);
@@ -791,9 +824,13 @@ void Game::update()
 	}
 
 	if(m_mouseInArea)
-		m_guiTop->findComponent("TEXT_POS")->setTitle("Select Pos\nX:" + Util::numToString(Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1)) + "\nY:" + Util::numToString(Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)));
+		m_guiLeft->findComponent("TEXT_CURSOR_POS")->setTitle("Select Pos\nX:" + 
+			Util::numToString(Sint32(floor(m_mouseBuffer.x / (TILE_SIZE + m_zoom) + m_camPos.x))) + "\nY:" + 
+			Util::numToString(Sint32(floor(m_mouseBuffer.y / (TILE_SIZE + m_zoom) + m_camPos.y))) + "\nCamPos\nX:" +
+			Util::numToString((m_camPos.x), 4) + "\nY:" +
+			Util::numToString((m_camPos.y), 4));
 	else
-		m_guiTop->findComponent("TEXT_POS")->setTitle("Select Pos\nX:NA\nY:NA");
+		m_guiLeft->findComponent("TEXT_CURSOR_POS")->setTitle("Select Pos\nX:NA\nY:NA");
 
 	m_zoneMap->setViewSize(m_tileMapArea);
 	m_zoneMap->setTileSize(TILE_SIZE);
@@ -819,7 +856,7 @@ void Game::render()
 
 	glPushMatrix();
 	{
-		m_zoneMap->render(m_camPos);
+		m_zoneMap->render(m_camPos, m_zoom);
 
 
 		Vector2<Sint32> _topLeft, _botRight;
@@ -882,13 +919,14 @@ void Game::render()
 		glColor4f(1, 1, 1, 0.2f);
 		if(m_mouseInArea && (m_listStamps->getSelectedItem() == 0 || m_selectLayer->getSelectedButton() != 4))
 		{
-			glTranslatef(-GLfloat(fmod((m_mouseBuffer.x + m_camPos.x), TILE_SIZE) - ((m_mouseBuffer.x + m_camPos.x) < 0 ? TILE_SIZE : 0) - m_mouseBuffer.x), -GLfloat(fmod((m_mouseBuffer.y + m_camPos.y), TILE_SIZE) - ((m_mouseBuffer.y + m_camPos.y) < 0 ? TILE_SIZE : 0) - m_mouseBuffer.y), 0);
+			glTranslatef(Sint32((floor((m_mouseBuffer.x) / (TILE_SIZE + m_zoom) + fmod(m_camPos.x, 1)) - fmod(m_camPos.x, 1)) * (TILE_SIZE + m_zoom)),
+						Sint32((floor((m_mouseBuffer.y) / (TILE_SIZE + m_zoom) + fmod(m_camPos.y, 1)) - fmod(m_camPos.y, 1)) * (TILE_SIZE + m_zoom)), 0);
 			glBegin(GL_QUADS);
 			{
 				glVertex2f(0, 0);
-				glVertex2f(GLfloat(TILE_SIZE), 0);
-				glVertex2f(GLfloat(TILE_SIZE), GLfloat(TILE_SIZE));
-				glVertex2f(0, GLfloat(TILE_SIZE));
+				glVertex2f(GLfloat(TILE_SIZE + m_zoom), 0);
+				glVertex2f(GLfloat(TILE_SIZE + m_zoom), GLfloat(TILE_SIZE + m_zoom));
+				glVertex2f(0, GLfloat(TILE_SIZE + m_zoom));
 			}
 			glEnd();
 		}
@@ -900,21 +938,7 @@ void Game::render()
 	if(getPause() == "CONTAINER_ENTITY_BOARD")
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);
-		bool _sci = (glIsEnabled(GL_SCISSOR_TEST) != 0);
-		int _scissorBox[4];
-		if(!_sci)
-		{
-			glEnable(GL_SCISSOR_TEST);
-			glScissor(GLint(m_boardArea.x + Globals::getInstance().m_screenSize.x / 2), GLint(-m_boardArea.h + Globals::getInstance().m_screenSize.y / 2), GLsizei(m_boardArea.w - m_boardArea.x), GLsizei(m_boardArea.h - m_boardArea.y));
-		}
-		else
-		{
-			glGetIntegerv(GL_SCISSOR_BOX, _scissorBox);
-			glScissor(GLint(max(m_boardArea.x + Globals::getInstance().m_screenSize.x / 2, _scissorBox[0])), 
-				GLint(max(-m_boardArea.h + Globals::getInstance().m_screenSize.y / 2, _scissorBox[1])), 
-				GLsizei(min(m_boardArea.w - m_boardArea.x, _scissorBox[2])), 
-				GLsizei(min(m_boardArea.h - m_boardArea.y, _scissorBox[3])));
-		}
+		MScissor::getInstance().push(Rect(m_boardArea.x + Globals::getInstance().m_screenSize.x / 2, -m_boardArea.h + Globals::getInstance().m_screenSize.y / 2, m_boardArea.w - m_boardArea.x, m_boardArea.h - m_boardArea.y));
 		glPushMatrix();
 		{
 			glTranslatef(m_boardArea.x, m_boardArea.y, 0);
@@ -995,9 +1019,6 @@ void Game::render()
 			}
 		}
 		glPopMatrix();
-		if(!_sci)
-			glDisable(GL_SCISSOR_TEST);
-		else
-			glScissor(_scissorBox[0], _scissorBox[1], _scissorBox[2], _scissorBox[3]);
+		MScissor::getInstance().pop();
 	}
 }

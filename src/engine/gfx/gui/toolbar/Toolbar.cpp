@@ -13,7 +13,7 @@ CToolbar::CToolbar(std::string p_compName, Vector2<Sint32> p_pos, Vector2<Sint32
 	m_slideCounter = 0;
 }
 
-//Directory splits with /'s or \\'s 
+//Directory splits with '/' or '\\' 
 void CToolbar::addButton(std::string p_dir, std::string p_buttonName, function p_func)
 {
 	Uint16 i = 0, j = 0;
@@ -42,7 +42,7 @@ void CToolbar::addButton(std::string p_dir, std::string p_buttonName, function p
 void CToolbar::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 {
 	Uint16 i = 0, j = 0;
-	if(p_mouseStates[0] == 1)
+	if((p_interactFlags & 1) == 0 && p_mouseStates[0] == 1)
 	{
 		m_slideCounter = 0;
 		SubList* _subList = &m_buttonsMain;
@@ -63,15 +63,15 @@ void CToolbar::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 		}
 
 		for(Uint16 k = 0; k < _splitDir.size(); k++)
-		{
 			_subList = _subList->find(_splitDir[k]);
-		}
+
 		if(_splitDir.size() == 1 && m_currDir == m_selected)
 			m_currDir = "";
 		else if(_subList->getFunction() != 0)
 		{
 			m_currDir = "";
 			_subList->callFunction();
+			p_interactFlags += 1;
 		}
 		else
 			m_currDir = m_selected;
@@ -132,6 +132,10 @@ void CToolbar::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 			w += Sint16(m_buttonsMain.m_buttons[i].m_name.length() * 16 + 32);
 		}
 	}
+	if((p_interactFlags & 1) == 0 &&
+		p_mousePos.x > m_pos.x && p_mousePos.x < m_pos.x + m_size.x &&
+		p_mousePos.y > m_pos.y && p_mousePos.y < m_pos.y + m_size.y)
+		p_interactFlags += 1;
 }
 void CToolbar::update(GLfloat p_deltaUpdate)
 {

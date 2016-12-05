@@ -1,0 +1,18 @@
+Entity Interact Script Syntax
+If you have any suggestions, please email them to NickMead0313@outlook.com
+
+Keyword					---	Function
+---------General-----------
+#						---	Comment
+sayDelay <num> <msg>	---	Say <msg> and wait for <num> seconds to continue
+sayPress <msg>			--- Say <msg> and wait for key press
+saySpeed <num>			---	Set Textbox speed at <num> chars per second.  0 = instant
+
+---------Neutral-----------
+
+
+---------Opponent----------
+startBattle				---	Starts battle
+
+----------Trader-----------
+openInventory			--- Opens trading screen
