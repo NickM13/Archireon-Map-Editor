@@ -9,8 +9,8 @@ CCounter::CCounter(std::string p_compName, std::string p_title, Vector2<Sint32> 
 	m_colorTheme = m_colorThemes[p_colorTheme];
 	m_numValue = p_currValue;
 
-	m_buttonAdd = new CButton("", "+", Vector2<Sint32>(p_pos.x + m_title.length() * 16 + 20, p_pos.y), Vector2<Sint32>(16, 16), 16, 1);
-	m_buttonSubtract = new CButton("", "-", Vector2<Sint32>(p_pos.x + m_title.length() * 16, p_pos.y), Vector2<Sint32>(16, 16), 16, 1);
+	m_buttonAdd = new CButton("", "+", Vector2<Sint32>(p_pos.x + m_title.length() * 16 + 20, p_pos.y), Vector2<Sint32>(16, 16), 1);
+	m_buttonSubtract = new CButton("", "-", Vector2<Sint32>(p_pos.x + m_title.length() * 16, p_pos.y), Vector2<Sint32>(16, 16), 1);
 }
 CCounter::~CCounter()
 {
@@ -58,7 +58,6 @@ void CCounter::update(GLfloat p_deltaUpdate)
 void CCounter::render()
 {
 	glColor3f(1, 1, 1);
-	Font::getInstance().setFontSize(16);
 	Font::getInstance().setAlignment(ALIGN_LEFT);
 	Font::getInstance().print(m_title, m_pos.x, m_pos.y);
 	Font::getInstance().print(Util::numToString(m_numValue, 0), m_pos.x + m_title.length() * 16 + 48, m_pos.y);

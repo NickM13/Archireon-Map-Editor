@@ -105,6 +105,7 @@ void CList::render()
 {
 	glPushMatrix();
 	{
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 
 		glPushMatrix();
@@ -131,9 +132,8 @@ void CList::render()
 			glEnd();
 
 			m_colorTheme.m_text.useColor();
-			Font::getInstance().setFontSize(16);
 			Font::getInstance().setAlignment(ALIGN_CENTER);
-			Font::getInstance().print(m_title, m_size.x / 2, -20);
+			Font::getInstance().print(m_title, m_size.x / 2, -12);
 
 			MScissor::getInstance().pop();
 			MScissor::getInstance().push(Rect(0, 0, GLfloat(m_size.x), GLfloat(m_size.y * m_itemHeight)));
@@ -147,9 +147,7 @@ void CList::render()
 				for(Uint16 y = 0; y < Uint16(m_size.y) + 1; y++)
 				{
 					if(m_scroll / m_itemHeight + y == m_selectedItem)
-					{
 						m_colorTheme.m_active.useColor(1.2f);
-					}
 					else
 					{
 						if((y + (m_scroll / m_itemHeight)) % 2 == 0) m_colorTheme.m_active.useColor(1.1f);
@@ -190,19 +188,18 @@ void CList::render()
 
 			m_colorTheme.m_text.useColor();
 			Font::getInstance().setAlignment(ALIGN_LEFT);
-			Font::getInstance().setFontSize(16);
 			for(Uint16 i = 0; i < Uint16(m_size.y) + 1; i++)
 			{
 				if(i + round(m_scroll / m_itemHeight) <= m_itemList.size())
 				{
 					if(i + round(m_scroll / m_itemHeight) == m_itemList.size())
-						Font::getInstance().print("Add Item", 32, Sint32((i + 0.25f) * m_itemHeight));
+						Font::getInstance().print("Add Item", 34, Sint32((i + 0.5f) * m_itemHeight));
 					else
 					{
 						if(Sint32(m_itemList[i + m_scroll / m_itemHeight].m_name.length()) > m_size.x / 16 - 2)
-							Font::getInstance().print(m_itemList[i + m_scroll / m_itemHeight].m_name.substr(0, m_size.x / 16 - 5) + "...", 32, Sint32((i + 0.25f) * m_itemHeight));
+							Font::getInstance().print(m_itemList[i + m_scroll / m_itemHeight].m_name.substr(0, m_size.x / 16 - 5) + "...", 34, Sint32((i + 0.5f) * m_itemHeight));
 						else
-							Font::getInstance().print(m_itemList[i + m_scroll / m_itemHeight].m_name, 32, Sint32((i + 0.25f) * m_itemHeight));
+							Font::getInstance().print(m_itemList[i + m_scroll / m_itemHeight].m_name, 34, Sint32((i + 0.5f) * m_itemHeight));
 					}
 				}
 			}
@@ -236,7 +233,7 @@ void CList::render()
 	glPopMatrix();
 }
 
-Uint16 CList::getSelectedItem()
+Sint16 CList::getSelectedItem()
 {
 	return m_selectedItem;
 }

@@ -53,7 +53,7 @@ public:
 	virtual void addItem(std::string p_item);
 	virtual void setSelectedItem(Uint16 p_selectedItem);
 	virtual Uint8 isUpdated();
-	virtual Uint16 getSelectedItem();
+	virtual Sint16 getSelectedItem();
 	std::string getName();
 	virtual std::string getTitle();
 
@@ -68,7 +68,7 @@ public:
 	virtual void setVisible(bool p_visible);
 	bool isVisible();
 
-	void setState(Sint8 p_selected);
+	virtual void setState(Sint8 p_selected);
 
 	virtual void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos);
 	virtual void update(GLfloat p_deltaUpdate);

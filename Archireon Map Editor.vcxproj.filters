@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\engine\game\world\map\ZoneMap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\game\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -96,11 +93,26 @@
     <ClCompile Include="src\engine\utils\variable\manager\Manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\game\map\board\BoardMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\map\zone\ZoneMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\map\Map.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\editor\Editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\editor\board\BoardEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\editor\zone\ZoneEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\engine\game\world\map\ZoneMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\engine\game\Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -207,6 +219,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\engine\utils\variable\manager\ScissorManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\map\zone\ZoneMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\map\Map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\editor\Editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\map\board\BoardMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\editor\board\BoardEditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\editor\zone\ZoneEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

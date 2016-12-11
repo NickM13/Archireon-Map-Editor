@@ -13,7 +13,7 @@ CToolbar::CToolbar(std::string p_compName, Vector2<Sint32> p_pos, Vector2<Sint32
 	m_slideCounter = 0;
 }
 
-//Directory splits with '/' or '\\' 
+//Directory splits with '/' or '\' 
 void CToolbar::addButton(std::string p_dir, std::string p_buttonName, function p_func)
 {
 	Uint16 i = 0, j = 0;
@@ -97,8 +97,11 @@ void CToolbar::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 		}
 
 		Sint16 w = 0;
+		Sint32 _buttonWidth;
+		Sint32 _subWidth;
 		for(i = 0; i < m_buttonsMain.m_buttons.size(); i++)
 		{
+			_buttonWidth = Font::getInstance().getMessageWidth(m_buttonsMain.m_buttons[i].m_name);
 			if(m_currDir != "" && _splitDir[0] == m_buttonsMain.m_buttons[i].m_name)
 			{
 				std::vector<std::string> _path;
@@ -107,10 +110,13 @@ void CToolbar::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 				{
 					_path.push_back(_splitDir[j]);
 					_subList = _subList->find(_splitDir[j]);
+					_subWidth = _buttonWidth;
+					for(Uint16 k = 0; k < _subList->m_buttons.size(); k++)
+						_subWidth = max(_subWidth, Font::getInstance().getMessageWidth(_subList->m_buttons[k].m_name));
 					for(Uint16 g = 0; g < _subList->m_buttons.size(); g++)
 					{
-						if(p_mousePos.x - w >= 0 && p_mousePos.x - w < _subList->m_width * 16 + 48 &&
-							p_mousePos.y - m_size.y >= g * 16 && p_mousePos.y - m_size.y < g * 16 + 16)
+						if(p_mousePos.x - w >= 0 && p_mousePos.x - w < _subWidth + 32 &&
+							p_mousePos.y - m_size.y >= g * Font::getInstance().getSpacingHeight() && p_mousePos.y - m_size.y < (g + 1) * Font::getInstance().getSpacingHeight())
 						{
 							m_selected = "";
 							for(Uint16 h = 0; h < _path.size(); h++)
@@ -122,14 +128,14 @@ void CToolbar::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 					}
 				}
 			}
-			if(p_mousePos.x - w >= 0 && p_mousePos.x - w < Sint32(m_buttonsMain.m_buttons[i].m_name.length() * 16 + 32) &&
+			if(p_mousePos.x - w >= 0 && p_mousePos.x - w < Sint32(_buttonWidth + 32) &&
 				p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
 			{
 				m_selected = m_buttonsMain.m_buttons[i].m_name;
 				p_interactFlags += 1;
 				break;
 			}
-			w += Sint16(m_buttonsMain.m_buttons[i].m_name.length() * 16 + 32);
+			w += Sint16(_buttonWidth + 32);
 		}
 	}
 	if((p_interactFlags & 1) == 0 &&
@@ -186,37 +192,46 @@ void CToolbar::render()
 	m_colorTheme.m_text.useColor();
 	glPushMatrix();
 	{
-		Font::getInstance().setFontSize(16);
+		std::string _buttonName;
+		Sint32 _buttonWidth;
 		Font::getInstance().setAlignment(ALIGN_LEFT);
 		for(Uint16 i = 0; i < m_buttonsMain.m_buttons.size(); i++)
 		{
+			_buttonName = m_buttonsMain.m_buttons[i].m_name;
+			_buttonWidth = Font::getInstance().getMessageWidth(_buttonName);
 			if(_splitDir[0] == m_buttonsMain.m_buttons[i].m_name || m_selected == m_buttonsMain.m_buttons[i].m_name)
 			{
 				glColor4f(0, 0, 0, 0.25f);
 				glBegin(GL_QUADS);
 				{
 					glVertex2f(0, 0);
-					glVertex2f(GLfloat(m_buttonsMain.m_buttons[i].m_name.length() * 16 + 32), 0);
-					glVertex2f(GLfloat(m_buttonsMain.m_buttons[i].m_name.length() * 16 + 32), GLfloat(m_size.y));
+					glVertex2f(GLfloat(_buttonWidth + 32), 0);
+					glVertex2f(GLfloat(_buttonWidth + 32), GLfloat(m_size.y));
 					glVertex2f(0, GLfloat(m_size.y));
 				}
 				glEnd();
 			}
 			m_colorTheme.m_text.useColor();
-			Font::getInstance().print(m_buttonsMain.m_buttons[i].m_name, 16, (m_size.y - 16) / 2);
+			Font::getInstance().print(m_buttonsMain.m_buttons[i].m_name, 8, (m_size.y) / 2);
 
 			if(_splitDir[0] == m_buttonsMain.m_buttons[i].m_name)
 			{
 				SubList* _subList = &m_buttonsMain;
+				std::string _subName;
+				Sint32 _subWidth;
 				for(Uint16 j = 0; j < _splitDir.size(); j++)
 				{
 					_subList = _subList->find(_splitDir[j]);
+					_subName = _subList->m_name;
+					_subWidth = _buttonWidth;
+					for(Uint16 k = 0; k < _subList->m_buttons.size(); k++)
+						_subWidth = max(_subWidth, Font::getInstance().getMessageWidth(_subList->m_buttons[k].m_name));
 					if(_subList->m_buttons.size() > 0)
 					{
 						glPushMatrix();
 						{
 							glTranslatef(GLfloat(j * 92), GLfloat(m_size.y), 0);
-							m_panelSub->setSize(Vector2<Sint32>(_subList->m_width * 16 + 48, _subList->m_buttons.size() * 16));
+							m_panelSub->setSize(Vector2<Sint32>(_subWidth + 32, (_subList->m_buttons.size()) * Font::getInstance().getSpacingHeight()));
 							if(j == _splitDir.size() - 1)
 								glScalef(1, m_slideCounter, 1);
 							m_panelSub->renderFill();
@@ -226,25 +241,26 @@ void CToolbar::render()
 							{
 								if((Uint16(_splitDir.size()) > j + 1 && _splitDir[j + 1] == _subList->m_buttons[k].m_name) || (Uint16(_splitSelect.size()) > j + 1 && _splitSelect[j + 1] == _subList->m_buttons[k].m_name))
 								{
-									glColor4f(0, 0, 0, 0.25f);
+									glBindTexture(GL_TEXTURE_2D, 0);
+									glColor4f(0, 0, 0, 0.2f);
 									glBegin(GL_QUADS);
 									{
-										glVertex2f(0, GLfloat(k * 16));
-										glVertex2f(GLfloat(_subList->m_width * 16 + 48), GLfloat(k * 16));
-										glVertex2f(GLfloat(_subList->m_width * 16 + 48), GLfloat(k * 16 + 16));
-										glVertex2f(0, GLfloat(k * 16 + 16));
+										glVertex2f(0, GLfloat(k * Font::getInstance().getSpacingHeight()));
+										glVertex2f(GLfloat(_subWidth + 32), GLfloat(k * Font::getInstance().getSpacingHeight()));
+										glVertex2f(GLfloat(_subWidth + 32), GLfloat((k + 1) * Font::getInstance().getSpacingHeight()));
+										glVertex2f(0, GLfloat((k + 1) * Font::getInstance().getSpacingHeight()));
 									}
 									glEnd();
 									m_colorTheme.m_text.useColor();
 								}
-								Font::getInstance().print(_subList->m_buttons[k].m_name, 0, k * 16);
+								Font::getInstance().print(_subList->m_buttons[k].m_name, 8, (k + 0.5f) * Font::getInstance().getSpacingHeight() - 1);
 							}
 						}
 						glPopMatrix();
 					}
 				}
 			}
-			glTranslatef(GLfloat(m_buttonsMain.m_buttons[i].m_name.length() * 16) + 32, 0, 0);
+			glTranslatef(GLfloat(_buttonWidth + 32), 0, 0);
 		}
 	}
 	glPopMatrix();

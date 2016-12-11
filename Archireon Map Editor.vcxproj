@@ -70,18 +70,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <IntDir>log\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)lib\devil\include;$(ProjectDir)lib\glfw\include;$(ProjectDir)lib\glew\include;$(ProjectDir)\include;$(IncludePath)</IncludePath>
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)log\$(Configuration)\</IntDir>
+    <IncludePath>$(ProjectDir)lib\devil\include;$(ProjectDir)lib\glfw\include;$(ProjectDir)lib\freetype\include;$(ProjectDir)lib\glew\include;$(ProjectDir)\include;$(IncludePath)</IncludePath>
     <ReferencePath>$(ProjectDir)res;$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(ProjectDir)lib\devil\lib;$(ProjectDir)lib\glew\lib;$(ProjectDir)lib\glfw\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)lib\devil\lib;$(ProjectDir)lib\glew\lib;$(ProjectDir)lib\glfw\lib;$(ProjectDir)lib\freetype\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-    <IntDir>log\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)lib\devil\include;$(ProjectDir)lib\glfw\include;$(ProjectDir)lib\glew\include;$(ProjectDir)\include;$(IncludePath)</IncludePath>
+    <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)log\$(Configuration)\</IntDir>
+    <IncludePath>$(ProjectDir)lib\devil\include;$(ProjectDir)lib\glfw\include;$(ProjectDir)lib\freetype\include;$(ProjectDir)lib\glew\include;$(ProjectDir)\include;$(IncludePath)</IncludePath>
     <ReferencePath>$(ProjectDir)res;$(ReferencePath)</ReferencePath>
-    <LibraryPath>$(ProjectDir)lib\devil\lib;$(ProjectDir)lib\glew\lib;$(ProjectDir)lib\glfw\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)lib\devil\lib;$(ProjectDir)lib\glew\lib;$(ProjectDir)lib\glfw\lib;$(ProjectDir)lib\freetype\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;glew32.lib;glfw3.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;glew32.lib;glfw3.lib;DevIL.lib;ILU.lib;ILUT.lib;freetyped.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -111,7 +111,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;glew32.lib;glfw3.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;glew32.lib;glfw3.lib;DevIL.lib;ILU.lib;ILUT.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,8 +129,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\engine\game\editor\board\BoardEditor.cpp" />
+    <ClCompile Include="src\engine\game\editor\Editor.cpp" />
+    <ClCompile Include="src\engine\game\editor\zone\ZoneEditor.cpp" />
     <ClCompile Include="src\engine\game\Game.cpp" />
-    <ClCompile Include="src\engine\game\world\map\ZoneMap.cpp" />
+    <ClCompile Include="src\engine\game\map\board\BoardMap.cpp" />
+    <ClCompile Include="src\engine\game\map\Map.cpp" />
+    <ClCompile Include="src\engine\game\map\zone\ZoneMap.cpp" />
     <ClCompile Include="src\engine\gfx\font\Font.cpp" />
     <ClCompile Include="src\engine\gfx\gui\base\Component.cpp" />
     <ClCompile Include="src\engine\gfx\gui\button\Button.cpp" />
@@ -158,8 +163,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Application.h" />
+    <ClInclude Include="include\engine\game\editor\board\BoardEditor.h" />
+    <ClInclude Include="include\engine\game\editor\Editor.h" />
+    <ClInclude Include="include\engine\game\editor\zone\ZoneEditor.h" />
     <ClInclude Include="include\engine\game\Game.h" />
-    <ClInclude Include="include\engine\game\world\map\ZoneMap.h" />
+    <ClInclude Include="include\engine\game\map\board\BoardMap.h" />
+    <ClInclude Include="include\engine\game\map\Map.h" />
+    <ClInclude Include="include\engine\game\map\zone\ZoneMap.h" />
     <ClInclude Include="include\engine\gfx\font\Font.h" />
     <ClInclude Include="include\engine\gfx\gui\base\Component.h" />
     <ClInclude Include="include\engine\gfx\gui\button\Button.h" />

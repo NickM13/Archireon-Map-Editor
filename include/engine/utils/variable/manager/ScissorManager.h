@@ -11,6 +11,7 @@ public:
 	MScissor() {};
 	MScissor(const MScissor&) {};
 	MScissor operator=(const MScissor&) {};
-	Uint32 push(Rect& p_area);
+	void toggle();
+	Uint32 push(Rect& p_area, bool p_override = false);
 	Rect& pop();
 };

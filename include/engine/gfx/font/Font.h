@@ -4,6 +4,12 @@
 #include "engine\utils\Utilities.h"
 #include "engine\utils\Singleton.h"
 
+#include <ft2build.h>
+#include <freetype/freetype.h>
+#include <freetype/ftglyph.h>
+#include <freetype/ftoutln.h>
+#include <freetype/fttrigon.h>
+
 enum Alignment
 {
 	ALIGN_LEFT = 0,
@@ -11,23 +17,26 @@ enum Alignment
 	ALIGN_RIGHT = 2
 };
 
-class Font : public Singleton < Font >
+class Font : public Singleton <Font>
 {
 public:
 	void setAlignment(Alignment p_alignment);
 
-	void setFont(std::string p_src);
-	void setFontId(GLuint p_id);
+	void init(std::string p_src, Uint32 h);
+	void clean();
 
-	void setFontSize(Sint32 p_fontSize);
-
-	GLuint getFontId();
+	Sint16 getHeight() {return m_height;};
+	Sint32 getMessageWidth(std::string p_msg);
+	GLfloat getSpacingHeight() {return m_height * 1.8f;};	/*Value with height multiplied*/
+	GLfloat getSpacing() {return 1.8f;};					/*Value without height multiplied*/
 
 	void print(std::string p_msg, Sint32 p_x, Sint32 p_y);
-
 private:
-	GLuint m_fontSheet;
+	Sint16 m_height;
+	GLuint* m_textures;
+	GLuint* m_charWidth;
+	GLuint m_listBase;
 
 	Alignment m_alignment;
-	Sint32 m_fontSize;
+	GLfloat m_spacing;
 };

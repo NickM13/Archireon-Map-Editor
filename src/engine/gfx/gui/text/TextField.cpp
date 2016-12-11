@@ -1,17 +1,14 @@
 #include "engine\gfx\gui\text\TextField.h"
 
 
-TextField::TextField(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_fontSize, Sint8 p_colorTheme, bool p_limitField)
+TextField::TextField(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, bool p_limitField)
 {
 	m_compName = p_compName;
 	m_blankField = p_title;
 	m_title = "";
 	m_pos = p_pos;
-	m_size = p_size * Sint32(p_fontSize);
-	m_fontSize = p_fontSize;
+	m_size = Vector2<Sint32>(p_size.x, p_size.y * Font::getInstance().getSpacingHeight());
 	m_colorTheme = m_colorThemes[p_colorTheme];
-
-	m_maxChars = p_size.x * p_size.y;
 
 	m_scrolling = false;
 	m_scroll = {};
@@ -22,6 +19,8 @@ TextField::TextField(std::string p_compName, std::string p_title, Vector2<Sint32
 	splitTitle();
 
 	m_limited = p_limitField;
+	if(m_limited)
+		m_limitSize = p_size;
 }
 
 void TextField::setScroll(Vector2<Sint32> p_scroll)
@@ -83,19 +82,6 @@ void TextField::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouse
 		else
 			m_selected = 0;
 	}
-	if(p_mouseStates[0] != 0)
-	{
-		if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x
-			&& p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
-		{
-			m_cursorPos = p_mousePos / m_fontSize;
-			if(m_cursorPos.y > Sint32(m_text.size()) - 1)
-				m_cursorPos.y = Sint32(m_text.size()) - 1;
-			if(m_cursorPos.x > Sint32(m_text[m_cursorPos.y].length()))
-				m_cursorPos.x = Sint32(m_text[m_cursorPos.y].length());
-		}
-	}
-
 	if(((p_interactFlags & 2) == 0) && m_selected)
 	{
 		p_interactFlags += 2;
@@ -136,12 +122,10 @@ void TextField::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouse
 							m_text.erase(m_text.begin() + m_cursorPos.y + 1);
 						}
 						else
-						{
 							m_text[m_cursorPos.y].erase(m_text[m_cursorPos.y].begin() + m_cursorPos.x);
-						}
 					}
 				}
-				else if((m_cursorPos.x < (m_size.x / m_fontSize) && m_cursorPos.y < (m_size.y / m_fontSize)) || m_scrolling)
+				else if((m_cursorPos.x < m_size.x && m_cursorPos.y < m_size.y) || m_scrolling)
 				{
 					if(_keyEvents[i].m_keyCode >= 65 && _keyEvents[i].m_keyCode <= 90)
 					{
@@ -236,13 +220,15 @@ void TextField::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouse
 					}
 					else if(_keyEvents[i].m_keyCode == GLFW_KEY_ENTER)
 					{
-						if(m_cursorPos.y < (m_size.y / m_fontSize) - 1)
+						if(m_cursorPos.y < m_limitSize.y - 1)
 						{
 							m_text.insert(m_text.begin() + m_cursorPos.y + 1, m_text[m_cursorPos.y].substr(m_cursorPos.x, m_text[m_cursorPos.y].length() - m_cursorPos.x));
 							m_text[m_cursorPos.y].erase(m_cursorPos.x, m_text[m_cursorPos.y].length() - m_cursorPos.x);
 							m_cursorPos.x = 0;
 							m_cursorPos.y += 1;
 						}
+						else
+							p_interactFlags -= 2;
 					}
 					else// if(m_scrolling)
 					{
@@ -291,7 +277,7 @@ void TextField::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouse
 							}
 						}
 					}
-					if(m_cursorPos.x == (m_size.x / m_fontSize) - 1 && m_cursorPos.y < (m_size.y / m_fontSize) - 1)
+					if(m_cursorPos.x == m_size.x - 1 && m_cursorPos.y < m_size.y - 1)
 					{
 						m_text.insert(m_text.begin() + m_cursorPos.y + 1, m_text[m_cursorPos.y].substr(m_cursorPos.x, m_text[m_cursorPos.y].length() - m_cursorPos.x));
 						m_text[m_cursorPos.y].erase(m_cursorPos.x, m_text[m_cursorPos.y].length() - m_cursorPos.x);
@@ -318,6 +304,7 @@ void TextField::render()
 {
 	glPushMatrix();
 	{
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 		glBegin(GL_QUADS);
 		{
@@ -337,27 +324,23 @@ void TextField::render()
 		glEnd();
 		m_colorTheme.m_text.useColor();
 		Font::getInstance().setAlignment(ALIGN_LEFT);
-		Font::getInstance().setFontSize(m_fontSize);
-		if(true || m_title.length() > 0)
+		if(m_title != "" || m_text[0] != "" || m_text.size() > 1)
 		{
 			for(Uint16 i = 0; i < m_text.size(); i++)
-				Font::getInstance().print(m_text[i], 0, i * m_fontSize);
+				Font::getInstance().print(m_text[i], 2, (i + 0.5f) * Font::getInstance().getSpacingHeight());
 			if(m_selected != 0 && (fmod(glfwGetTime(), 0.5) < 0.25))
-				Font::getInstance().print("|", m_cursorPos.x * m_fontSize - m_fontSize / 2 + 2, m_cursorPos.y * m_fontSize);
+				Font::getInstance().print("|", Font::getInstance().getMessageWidth(m_text[m_cursorPos.y].substr(0, m_cursorPos.x)) + 1, (m_cursorPos.y + 0.5f) * Font::getInstance().getSpacingHeight());
 		}
 		else
 		{
 			if(m_selected != 0)
 			{
 				m_colorTheme.m_text.useColor();
-				Font::getInstance().print(((fmod(glfwGetTime(), 0.5) < 0.25) ? "|" : ""), 0, 0);
+				Font::getInstance().print(((fmod(glfwGetTime(), 0.5) < 0.25) ? "|" : ""), 2, 0.5f * Font::getInstance().getSpacingHeight());
 			}
-			else
-			{
-				m_colorTheme.m_text.useColor(0.5f);
-				for(Uint16 i = 0; i < fmin((m_size.y / m_fontSize), ceil(GLfloat(m_blankField.length()) / (m_size.x / m_fontSize))); i++)
-					Font::getInstance().print(m_blankField.substr(i * (m_size.x / m_fontSize), (m_size.x / m_fontSize)) + ((m_selected && m_blankField.size() < m_maxChars && (i == (m_size.y / m_fontSize) - 1) && fmod(glfwGetTime(), 0.5) < 0.25) ? "|" : ""), 0, m_fontSize * i);
-			}
+			m_colorTheme.m_text.useColor(1, 1, 1, 0.5f);
+			for(Uint16 i = 0; i < fmin((m_size.y), ceil(GLfloat(m_blankField.length()) / (m_size.x))); i++)
+				Font::getInstance().print(m_blankField.substr(i * (m_size.x), (m_size.x)) + ((m_selected && (i == (m_size.y) - 1) && fmod(glfwGetTime(), 0.5) < 0.25) ? "|" : ""), 2, (i + 0.5f) * Font::getInstance().getSpacingHeight());
 		}
 	}
 	glPopMatrix();

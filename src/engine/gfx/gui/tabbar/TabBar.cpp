@@ -1,154 +1,174 @@
 #include "engine\gfx\gui\tabbar\TabBar.h"
+#include "engine\utils\Utilities.h"
 
-void TabBar::setPosition(Vector2<Sint32> p_pos)
+CTabBar::CTabBar(std::string p_compName, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme)
 {
+	m_compName = p_compName;
 	m_pos = p_pos;
+	m_size = p_size;
+	m_colorTheme = m_colorThemes[p_colorTheme];
+	m_scroll = 0;
+	m_selected = 0;
+	m_updated = 0;
+
+	m_buttonLShift = new CButton("", "<", {0, 0}, {20, m_size.y}, 1);
+	m_buttonRShift = new CButton("", ">", {m_size.x - 20, 0}, {20, m_size.y}, 1);
+
+	m_maxScroll = 0;
 }
 
-void TabBar::setWidth(Sint32 p_width)
-{
-	m_width = p_width;
-}
-
-void TabBar::setSelected(Uint16 p_selected)
+void CTabBar::setSelected(Uint16 p_selected)
 {
 	m_selected = p_selected;
+	calcMaxScroll();
 }
 
-void TabBar::setTabCount(Uint16 p_num)
+std::string CTabBar::getTab(Sint16 p_index)
 {
-	m_numOfTabs = p_num;
-	if(m_selected > m_numOfTabs)
-		m_selected = m_numOfTabs;
-	m_scroll = 0;
+	if(p_index < m_tabList.size())
+		return m_tabList[p_index];
+	return "";
 }
 
-Uint16 TabBar::getTabCount()
+Uint16 CTabBar::getTabCount()
 {
-	return m_numOfTabs;
+	return m_tabList.size();
+}
+void CTabBar::removeTab(Sint16 p_index)
+{
+	m_tabList.erase(m_tabList.begin() + p_index);
+	if(m_selected >= m_tabList.size())
+		m_selected--;
+	calcMaxScroll();
+}
+void CTabBar::clear()
+{
+	m_tabList.clear();
+	calcMaxScroll();
 }
 
-Uint16 TabBar::getSelected()
+Sint16 CTabBar::getSelectedItem()
 {
 	return m_selected;
 }
 
-void TabBar::checkPoint(Vector2<Sint32> p_mousePos)
+void CTabBar::addItem(std::string p_title)
+{
+	m_tabList.push_back(p_title);
+	calcMaxScroll();
+}
+
+void CTabBar::calcMaxScroll()
+{
+	m_maxScroll = -m_size.x + 24 * 2 + 20 + (m_tabList.size()) * 12;
+	for(Uint16 i = 0; i < m_tabList.size(); i++)
+		m_maxScroll += Font::getInstance().getMessageWidth(m_tabList[i]);
+	m_maxScroll = max(0, m_maxScroll);
+}
+
+void CTabBar::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 {
 	p_mousePos = p_mousePos - m_pos;
-	if(p_mousePos.x >= 0 && p_mousePos.y >= 0 && p_mousePos.x <= m_width && p_mousePos.y <= 32)
+
+	m_updated = 0;
+	m_hovered = -1;
+	if(m_selected == m_tabList.size() + 1)
+		m_selected = 0;
+
+	m_buttonLShift->input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos);
+	if(m_buttonLShift->isSelected() != 0 && p_mouseStates[0] != 0)
+		m_scroll -= 4;
+	if(m_scroll <= 0)
+		m_scroll = 0;
+
+	m_buttonRShift->input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos);
+	if(m_buttonRShift->isSelected() != 0 && p_mouseStates[0] != 0 && m_scroll < m_maxScroll)
+		m_scroll += 4;
+	if(m_scroll >= m_maxScroll)
+		m_scroll = m_maxScroll;
+
+	if(p_mousePos.x >= 0 && p_mousePos.y >= 0 && p_mousePos.x <= m_size.x && p_mousePos.y <= m_size.y)
 	{
-		if(p_mousePos.x >= 0 && p_mousePos.x < 32)
+		CButton* _button = new CButton("", "", {}, {}, 1);
+
+		Sint32 _offset = 24 - m_scroll;
+		for(Sint32 i = 0; i < Sint32(m_tabList.size()); i++)
 		{
-			if(m_scroll > 0)
-				m_scroll--;
-		}
-		else if(p_mousePos.x >= m_width - 32 && p_mousePos.x <= m_width)
-		{
-			if(m_scroll < (m_numOfTabs + 1) * 32 - m_width + 64)
-				m_scroll++;
-		}
-		else
-		{
-			p_mousePos.x -= (32 - m_scroll);
-			for(Uint16 i = 0; i < (m_numOfTabs + 1); i++)
+			_button->setTitle(m_tabList[i]);
+			_button->setPosition(Vector2<Sint32>(_offset, 0));
+			_button->setSize(Vector2<Sint32>(Font::getInstance().getMessageWidth(m_tabList[i]) + 8, m_size.y));
+			_button->input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos);
+			if(m_selected != i && _button->isSelected() != 0 && p_mouseStates[0] == 1)
 			{
-				if(p_mousePos.x >= i * 32 && p_mousePos.x <= i * 32 + 32)
-				{
-					m_selected = i;
-					return;
-				}
+				m_selected = i;
+				if((m_updated & 1) == 0)
+					m_updated += 1;
 			}
+			if(_button->isHovered())
+				m_hovered = i;
+
+			_offset += _button->getSize().x + 4;
 		}
+		_button->setPosition(Vector2<Sint32>(_offset, 0));
+		_button->setSize(Vector2<Sint32>(20, m_size.y));
+		_button->setHover(m_hovered == (m_tabList.size() + 1));
+		_button->input(p_interactFlags, p_keyStates, p_mouseStates, p_mousePos);
+		if(_button->isSelected() != 0 && p_mouseStates[0] == 1)
+		{
+			m_selected = m_tabList.size();
+			addItem(std::string("Item ") + Util::numToString(m_tabList.size()));
+			if((m_updated & 1) == 0)
+				m_updated += 1;
+			if((m_updated & 2) == 0)
+				m_updated += 2;
+			m_scroll = m_maxScroll;
+		}
+		if(_button->isHovered())
+			m_hovered = m_tabList.size() + 1;
+
+		delete _button;
 	}
 }
 
-void TabBar::render()
+void CTabBar::update(GLfloat p_deltaUpdate)
+{
+
+}
+
+void CTabBar::render()
 {
 	Font::getInstance().setAlignment(ALIGN_CENTER);
-	Font::getInstance().setFontSize(16);
 	glPushMatrix();
 	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+		Component::render();
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 
-		glTranslatef(32, 0, 0);
-		for(Sint32 i = 0; i < (m_numOfTabs + 1); i++)
+		glPushMatrix();
 		{
-			if(i * 32 + 32 - m_scroll <= 0 || i * 32 + 32 - m_scroll > m_width - 32)
-				continue;
-			glColor3f(1, 1, 1);
-			glBegin(GL_QUADS);
+			CButton* _button = new CButton("", "", {}, {}, 1);
+
+			_button->setPosition(Vector2<Sint32>(24 - m_scroll, 0));
+			for(Sint32 i = 0; i < Sint32(m_tabList.size()); i++)
 			{
-				glVertex2f(GLfloat(i * 32 - m_scroll - 1), 0);
-				glVertex2f(GLfloat(i * 32 + 32 - m_scroll), 0);
-				glVertex2f(GLfloat(i * 32 + 32 - m_scroll), 32);
-				glVertex2f(GLfloat(i * 32 - m_scroll - 1), 32);
+				_button->setTitle(m_tabList[i]);
+				_button->setSize(Vector2<Sint32>(Font::getInstance().getMessageWidth(m_tabList[i]) + 8, m_size.y));
+				_button->setState(m_selected == i);
+				_button->setHover(m_hovered == i);
+				_button->render();
+				glTranslatef(_button->getSize().x + 4, 0, 0);
 			}
-			glEnd();
-
-			if(m_selected == i)
-				glColor3f(0.15f, 0.15f, 0.65f);
-			else
-				glColor3f(0.15f, 0.15f, 0.15f);
-			glBegin(GL_QUADS);
-			{
-				glVertex2f(GLfloat(i * 32 - m_scroll), 1);
-				glVertex2f(GLfloat(i * 32 + 32 - m_scroll - 1), 1);
-				glVertex2f(GLfloat(i * 32 + 32 - m_scroll - 1), 31);
-				glVertex2f(GLfloat(i * 32 - m_scroll), 31);
-			}
-			glEnd();
-
-			glColor3f(1, 1, 1);
-			Font::getInstance().print(Util::numToString(i, 0), i * 32 + 16 - m_scroll, 8);
+			_button->setTitle("+");
+			_button->setSize(Vector2<Sint32>(20, m_size.y));
+			_button->setState(m_selected == (m_tabList.size() + 1));
+			_button->setHover(m_hovered == (m_tabList.size() + 1));
+			_button->render();
+			glTranslatef(_button->getSize().x + 4, 0, 0);
+			delete _button;
 		}
-		glTranslatef(-32, 0, 0);
-
-		glColor3f(1, 1, 1);
-		glBegin(GL_QUADS);
-		{
-			glVertex2f(0, 0);
-			glVertex2f(32, 0);
-			glVertex2f(32, 32);
-			glVertex2f(0, 32);
-		}
-		glEnd();
-
-		glColor3f(0.15f, 0.15f, 0.15f);
-		glBegin(GL_QUADS);
-		{
-			glVertex2f(1, 1);
-			glVertex2f(31, 1);
-			glVertex2f(31, 31);
-			glVertex2f(1, 31);
-		}
-		glEnd();
-
-		glColor3f(1, 1, 1);
-		Font::getInstance().print("<", 16, 8);
-
-		glColor3f(1, 1, 1);
-		glBegin(GL_QUADS);
-		{
-			glVertex2f(GLfloat(m_width), 0);
-			glVertex2f(GLfloat(m_width - 33), 0);
-			glVertex2f(GLfloat(m_width - 33), 32);
-			glVertex2f(GLfloat(m_width), 32);
-		}
-		glEnd();
-
-		glColor3f(0.15f, 0.15f, 0.15f);
-		glBegin(GL_QUADS);
-		{
-			glVertex2f(GLfloat(m_width - 32), 1);
-			glVertex2f(GLfloat(m_width - 1), 1);
-			glVertex2f(GLfloat(m_width - 1), 31);
-			glVertex2f(GLfloat(m_width - 32), 31);
-		}
-		glEnd();
-
-		glColor3f(1, 1, 1);
-		Font::getInstance().print(">", m_width - 16, 8);
+		glPopMatrix();
+		m_buttonLShift->render();
+		m_buttonRShift->render();
 	}
 	glPopMatrix();
 }

@@ -44,7 +44,7 @@ Uint8 Component::isUpdated()
 {
 	return 0;
 }
-Uint16 Component::getSelectedItem()
+Sint16 Component::getSelectedItem()
 {
 	return 0;
 }
@@ -113,12 +113,13 @@ void Component::renderBack()
 {
 	glPushMatrix();
 	{
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 		m_colorTheme.m_back.useColor();
 		glBegin(GL_LINES);
 		{
-			glVertex2f(-GLfloat(m_borderThickness), -GLfloat(m_borderThickness));
-			glVertex2f(GLfloat(m_size.x + m_borderThickness), -GLfloat(m_borderThickness));
+			glVertex2f(-GLfloat(m_borderThickness), -GLfloat(m_borderThickness) + 1);
+			glVertex2f(GLfloat(m_size.x + m_borderThickness), -GLfloat(m_borderThickness) + 1);
 
 			glVertex2f(GLfloat(m_size.x + m_borderThickness), -GLfloat(m_borderThickness));
 			glVertex2f(GLfloat(m_size.x + m_borderThickness), GLfloat(m_size.y + m_borderThickness));
@@ -126,8 +127,8 @@ void Component::renderBack()
 			glVertex2f(GLfloat(m_size.x + m_borderThickness), GLfloat(m_size.y + m_borderThickness));
 			glVertex2f(-GLfloat(m_borderThickness), GLfloat(m_size.y + m_borderThickness));
 
-			glVertex2f(-GLfloat(m_borderThickness), GLfloat(m_size.y + m_borderThickness));
-			glVertex2f(-GLfloat(m_borderThickness), -GLfloat(m_borderThickness));
+			glVertex2f(-GLfloat(m_borderThickness) + 1, GLfloat(m_size.y + m_borderThickness));
+			glVertex2f(-GLfloat(m_borderThickness) + 1, -GLfloat(m_borderThickness));
 		}
 		glEnd();
 	}
@@ -141,26 +142,20 @@ void Component::renderFill(bool p_setColor)
 		if(p_setColor)
 		{
 			if(isSelected())
-			{
 				m_colorTheme.m_active.useColor();
-			}
 			else
-			{
 				m_colorTheme.m_fore.useColor();
-			}
 		}
 		if(m_texture != -1)
-		{
 			glBindTexture(GL_TEXTURE_2D, MTexture::getInstance().getUnit(m_texture).getId());
-		}
+		
 		glBegin(GL_QUADS);
 		{
 			if(m_texture != -1)
 			{
 				Vector2<Sint32> _texSize;
-				switch(m_textureStyle)
+				if(m_textureStyle == COMPONENT_TEXTURE_STYLE_NONE)
 				{
-				case COMPONENT_TEXTURE_STYLE_NONE: // Scale
 					glTexCoord2f(0, 0);
 					glVertex2f(0, 0);
 					glTexCoord2f(1, 0);
@@ -169,8 +164,9 @@ void Component::renderFill(bool p_setColor)
 					glVertex2f(GLfloat(m_size.x), GLfloat(m_size.y));
 					glTexCoord2f(0, 1);
 					glVertex2f(0, GLfloat(m_size.y));
-					break;
-				case COMPONENT_TEXTURE_STYLE_WRAP: // Repeat
+				}
+				else if(m_textureStyle == COMPONENT_TEXTURE_STYLE_WRAP)
+				{
 					_texSize = MTexture::getInstance().getUnit(m_texture).getSize();
 					glTexCoord2f(0, 0);
 					glVertex2f(0, 0);
@@ -180,8 +176,9 @@ void Component::renderFill(bool p_setColor)
 					glVertex2f(GLfloat(m_size.x), GLfloat(m_size.y));
 					glTexCoord2f(0, GLfloat(m_size.y) / _texSize.y);
 					glVertex2f(0, GLfloat(m_size.y));
-					break;
-				case COMPONENT_TEXTURE_STYLE_SCALE: // Repeat and Scale?
+				}
+				else if(m_textureStyle == COMPONENT_TEXTURE_STYLE_SCALE)
+				{
 					_texSize = MTexture::getInstance().getUnit(m_texture).getSize();
 					// Top Left corner
 					glTexCoord2f(0, 1);
@@ -272,7 +269,6 @@ void Component::renderFill(bool p_setColor)
 					glVertex2f(_texSize.x / 4.f + ((_width + (_widthF - _width)) * _texSize.x / 2.f), GLfloat(m_size.y));
 					glTexCoord2f(0.25f, 0);
 					glVertex2f(_texSize.x / 4.f + (_width * _texSize.x / 2.f), GLfloat(m_size.y));
-
 
 
 
@@ -373,7 +369,6 @@ void Component::renderFill(bool p_setColor)
 					glVertex2f(_texSize.x / 4.f + ((_width + (_widthF - _width)) * _texSize.x / 2.f), _texSize.y / 4.f + ((_height + (_heightF - _height)) * _texSize.y / 2.f));
 					glTexCoord2f(0.25f, 0.75f - 0.5f * (_heightF - _height));
 					glVertex2f(_texSize.x / 4.f + (_width * _texSize.x / 2.f), _texSize.y / 4.f + ((_height + (_heightF - _height)) * _texSize.y / 2.f));
-					break;
 				}
 			}
 			else

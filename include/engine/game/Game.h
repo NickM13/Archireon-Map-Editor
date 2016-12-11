@@ -1,7 +1,5 @@
 #pragma once
 
-#define TILE_SIZE 32
-
 #include "engine\utils\Globals.h"
 #include "engine\utils\OpenGL.h"
 #include "engine\utils\Singleton.h"
@@ -10,7 +8,8 @@
 
 #include "engine\gfx\LTexture.h"
 
-#include "world\map\ZoneMap.h"
+#include "editor\board\BoardEditor.h"
+#include "editor\zone\ZoneEditor.h"
 
 #include "..\gfx\gui\container\Container.h"
 #include "..\gfx\gui\container\ContainerPanel.h"
@@ -20,6 +19,7 @@
 #include "..\gfx\gui\list\List.h"
 #include "..\gfx\gui\panel\Panel.h"
 #include "..\gfx\gui\slider\Slider.h"
+#include "..\gfx\gui\tabbar\TabBar.h"
 #include "..\gfx\gui\text\Text.h"
 #include "..\gfx\gui\text\TextField.h"
 #include "..\gfx\gui\tileset\Tileset.h"
@@ -30,15 +30,21 @@
 class Game : public Singleton<Game>
 {
 public:
+	enum EditorState
+	{
+		ZONE = 0,
+		BOARD = 1
+	} m_editorState;
+
+	BoardEditor* m_boardEditor;
+	ZoneEditor* m_zoneEditor;
+
+	~Game() {Font::getInstance().clean();};
 	bool init();
 	void resize();
 
-	std::string getZoneName();
-	void unpause();
-	void pause(std::string p_screen);
-	std::string getPause();
-
-	void setBoard(ZoneMap::Board *p_board);
+	void setEditorState(EditorState p_state);
+	void setFadeMessage(std::string p_msg, GLfloat p_time);
 
 	void input();
 	void update();
@@ -57,49 +63,9 @@ private:
 			m_sky(p_sky) {}
 	};
 
-	std::vector<Stamp> m_stamps;
-
-	ZoneMap* m_zoneMap;
-	Vector2<GLfloat> m_camPos;
-	GLfloat m_zoom;
-
-	Vector2<Sint32> m_mouseBuffer;
-	bool m_mouseInArea;
-	bool m_lmbDown, m_rmbDown;
-
-	Rect m_tileMapArea;
-	Texture m_backTexId;
-
-	Vector2<Sint32> m_selectStart, m_selectEnd;
-
 	GLfloat m_lastUpdate, m_deltaUpdate;
 
 protected:
-	bool m_showGrid;
-
-	CToolbar* m_toolbarMenu;
-	Container* m_guiAll, *m_guiTop;
-	Container* m_guiLeft, *m_guiRight;
-	Container* m_guiLeftLayer, *m_guiLeftDetail; // Layer panel
-	ContainerPanel* m_guiGround, *m_guiWorld, *m_guiEntity, *m_guiSky, *m_guiStamp;
-	Container* m_guiWorldSwitch, *m_guiWorldPortal;
-	CTileSet* m_tileSetGround, *m_tileSetWorld, *m_tileSetEntity, *m_tileSetSky, *m_tileSetStamps;
-	CList* m_listWorld, *m_listEntity, *m_listStamps;
-	CButtonRadio* m_selectLayer;
-
-	//Pause screens
-	Container* m_guiPause;
-	Sint16 m_cPauseScreen;
-	std::vector<Container*> m_pauseScreens;
-	Container* m_guiSaveMap, *m_guiLoadMap, *m_guiClearMap, *m_guiResizeMap;
-	Container* m_guiEntityTex, *m_guiEntityInteract, *m_guiEntityIdle, *m_guiEntityBoard;
-	Container* m_guiExit;
-
-	//Board variables
-	Rect m_boardArea;
-	bool m_mouseInBoardArea;
-	bool m_blmbDown, m_brmbDown;
-	Uint8** m_boardData[2];
-	Vector2<Uint16> m_boardSize;
-	Vector2<Sint32> m_boardScroll;
+	GLfloat m_fadeTimer;
+	std::string m_fadeMsg;
 };

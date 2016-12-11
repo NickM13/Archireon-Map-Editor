@@ -2,31 +2,37 @@
 
 #include "engine\utils\Utilities.h"
 #include "..\base\Component.h"
+#include "..\button\Button.h"
 #include "..\..\font\Font.h"
 #include <vector>
 
-struct TabBar : public Component
+struct CTabBar : public Component
 {
-private:
-	Vector2<Sint32> m_pos;
-	Uint16 m_width;
-
-	Uint16 m_numOfTabs;
-	Uint16 m_selected;
-
-	Sint32 m_scroll;
 public:
-	TabBar() {}
+	CTabBar(std::string p_compName, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme);
 
-	void setPosition(Vector2<Sint32> p_pos);
-	void setWidth(Sint32 p_width);
-
-	void setTabCount(Uint16 p_num);
 	Uint16 getTabCount();
 	void setSelected(Uint16 p_selected);
-	Uint16 getSelected();
+	Sint16 getSelectedItem();
+	Uint8 isUpdated() {return m_updated;}
 
-	void checkPoint(Vector2<Sint32> p_mousePos);
+	std::string getTab(Sint16 p_index);
+	void addItem(std::string p_title);
+	void removeTab(Sint16 p_index);
+	void clear();
+	void setTab(Sint16 p_index, std::string p_title) {m_tabList[p_index] = p_title;};
 
+	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos);
+	void update(GLfloat p_deltaUpdate);
 	void render();
+private:
+	void calcMaxScroll();
+
+	Sint16 m_selected, m_hovered;
+	Sint32 m_scroll, m_maxScroll;
+	std::vector<std::string> m_tabList;
+
+	CButton* m_buttonLShift, *m_buttonRShift;
+
+	Sint8 m_updated;
 };

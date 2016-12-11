@@ -80,6 +80,7 @@ void CSlider::render()
 	m_slideValue = m_numValue * (m_length / m_maxValue);
 	glPushMatrix();
 	{
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 		glBegin(GL_QUADS);
 		{
@@ -111,10 +112,8 @@ void CSlider::render()
 	glPopMatrix();
 	m_colorTheme.m_text.useColor();
 	Font::getInstance().setAlignment(ALIGN_RIGHT);
-	Font::getInstance().setFontSize(16);
 	Font::getInstance().print(m_title, Sint32(0), Sint32(m_pos.y - 8));
 	Font::getInstance().setAlignment(ALIGN_LEFT);
-	Font::getInstance().setFontSize(16);
 	Font::getInstance().print(Util::numToString(m_numValue, 16), Sint32(m_pos.x + m_length), Sint32(m_pos.y - 8));
 }
 

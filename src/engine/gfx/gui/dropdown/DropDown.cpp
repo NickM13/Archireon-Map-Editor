@@ -1,13 +1,12 @@
 #include "engine\gfx\gui\dropdown\DropDown.h"
 #include "engine\gfx\font\Font.h"
 
-CDropDown::CDropDown(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint16 p_fontSize, Sint8 p_colorTheme)
+CDropDown::CDropDown(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme)
 {
 	m_compName = p_compName;
 	m_title = p_title;
 	m_pos = p_pos;
 	m_size = p_size;
-	m_fontSize = p_fontSize;
 	m_colorTheme = m_colorThemes[p_colorTheme];
 
 	m_selectedItem = 0;
@@ -79,6 +78,7 @@ void CDropDown::render()
 {
 	glPushMatrix();
 	{
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 
 		if(m_selected == 0)
@@ -145,11 +145,11 @@ void CDropDown::render()
 			}
 		}
 		m_colorTheme.m_text.useColor();
-		Font::getInstance().setFontSize(m_fontSize);
 		Font::getInstance().setAlignment(ALIGN_CENTER);
-		Font::getInstance().print(m_title, m_size.x / 2, -m_fontSize);
+		Font::getInstance().print(m_title, m_size.x / 2, -(Font::getInstance().getHeight()));
 		Font::getInstance().setAlignment(ALIGN_LEFT);
-		glTranslatef(GLfloat(m_size.y - m_fontSize) / 2, GLfloat(m_size.y - m_fontSize) / 2, 0);
+		// Gets text same distance from top as from left
+		glTranslatef(GLfloat(m_size.y) / 2, GLfloat(m_size.y) / 2, 0);
 		if(m_itemList.size() > 0)
 		{
 			Font::getInstance().print(m_itemList[m_selectedItem], 0, 0);
@@ -174,7 +174,7 @@ Uint8 CDropDown::isUpdated()
 	return m_update;
 }
 
-Uint16 CDropDown::getSelectedItem()
+Sint16 CDropDown::getSelectedItem()
 {
 	return m_selectedItem;
 }

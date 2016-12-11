@@ -12,7 +12,7 @@ Panel::Panel(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos,
 	m_textureStyle = p_textureStyle;
 	m_visible = p_visible;
 
-	m_borderThickness = 1;
+	m_borderThickness = 0;
 }
 
 void Panel::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
@@ -45,8 +45,7 @@ void Panel::render()
 
 				m_colorTheme.m_text.useColor();
 				Font::getInstance().setAlignment(ALIGN_CENTER);
-				Font::getInstance().setFontSize(16);
-				Font::getInstance().print(m_title, m_pos.x + m_size.x / 2, m_pos.y + 4);
+				Font::getInstance().print(m_title, m_pos.x + m_size.x / 2, m_pos.y + 12);
 			}
 		}
 	}

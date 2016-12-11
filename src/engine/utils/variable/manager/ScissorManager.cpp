@@ -1,6 +1,14 @@
 #include "engine\utils\variable\manager\ScissorManager.h"
 
-Uint32 MScissor::push(Rect& p_area)
+void MScissor::toggle()
+{
+	if(glIsEnabled(GL_SCISSOR_TEST) || m_unitList.empty())
+		glDisable(GL_SCISSOR_TEST);
+	else if(!m_unitList.empty())
+		glEnable(GL_SCISSOR_TEST);
+}
+
+Uint32 MScissor::push(Rect& p_area, bool p_override)
 {
 	Rect _rect;
 	float _mat[16];
@@ -8,7 +16,7 @@ Uint32 MScissor::push(Rect& p_area)
 	bool _sci = (glIsEnabled(GL_SCISSOR_TEST) != 0);
 	int _scissorBox[4];
 
-	if(m_unitList.empty())
+	if(m_unitList.empty() || p_override)
 	{
 		_rect = p_area;
 		_rect.x += _mat[12] + Globals::getInstance().m_screenSize.x / 2;

@@ -117,7 +117,7 @@ void ContainerPanel::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_
 		p_mousePos.x - m_pos.x >= 0 && p_mousePos.x - m_pos.x <= m_size.x + 10 &&
 		p_mousePos.y - m_pos.y >= 0 && p_mousePos.y - m_pos.y <= m_size.y)
 	{
-		m_scroll.y -= Globals::getInstance().m_mouseScroll * 4;
+		m_scroll.y -= Globals::getInstance().m_mouseScroll * 8;
 		p_interactFlags += 4;
 	}
 	if(m_rHeld != 0)
@@ -229,7 +229,6 @@ void ContainerPanel::render()
 			glEnd();
 
 			m_colorTheme.m_text.useColor();
-			Font::getInstance().setFontSize(16);
 			Font::getInstance().setAlignment(ALIGN_CENTER);
 			Font::getInstance().print(m_title, m_pos.x + m_size.x / 2, m_pos.y + 4);
 		}
@@ -243,6 +242,7 @@ void ContainerPanel::render()
 		MScissor::getInstance().pop();
 		glPushMatrix();
 		{
+			glBindTexture(GL_TEXTURE_2D, 0);
 			Vector2<Sint32> _scrollDist = m_maxScroll - m_minScroll;
 			glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
 			if(m_scrollX)

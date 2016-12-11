@@ -8,7 +8,7 @@
 class CList : public Component
 {
 private:
-	Uint16 m_selectedItem;
+	Sint16 m_selectedItem;
 	Uint16 m_itemHeight;
 
 	Sint16 m_scroll, m_maxScroll;
@@ -44,7 +44,7 @@ public:
 	void update(GLfloat p_deltaUpdate);
 	void render();
 
-	Uint16 getSelectedItem();
+	Sint16 getSelectedItem();
 	Uint8 isUpdated();
 
 	Sint8 isSelected();

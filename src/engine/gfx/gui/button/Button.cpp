@@ -1,22 +1,21 @@
 #include "engine\gfx\gui\button\Button.h"
 
 
-CButton::CButton(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, function p_function)
+CButton::CButton(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, function p_func)
 {
 	m_selected = 0;
 	m_compName = p_compName;
 	m_title = p_title;
 	m_pos = p_pos;
 	m_size = p_size;
-	m_fontSize = p_fontSize;
 	m_colorTheme = m_colorThemes[p_colorTheme];
 
 	m_texture = LTexture::getInstance().loadImage("gui\\BarRect.png");
 	m_textureStyle = COMPONENT_TEXTURE_STYLE_SCALE;
 
-	m_function = p_function;
+	m_function = p_func;
 }
-CButton::CButton(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, function p_function)
+CButton::CButton(std::string p_compName, std::string p_title, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, function p_func)
 {
 	m_selected = 0;
 	m_compName = p_compName;
@@ -24,13 +23,12 @@ CButton::CButton(std::string p_compName, std::string p_title, Texture p_buttonTe
 	m_buttonTex = p_buttonTex;
 	m_pos = p_pos;
 	m_size = p_size;
-	m_fontSize = p_fontSize;
 	m_colorTheme = m_colorThemes[p_colorTheme];
 
 	m_texture = LTexture::getInstance().loadImage("gui\\BarRect.png");
 	m_textureStyle = COMPONENT_TEXTURE_STYLE_SCALE;
 
-	m_function = p_function;
+	m_function = p_func;
 }
 void CButton::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 {
@@ -127,11 +125,17 @@ void CButton::render()
 
 
 		m_colorTheme.m_text.useColor();
-		Font::getInstance().setFontSize(m_fontSize);
 		Font::getInstance().setAlignment(ALIGN_CENTER);
-		Font::getInstance().print(m_title, 0, -8);
+		Font::getInstance().print(m_title, 0, 0);
 	}
 	glPopMatrix();
+}
+
+void CButton::setState(Sint8 p_selected)
+{
+	m_selected = p_selected;
+	if(p_selected == 1 && m_function != 0)
+		m_function();
 }
 
 Sint8 CButton::isSelected() // 0 = not selected, 1 = JUST pressed, 2 = is held, 3 = JUST released
@@ -143,20 +147,20 @@ Sint8 CButton::isSelected() // 0 = not selected, 1 = JUST pressed, 2 = is held, 
 
 
 
-CButtonToggle::CButtonToggle(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state)
+CButtonToggle::CButtonToggle(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, Sint8 p_state, function p_func)
 {
 	m_compName = p_compName;
 	m_title = p_title;
 	m_pos = p_pos;
 	m_size = p_size;
-	m_fontSize = p_fontSize;
 	m_colorTheme = m_colorThemes[p_colorTheme];
 	m_selected = p_state;
 
 	m_borderThickness = 1;
 	m_texType = 0;
+	m_function = p_func;
 }
-CButtonToggle::CButtonToggle(std::string p_compName, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state)
+CButtonToggle::CButtonToggle(std::string p_compName, Texture p_buttonTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, Sint8 p_state, function p_func)
 {
 	m_compName = p_compName;
 	m_title = "";
@@ -168,8 +172,10 @@ CButtonToggle::CButtonToggle(std::string p_compName, Texture p_buttonTex, Vector
 
 	m_borderThickness = 1;
 	m_texType = 1;
+
+	m_function = p_func;
 }
-CButtonToggle::CButtonToggle(std::string p_compName, Texture p_activeTex, Texture p_inactiveTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint32 p_fontSize, Sint8 p_colorTheme, Sint8 p_state)
+CButtonToggle::CButtonToggle(std::string p_compName, Texture p_activeTex, Texture p_inactiveTex, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Sint8 p_colorTheme, Sint8 p_state, function p_func)
 {
 	m_compName = p_compName;
 	m_title = "";
@@ -182,6 +188,8 @@ CButtonToggle::CButtonToggle(std::string p_compName, Texture p_activeTex, Textur
 
 	m_borderThickness = 1;
 	m_texType = 2;
+
+	m_function = p_func;
 }
 
 void CButtonToggle::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
@@ -196,6 +204,8 @@ void CButtonToggle::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_m
 		{
 			m_numValue = 1;
 			m_selected = !m_selected;
+			if(m_function != 0)
+				m_function();
 		}
 		p_interactFlags += 1;
 	}
@@ -208,11 +218,12 @@ void CButtonToggle::update(GLfloat p_deltaUpdate)
 }
 void CButtonToggle::render()
 {
-	Component::render();
 	glPushMatrix();
 	{
+		Component::renderBack();
+		Component::renderFill();
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
-		if(m_selected)
+		if(m_selected && m_texType != 2)
 			m_colorTheme.m_active.useColor();
 		else
 		{
@@ -233,38 +244,34 @@ void CButtonToggle::render()
 		glTranslatef(GLfloat(m_size.x / 2), GLfloat(m_size.y / 2), 0);
 		if(m_texType != 0)
 		{
-			glPushMatrix();
+			glColor3f(1, 1, 1);
+			if(m_selected != 0 || m_texType == 1)
+				glBindTexture(GL_TEXTURE_2D, m_buttonTex[0].getId());
+			else
+				glBindTexture(GL_TEXTURE_2D, m_buttonTex[1].getId());
+			glBegin(GL_QUADS);
 			{
-				glColor3f(1, 1, 1);
-				if(m_selected != 0 || m_texType == 1)
-					glBindTexture(GL_TEXTURE_2D, m_buttonTex[0].getId());
-				else
-					glBindTexture(GL_TEXTURE_2D, m_buttonTex[1].getId());
-				glBegin(GL_QUADS);
-				{
-					glTexCoord2f(0, 1);
-					if(m_selected != 0 || m_texType == 1) glVertex2f(-GLfloat(m_buttonTex[0].getSize().x) / 2, -GLfloat(m_buttonTex[0].getSize().y) / 2);
-					else glVertex2f(-GLfloat(m_buttonTex[1].getSize().x) / 2, -GLfloat(m_buttonTex[1].getSize().y) / 2);
-					glTexCoord2f(1, 1);
-					if(m_selected != 0 || m_texType == 1) glVertex2f(GLfloat(m_buttonTex[0].getSize().x) / 2, -GLfloat(m_buttonTex[0].getSize().y) / 2);
-					else glVertex2f(GLfloat(m_buttonTex[1].getSize().x) / 2, -GLfloat(m_buttonTex[1].getSize().y) / 2);
-					glTexCoord2f(1, 0);
-					if(m_selected != 0 || m_texType == 1) glVertex2f(GLfloat(m_buttonTex[0].getSize().x) / 2, GLfloat(m_buttonTex[0].getSize().y) / 2);
-					else glVertex2f(GLfloat(m_buttonTex[1].getSize().x) / 2, GLfloat(m_buttonTex[1].getSize().y) / 2);
-					glTexCoord2f(0, 0);
-					if(m_selected != 0 || m_texType == 1) glVertex2f(-GLfloat(m_buttonTex[0].getSize().x) / 2, GLfloat(m_buttonTex[0].getSize().y) / 2);
-					else glVertex2f(-GLfloat(m_buttonTex[1].getSize().x) / 2, GLfloat(m_buttonTex[1].getSize().y) / 2);
-				}
-				glEnd();
+				glTexCoord2f(0, 1);
+				if(m_selected != 0 || m_texType == 1) glVertex2f(-GLfloat(m_buttonTex[0].getSize().x) / 2, -GLfloat(m_buttonTex[0].getSize().y) / 2);
+				else glVertex2f(-GLfloat(m_buttonTex[1].getSize().x) / 2, -GLfloat(m_buttonTex[1].getSize().y) / 2);
+				glTexCoord2f(1, 1);
+				if(m_selected != 0 || m_texType == 1) glVertex2f(GLfloat(m_buttonTex[0].getSize().x) / 2, -GLfloat(m_buttonTex[0].getSize().y) / 2);
+				else glVertex2f(GLfloat(m_buttonTex[1].getSize().x) / 2, -GLfloat(m_buttonTex[1].getSize().y) / 2);
+				glTexCoord2f(1, 0);
+				if(m_selected != 0 || m_texType == 1) glVertex2f(GLfloat(m_buttonTex[0].getSize().x) / 2, GLfloat(m_buttonTex[0].getSize().y) / 2);
+				else glVertex2f(GLfloat(m_buttonTex[1].getSize().x) / 2, GLfloat(m_buttonTex[1].getSize().y) / 2);
+				glTexCoord2f(0, 0);
+				if(m_selected != 0 || m_texType == 1) glVertex2f(-GLfloat(m_buttonTex[0].getSize().x) / 2, GLfloat(m_buttonTex[0].getSize().y) / 2);
+				else glVertex2f(-GLfloat(m_buttonTex[1].getSize().x) / 2, GLfloat(m_buttonTex[1].getSize().y) / 2);
 			}
-			glPopMatrix();
+			glEnd();
 		}
 		m_colorTheme.m_text.useColor();
-		Font::getInstance().setFontSize(m_fontSize);
 		Font::getInstance().setAlignment(ALIGN_CENTER);
-		Font::getInstance().print(m_title, 0, -8);
+		Font::getInstance().print(m_title, 0, 0);
 	}
 	glPopMatrix();
+
 }
 
 
