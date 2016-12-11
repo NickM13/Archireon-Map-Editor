@@ -60,7 +60,7 @@ void CList::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStat
 			}
 			if(Sint32((p_mousePos.y + (GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) == Sint32(m_itemList.size()))
 			{
-				addItem(ListItem(std::string("Item " + Util::numToString(m_itemList.size(), 0)), Uint16(m_itemList.size())));
+				addItem(ListItem(std::string("Item " + Util::numToString(m_itemList.size(), 0)), 0));
 				m_update = 3;
 				if(Sint32(m_itemList.size()) >= m_size.y)
 					m_scroll += m_itemHeight;

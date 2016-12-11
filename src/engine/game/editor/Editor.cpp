@@ -219,18 +219,14 @@ void Editor::input()
 			Globals::getInstance().m_exitting = 1;
 		_rValue += 2;
 	}
+
 	if(getPause() != "" && (_rValue & 2) == 0 && Globals::getInstance().m_keyStates[GLFW_KEY_ENTER] == 1)
-	{
 		m_pauseScreens[m_cPauseScreen]->findComponent("BUTTON_SET")->setState(1);
-	}
+
 	if(getPause() == "" && Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] != 0 && Globals::getInstance().m_keyStates[GLFW_KEY_Z] == 1)
-	{
 		m_map->undo();
-	}
 	if(getPause() == "" && Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] != 0 && Globals::getInstance().m_keyStates[GLFW_KEY_Y] == 1)
-	{
 		m_map->redo();
-	}
 
 	if(Globals::getInstance().m_mouseStates[0] == 1)
 	{
@@ -270,7 +266,7 @@ void Editor::input()
 			m_map->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_listWorld->getSelectedItem());
 			break;
 		case 2:
-			m_map->getEntity(m_tabEntity->getSelectedItem()).m_pos = Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))));
+			m_map->setEntity(m_tabEntity->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
 			break;
 		case 3:
 			m_map->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetSky->getSelectedTile());

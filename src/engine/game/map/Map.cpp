@@ -161,6 +161,32 @@ void Map::removeWorldObject(Uint16 p_index)
 			else if(m_tileData[1][x][y] == p_index)
 				m_tileData[1][x][y] = 0;
 		}
+	for(Uint16 i = 0; i < m_undoEdits.size(); i++)
+	{
+		for(Uint16 j = 0; j < m_undoEdits[i].m_tile.size(); j++)
+		{
+			if(m_undoEdits[i].m_tile[j].layer == 1)
+			{
+				if(m_undoEdits[i].m_tile[j].id == p_index)
+					m_undoEdits[i].m_tile[j].id = 0;
+				else if(m_undoEdits[i].m_tile[j].id > p_index)
+					m_undoEdits[i].m_tile[j].id--;
+			}
+		}
+	}
+	for(Uint16 i = 0; i < m_redoEdits.size(); i++)
+	{
+		for(Uint16 j = 0; j < m_redoEdits[i].m_tile.size(); j++)
+		{
+			if(m_redoEdits[i].m_tile[j].layer == 1)
+			{
+				if(m_redoEdits[i].m_tile[j].id == p_index)
+					m_redoEdits[i].m_tile[j].id = 0;
+				else if(m_redoEdits[i].m_tile[j].id > p_index)
+					m_redoEdits[i].m_tile[j].id--;
+			}
+		}
+	}
 }
 
 Uint16 Map::addEntity(Entity p_entity)
@@ -182,6 +208,16 @@ void Map::removeEntity(Uint16 p_index)
 {
 	m_entities.erase(m_entities.begin() + p_index);
 }
+void Map::setEntity(Uint16 p_index, Vector2<Sint32> p_pos)
+{
+	if(m_editting && p_index != 0)
+	{
+		if(m_currentUndoEdit.m_entity.id != p_index)
+			m_currentUndoEdit.m_entity = Edit::Entity(p_index, m_entities[p_index].m_pos);
+		m_currentRedoEdit.m_entity = Edit::Entity(p_index, p_pos);
+		m_entities[p_index].m_pos = p_pos;
+	}
+}
 
 void Map::startEdit()
 {
@@ -196,7 +232,7 @@ void Map::startEdit()
 }
 void Map::stopEdit()
 {
-	if(m_currentUndoEdit.m_tile.size() > 0)
+	if(m_currentUndoEdit.m_tile.size() > 0 || m_currentUndoEdit.m_entity.id != 0)
 	{
 		m_undoEdits.push_back(m_currentUndoEdit);
 		m_redoEdits.push_back(m_currentRedoEdit);
@@ -217,6 +253,7 @@ void Map::undo()
 			_tile = m_undoEdits[m_cEdit].m_tile[i];
 			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
 		}
+		m_entities[m_undoEdits[m_cEdit].m_entity.id].m_pos = m_undoEdits[m_cEdit].m_entity.pos;
 		m_cEdit--;
 		m_editting = false;
 	}
@@ -232,6 +269,7 @@ void Map::redo()
 			_tile = m_redoEdits[m_cEdit + 1].m_tile[i];
 			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
 		}
+		m_entities[m_redoEdits[m_cEdit + 1].m_entity.id].m_pos = m_redoEdits[m_cEdit + 1].m_entity.pos;
 		m_cEdit++;
 		m_editting = false;
 	}

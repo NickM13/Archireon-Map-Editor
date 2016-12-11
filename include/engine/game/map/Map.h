@@ -88,6 +88,7 @@ public:
 	Entity& getEntity(Uint16 p_index);
 	Uint16 getEntitySize();
 	void removeEntity(Uint16 p_index);
+	void setEntity(Uint16 p_index, Vector2<Sint32> p_pos);
 
 	void startEdit();
 	void stopEdit();
@@ -125,12 +126,21 @@ protected:
 	{
 		struct Tile
 		{
-			Tile(){}
+			Tile() {}
 			Tile(Uint16 p_layer, Uint16 p_x, Uint16 p_y, Uint16 p_id) : layer(p_layer), x(p_x), y(p_y), id(p_id)
 			{}
-			Uint16 layer, x, y, id;
+			Sint32 layer, x, y, id;
+		};
+		struct Entity
+		{
+			Entity() {}
+			Entity(Uint16 p_id, Vector2<Sint32> p_pos) : id(p_id), pos(p_pos)
+			{}
+			Uint16 id = 0;
+			Vector2<Sint32> pos;
 		};
 		std::vector<Tile> m_tile;
+		Entity m_entity;
 	};
 	Edit m_currentUndoEdit;
 	Edit m_currentRedoEdit;
