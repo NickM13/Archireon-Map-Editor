@@ -95,6 +95,11 @@ public:
 	void undo();
 	void redo();
 
+	bool isFilling() {return m_filling;};
+	void startFill(Uint16 p_layer, Uint16 p_id, Vector2<Sint32> p_pos);
+	void moveFill(Vector2<Sint32> p_pos);
+	void stopFill();
+
 	void render(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
 
 	virtual void save();
@@ -120,6 +125,11 @@ protected:
 	Texture m_tileSheetGround, m_tileSheetWorld, m_tileSheetSky;
 
 	bool m_initialized;
+
+
+	bool m_filling;
+	Uint16 m_fillLayer, m_fillTileId;
+	Vector2<Sint32> m_fillStart, m_fillEnd;
 
 
 	struct Edit

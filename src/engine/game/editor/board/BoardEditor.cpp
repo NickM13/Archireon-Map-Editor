@@ -115,18 +115,6 @@ void BoardEditor::init()
 		}), PANEL_ALIGN_BOTTOM);
 		m_guiEntityIdle->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 1, []() {BoardEditor::getInstance().unpause(); }), PANEL_ALIGN_BOTTOM);
 	}
-	/*
-	m_guiEntityBoard = new Container("CONTAINER_ENTITY_BOARD", {0, 0}, Globals::getInstance().m_screenSize, false);
-	{
-	m_guiEntityBoard->addComponent(new Panel("PANEL_BG2", "Set Board", {0, -12}, {534, 112}, 0, true), PANEL_ALIGN_CENTER);
-	m_guiEntityBoard->addComponent(new TextField("TEXTFIELD_BOARD", "Directory map\\boards\\", {0, -24}, {512, 1}, 1), PANEL_ALIGN_CENTER);
-
-	m_guiEntityBoard->addComponent(new CButton("BUTTON_SET2", "Set", {-130, 24}, {252, 24}, 1, []() {
-	BoardEditor::getInstance().unpause();
-	}), PANEL_ALIGN_CENTER);
-	m_guiEntityBoard->addComponent(new CButton("BUTTON_CANCEL", "Cancel", {130, 24}, {252, 24}, 1, []() {BoardEditor::getInstance().unpause(); }), PANEL_ALIGN_CENTER);
-	}
-	*/
 
 	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_TEXTURE", "Set Spritesheet", Vector2<Sint32>(0, 362), Vector2<Sint32>(264, 32), 1, []()
 	{
@@ -142,13 +130,6 @@ void BoardEditor::init()
 		BoardEditor::getInstance().m_guiEntityInteract->findComponent("TEXTFIELD_SCRIPT")->setState(1);
 	}), PANEL_ALIGN_TOP);
 	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_IDLE_SCRIPT", "Edit Idle Script", Vector2<Sint32>(0, 502), Vector2<Sint32>(264, 32), 1, []()
-	{
-		BoardEditor::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setState(1);
-		BoardEditor::getInstance().pause("CONTAINER_ENTITY_INTERACT_SCRIPT");
-		BoardEditor::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setTitle(BoardEditor::getInstance().m_map->getEntity(BoardEditor::getInstance().m_tabEntity->getSelectedItem()).m_interact);
-		BoardEditor::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setState(1);
-	}), PANEL_ALIGN_TOP);
-	m_guiEntity->addComponent(new CButton("BUTTON_ENTITY_SET_BOARD", "Set Board", Vector2<Sint32>(0, 538), Vector2<Sint32>(264, 32), 1, []()
 	{
 		BoardEditor::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setState(1);
 		BoardEditor::getInstance().pause("CONTAINER_ENTITY_INTERACT_SCRIPT");

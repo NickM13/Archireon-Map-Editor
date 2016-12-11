@@ -129,7 +129,7 @@ void Editor::init()
 
 
 
-	m_listWorld = new CList("LIST_WORLD", "World Obj List", {0, 32}, {256, 4}, 32, m_map->getTextureWorld(), 1);
+	m_listWorld = new CList("LIST_WORLD", "World Object List", {0, 32}, {256, 4}, 32, m_map->getTextureWorld(), 1);
 	m_listWorld->addItem({"None", 0});
 	m_map->addWorldObject(Map::WorldObject("None", 0, 0));
 	m_guiWorld->addComponent(m_listWorld, PANEL_ALIGN_TOP);
@@ -234,7 +234,26 @@ void Editor::input()
 		{
 			if(!m_lmbDown)
 			{
-				m_map->startEdit();
+				if(Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_SHIFT] == 0)
+					m_map->startEdit();
+				else
+				{
+					switch(m_selectLayer->getSelectedButton())
+					{
+					case 0:
+						m_map->startFill(0, m_tileSetGround->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+						break;
+					case 1:
+						m_map->startFill(1, m_listWorld->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+						break;
+					case 2:
+						m_map->startEdit();
+						break;
+					case 3:
+						m_map->startFill(3, m_tileSetSky->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+						break;
+					}
+				}
 				m_lmbDown = true;
 			}
 			if(m_selectLayer->getSelectedButton() == 4)
@@ -250,6 +269,7 @@ void Editor::input()
 	if(m_lmbDown && Globals::getInstance().m_mouseStates[0] == 0)
 	{
 		m_map->stopEdit();
+		m_map->stopFill();
 		m_lmbDown = false;
 	}
 	if(m_rmbDown && Globals::getInstance().m_mouseStates[1] == 0)
@@ -257,45 +277,52 @@ void Editor::input()
 
 	if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)
 	{
-		switch(m_selectLayer->getSelectedButton())
+		if(m_map->isFilling())
 		{
-		case 0:
-			m_map->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetGround->getSelectedTile());
-			break;
-		case 1:
-			m_map->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_listWorld->getSelectedItem());
-			break;
-		case 2:
-			m_map->setEntity(m_tabEntity->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
-			break;
-		case 3:
-			m_map->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetSky->getSelectedTile());
-			break;
-		case 4:
-			if(m_listStamps->getSelectedItem() == 0)
+			m_map->moveFill(Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+		}
+		else
+		{
+			switch(m_selectLayer->getSelectedButton())
 			{
-				m_selectEnd = {Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))};
-			}
-			else
-			{
-				Stamp _selected = m_stamps[m_listStamps->getSelectedItem()];
-
-				for(Sint32 x = Sint32(ceil(-GLfloat(_selected.m_size.x) / 2)); x < Sint32(ceil(GLfloat(_selected.m_size.x) / 2)); x++)
+			case 0:
+				m_map->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetGround->getSelectedTile());
+				break;
+			case 1:
+				m_map->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_listWorld->getSelectedItem());
+				break;
+			case 2:
+				m_map->setEntity(m_tabEntity->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+				break;
+			case 3:
+				m_map->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetSky->getSelectedTile());
+				break;
+			case 4:
+				if(m_listStamps->getSelectedItem() == 0)
 				{
-					for(Sint32 y = Sint32(ceil(-GLfloat(_selected.m_size.y) / 2)); y < Sint32(ceil(GLfloat(_selected.m_size.y) / 2)); y++)
+					m_selectEnd = {Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))};
+				}
+				else
+				{
+					Stamp _selected = m_stamps[m_listStamps->getSelectedItem()];
+
+					for(Sint32 x = Sint32(ceil(-GLfloat(_selected.m_size.x) / 2)); x < Sint32(ceil(GLfloat(_selected.m_size.x) / 2)); x++)
 					{
-						if(m_guiStamp->findComponent("BUTTON_USE_GROUND")->isSelected() != 0)
-							m_map->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_ground[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						if(m_guiStamp->findComponent("BUTTON_USE_WORLD")->isSelected() != 0)
-							m_map->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_world[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						if(m_guiStamp->findComponent("BUTTON_USE_ENTITY")->isSelected() != 0)
-							m_map->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_entity[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
-						if(m_guiStamp->findComponent("BUTTON_USE_SKY")->isSelected() != 0)
-							m_map->setTile(3, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_sky[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+						for(Sint32 y = Sint32(ceil(-GLfloat(_selected.m_size.y) / 2)); y < Sint32(ceil(GLfloat(_selected.m_size.y) / 2)); y++)
+						{
+							if(m_guiStamp->findComponent("BUTTON_USE_GROUND")->isSelected() != 0)
+								m_map->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_ground[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							if(m_guiStamp->findComponent("BUTTON_USE_WORLD")->isSelected() != 0)
+								m_map->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_world[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							if(m_guiStamp->findComponent("BUTTON_USE_ENTITY")->isSelected() != 0)
+								m_map->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_entity[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							if(m_guiStamp->findComponent("BUTTON_USE_SKY")->isSelected() != 0)
+								m_map->setTile(3, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_sky[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+						}
 					}
 				}
+				break;
 			}
-			break;
 		}
 	}
 	else if(m_rmbDown && (_rValue & 1) == 0)
