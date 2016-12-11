@@ -54,7 +54,6 @@ void CTileSet::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseS
 	{
 		if(p_mouseStates[0] == 1)
 		{
-			std::cout << Sint16(GLfloat(p_mousePos.x - m_pos.x + (GLfloat(m_scroll.x) / m_tileSize) * m_tileSize)) << std::endl;
 			if(Sint16(GLfloat(p_mousePos.x - m_pos.x + (GLfloat(m_scroll.x) / m_tileSize) * m_tileSize) < m_tileSheet.getSize().x) &&
 				Sint16(GLfloat(p_mousePos.y - m_pos.y + (GLfloat(m_scroll.y) / m_tileSize) * m_tileSize) < m_tileSheet.getSize().y))
 				m_selectedTile = {Sint16(GLfloat(p_mousePos.x - m_pos.x + m_scroll.x) / m_tileSize),

@@ -89,6 +89,11 @@ public:
 	Uint16 getEntitySize();
 	void removeEntity(Uint16 p_index);
 
+	void startEdit();
+	void stopEdit();
+	void undo();
+	void redo();
+
 	void render(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
 
 	virtual void save();
@@ -116,10 +121,21 @@ protected:
 	bool m_initialized;
 
 
-
 	struct Edit
 	{
-		std::vector<Uint16> m_tile;
+		struct Tile
+		{
+			Tile(){}
+			Tile(Uint16 p_layer, Uint16 p_x, Uint16 p_y, Uint16 p_id) : layer(p_layer), x(p_x), y(p_y), id(p_id)
+			{}
+			Uint16 layer, x, y, id;
+		};
+		std::vector<Tile> m_tile;
 	};
-	std::vector<Edit> m_edits; // For undoing/redoing
+	Edit m_currentUndoEdit;
+	Edit m_currentRedoEdit;
+	std::vector<Edit> m_undoEdits; // For undoing
+	std::vector<Edit> m_redoEdits; // For redoing
+	Sint32 m_cEdit; // Current edit counter, for redoing
+	bool m_editting;
 };

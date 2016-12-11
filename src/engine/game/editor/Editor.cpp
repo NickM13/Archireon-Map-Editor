@@ -223,12 +223,24 @@ void Editor::input()
 	{
 		m_pauseScreens[m_cPauseScreen]->findComponent("BUTTON_SET")->setState(1);
 	}
+	if(getPause() == "" && Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] != 0 && Globals::getInstance().m_keyStates[GLFW_KEY_Z] == 1)
+	{
+		m_map->undo();
+	}
+	if(getPause() == "" && Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] != 0 && Globals::getInstance().m_keyStates[GLFW_KEY_Y] == 1)
+	{
+		m_map->redo();
+	}
 
 	if(Globals::getInstance().m_mouseStates[0] == 1)
 	{
 		if(m_mouseInArea)
 		{
-			m_lmbDown = true;
+			if(!m_lmbDown)
+			{
+				m_map->startEdit();
+				m_lmbDown = true;
+			}
 			if(m_selectLayer->getSelectedButton() == 4)
 				m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
 		}
@@ -239,9 +251,12 @@ void Editor::input()
 			m_rmbDown = true;
 	}
 
-	if(Globals::getInstance().m_mouseStates[0] == 0)
+	if(m_lmbDown && Globals::getInstance().m_mouseStates[0] == 0)
+	{
+		m_map->stopEdit();
 		m_lmbDown = false;
-	if(Globals::getInstance().m_mouseStates[1] == 0)
+	}
+	if(m_rmbDown && Globals::getInstance().m_mouseStates[1] == 0)
 		m_rmbDown = false;
 
 	if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)

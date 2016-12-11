@@ -21,6 +21,8 @@ bool Map::init()
 
 	m_initialized = true;
 
+	m_cEdit = -1;
+
 	return true;
 }
 
@@ -123,8 +125,12 @@ Vector2<Uint16> Map::getSize()
 
 void Map::setTile(Sint8 p_layer, Sint32 x, Sint32 y, Uint16 p_tile)
 {
-	if(x >= 0 && x < m_mapSize.x && y >= 0 && y < m_mapSize.y)
+	if(m_editting && x >= 0 && x < m_mapSize.x && y >= 0 && y < m_mapSize.y && m_tileData[p_layer][x][y] != p_tile)
+	{
+		m_currentUndoEdit.m_tile.push_back(Edit::Tile(p_layer, x, y, m_tileData[p_layer][x][y]));
+		m_currentRedoEdit.m_tile.push_back(Edit::Tile(p_layer, x, y, p_tile));
 		m_tileData[p_layer][x][y] = p_tile;
+	}
 }
 Uint16 Map::getTile(Sint8 p_layer, Sint32 x, Sint32 y)
 {
@@ -175,6 +181,60 @@ Uint16 Map::getEntitySize()
 void Map::removeEntity(Uint16 p_index)
 {
 	m_entities.erase(m_entities.begin() + p_index);
+}
+
+void Map::startEdit()
+{
+	m_currentUndoEdit = Edit();
+	m_currentRedoEdit = Edit();
+	for(Uint16 i = m_undoEdits.size(); i > m_cEdit + 1; i--)
+	{
+		m_undoEdits.pop_back();
+		m_redoEdits.pop_back();
+	}
+	m_editting = true;
+}
+void Map::stopEdit()
+{
+	if(m_currentUndoEdit.m_tile.size() > 0)
+	{
+		m_undoEdits.push_back(m_currentUndoEdit);
+		m_redoEdits.push_back(m_currentRedoEdit);
+		m_cEdit++;
+	}
+	m_editting = false;
+}
+void Map::undo()
+{
+	if(m_editting)
+		stopEdit();
+	if(m_cEdit >= 0)
+	{
+		Edit::Tile _tile;
+		m_editting = true;
+		for(Uint16 i = 0; i < m_undoEdits[m_cEdit].m_tile.size(); i++)
+		{
+			_tile = m_undoEdits[m_cEdit].m_tile[i];
+			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
+		}
+		m_cEdit--;
+		m_editting = false;
+	}
+}
+void Map::redo()
+{
+	if(m_cEdit < Sint32(m_redoEdits.size()) - 1)
+	{
+		Edit::Tile _tile;
+		m_editting = true;
+		for(Uint16 i = 0; i < m_redoEdits[m_cEdit + 1].m_tile.size(); i++)
+		{
+			_tile = m_redoEdits[m_cEdit + 1].m_tile[i];
+			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
+		}
+		m_cEdit++;
+		m_editting = false;
+	}
 }
 
 void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
