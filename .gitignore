@@ -1,6 +1,7 @@
 Debug/
 Release/
 log/
+bin/
 
 *.sdf
 *.opendb
