@@ -73,6 +73,8 @@ void Game::update()
 	m_deltaUpdate = GLfloat(glfwGetTime() - m_lastUpdate);
 	m_lastUpdate = GLfloat(glfwGetTime());
 
+	Globals::getInstance().m_deltaTime = m_deltaUpdate;
+
 	switch(m_editorState)
 	{
 	case BOARD:

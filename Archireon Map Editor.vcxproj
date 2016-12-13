@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -18,6 +18,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+	<DnxInvisibleFolder Include="$(ProjectDir).vs\" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{183F9B36-D029-4B12-A3AF-1BE7AA0B55FC}</ProjectGuid>
     <RootNamespace>Archireon Map Editor</RootNamespace>
@@ -28,26 +31,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -137,21 +140,21 @@
     <ClCompile Include="src\engine\game\map\Map.cpp" />
     <ClCompile Include="src\engine\game\map\zone\ZoneMap.cpp" />
     <ClCompile Include="src\engine\gfx\font\Font.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\base\Component.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\button\Button.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\console\Console.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\container\Container.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\container\ContainerPanel.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\counter\Counter.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\dropdown\DropDown.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\list\List.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\panel\Panel.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\slider\Slider.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\tabbar\TabBar.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\text\Text.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\text\TextField.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\tileset\Tileset.cpp" />
-    <ClCompile Include="src\engine\gfx\gui\toolbar\Toolbar.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\_Component.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Button.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Console.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Container.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\ContainerPanel.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Counter.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\DropDown.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\List.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Panel.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Slider.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\TabBar.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Text.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\TextField.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Tileset.cpp" />
+    <ClCompile Include="src\engine\gfx\gui\Toolbar.cpp" />
     <ClCompile Include="src\engine\gfx\LTexture.cpp" />
     <ClCompile Include="src\engine\utils\Utilities.cpp" />
     <ClCompile Include="src\engine\utils\variable\manager\ColorManager.cpp" />
@@ -171,21 +174,21 @@
     <ClInclude Include="include\engine\game\map\Map.h" />
     <ClInclude Include="include\engine\game\map\zone\ZoneMap.h" />
     <ClInclude Include="include\engine\gfx\font\Font.h" />
-    <ClInclude Include="include\engine\gfx\gui\base\Component.h" />
-    <ClInclude Include="include\engine\gfx\gui\button\Button.h" />
-    <ClInclude Include="include\engine\gfx\gui\console\Console.h" />
-    <ClInclude Include="include\engine\gfx\gui\container\Container.h" />
-    <ClInclude Include="include\engine\gfx\gui\container\ContainerPanel.h" />
-    <ClInclude Include="include\engine\gfx\gui\counter\Counter.h" />
-    <ClInclude Include="include\engine\gfx\gui\dropdown\DropDown.h" />
-    <ClInclude Include="include\engine\gfx\gui\list\List.h" />
-    <ClInclude Include="include\engine\gfx\gui\toolbar\Toolbar.h" />
-    <ClInclude Include="include\engine\gfx\gui\panel\Panel.h" />
-    <ClInclude Include="include\engine\gfx\gui\slider\Slider.h" />
-    <ClInclude Include="include\engine\gfx\gui\tabbar\TabBar.h" />
-    <ClInclude Include="include\engine\gfx\gui\text\Text.h" />
-    <ClInclude Include="include\engine\gfx\gui\text\TextField.h" />
-    <ClInclude Include="include\engine\gfx\gui\tileset\Tileset.h" />
+    <ClInclude Include="include\engine\gfx\gui\_Component.h" />
+    <ClInclude Include="include\engine\gfx\gui\Button.h" />
+    <ClInclude Include="include\engine\gfx\gui\Console.h" />
+    <ClInclude Include="include\engine\gfx\gui\Container.h" />
+    <ClInclude Include="include\engine\gfx\gui\ContainerPanel.h" />
+    <ClInclude Include="include\engine\gfx\gui\Counter.h" />
+    <ClInclude Include="include\engine\gfx\gui\DropDown.h" />
+    <ClInclude Include="include\engine\gfx\gui\List.h" />
+    <ClInclude Include="include\engine\gfx\gui\Toolbar.h" />
+    <ClInclude Include="include\engine\gfx\gui\Panel.h" />
+    <ClInclude Include="include\engine\gfx\gui\Slider.h" />
+    <ClInclude Include="include\engine\gfx\gui\TabBar.h" />
+    <ClInclude Include="include\engine\gfx\gui\Text.h" />
+    <ClInclude Include="include\engine\gfx\gui\TextField.h" />
+    <ClInclude Include="include\engine\gfx\gui\Tileset.h" />
     <ClInclude Include="include\engine\gfx\LTexture.h" />
     <ClInclude Include="include\engine\utils\Globals.h" />
     <ClInclude Include="include\engine\utils\OpenGL.h" />
@@ -211,10 +214,6 @@
     <None Include="glfw3.dll" />
     <None Include="ILU.dll" />
     <None Include="ILUT.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="res\arial.ttf" />
-    <Font Include="res\expressway.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

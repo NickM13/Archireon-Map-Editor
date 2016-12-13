@@ -116,12 +116,23 @@ void Font::clean()
 	delete[] m_textures;
 }
 
-Sint32 Font::getMessageWidth(std::string p_msg)
+Vector2<Sint32> Font::getMessageWidth(std::string p_msg)
 {
-	Sint32 _rVal = 0;
+	Sint32 _y = 1;
+	Sint32 _rVal = 0, _rMaxVal = 0;
 	for(Sint32 i = 0; i < p_msg.length(); i++)
-		_rVal += m_charWidth[p_msg[i]];
-	return Sint32(_rVal);
+	{
+		if(p_msg[i] == '\n')
+		{
+			_y++;
+			_rMaxVal = max(_rVal, _rMaxVal);
+			_rVal = 0;
+		}
+		else
+			_rVal += m_charWidth[p_msg[i]];
+	}
+	_rMaxVal = max(_rVal, _rMaxVal);
+	return Vector2<Sint32>(_rMaxVal, _y);
 }
 
 inline void pushScreenCoordinateMaterix()
@@ -208,10 +219,10 @@ void Font::print(std::string message, Sint32 x, Sint32 y)
 					case ALIGN_LEFT:
 						break;
 					case ALIGN_CENTER:
-						glTranslatef(-getMessageWidth(message) / 2, 0, 0);
+						glTranslatef(-getMessageWidth(message).x / 2, 0, 0);
 						break;
 					case ALIGN_RIGHT:
-						glTranslatef(-getMessageWidth(message), 0, 0);
+						glTranslatef(-getMessageWidth(message).x, 0, 0);
 						break;
 					default:
 						break;

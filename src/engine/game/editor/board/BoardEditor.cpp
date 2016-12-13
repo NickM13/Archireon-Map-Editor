@@ -11,6 +11,74 @@ void BoardEditor::init()
 
 	Editor::init();
 
+	m_guiWorldSlow = new Container("GUI_SLOW", {0, 600}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldTrap = new Container(*m_guiWorldSlow);
+	m_guiWorldSwitch = new Container(*m_guiWorldSlow);
+	m_guiWorldSolidSwitch = new Container(*m_guiWorldSlow);
+	m_guiWorldPortal = new Container(*m_guiWorldSlow);
+
+	m_guiWorldSlow->addComponent(new CSlider("SLIDER_SLOW", "Slow", {0, 0}, 252, 20, 10, 1), PANEL_ALIGN_CENTER);
+
+
+	m_guiWorld->addComponent(m_guiWorldSlow);
+	m_guiWorld->addComponent(m_guiWorldTrap);
+	m_guiWorld->addComponent(m_guiWorldSwitch);
+	m_guiWorld->addComponent(m_guiWorldSolidSwitch);
+	m_guiWorld->addComponent(m_guiWorldPortal);
+
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setFunction([]()
+	{
+		Sint8 _sel = BoardEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
+		Sint8 _pSel = BoardEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getPrevSelectedItem();
+		if(_sel != _pSel)
+		{
+			switch(_sel)
+			{
+			case 2: // Slow
+				BoardEditor::getInstance().m_guiWorldSlow->setVisible(true);
+				break;
+			case 3: // Trap
+				BoardEditor::getInstance().m_guiWorldTrap->setVisible(true);
+				break;
+			case 4: // Switch
+				BoardEditor::getInstance().m_guiWorldSwitch->setVisible(true);
+				break;
+			case 5: // Solid Switch
+				BoardEditor::getInstance().m_guiWorldSolidSwitch->setVisible(true);
+				break;
+			case 6: // Portal
+				BoardEditor::getInstance().m_guiWorldPortal->setVisible(true);
+				break;
+			}
+			switch(_pSel)
+			{
+			case 2: // Slow
+				BoardEditor::getInstance().m_guiWorldSlow->setVisible(false);
+				break;
+			case 3: // Trap
+				BoardEditor::getInstance().m_guiWorldTrap->setVisible(false);
+				break;
+			case 4: // Switch
+				BoardEditor::getInstance().m_guiWorldSwitch->setVisible(false);
+				break;
+			case 5: // Solid Switch
+				BoardEditor::getInstance().m_guiWorldSolidSwitch->setVisible(false);
+				break;
+			case 6: // Portal
+				BoardEditor::getInstance().m_guiWorldPortal->setVisible(false);
+				break;
+			}
+			BoardEditor::getInstance().m_guiWorld->calcSize();
+		}
+	});
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Slowing");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Trap");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
+
 	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\BoardIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER);
 
 	m_toolbarMenu->addButton("", "File");

@@ -1,6 +1,8 @@
 Debug/
 Release/
+log/
 
 *.sdf
 *.opendb
 *.db
+*.rar

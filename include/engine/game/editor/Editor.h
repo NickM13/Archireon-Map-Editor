@@ -6,19 +6,19 @@
 
 #include "engine\game\map\Map.h"
 
-#include "..\..\gfx\gui\container\Container.h"
-#include "..\..\gfx\gui\container\ContainerPanel.h"
-#include "..\..\gfx\gui\counter\Counter.h"
-#include "..\..\gfx\gui\button\Button.h"
-#include "..\..\gfx\gui\dropdown\DropDown.h"
-#include "..\..\gfx\gui\list\List.h"
-#include "..\..\gfx\gui\panel\Panel.h"
-#include "..\..\gfx\gui\slider\Slider.h"
-#include "..\..\gfx\gui\tabbar\TabBar.h"
-#include "..\..\gfx\gui\text\Text.h"
-#include "..\..\gfx\gui\text\TextField.h"
-#include "..\..\gfx\gui\tileset\Tileset.h"
-#include "..\..\gfx\gui\toolbar\Toolbar.h"
+#include "..\..\gfx\gui\Container.h"
+#include "..\..\gfx\gui\ContainerPanel.h"
+#include "..\..\gfx\gui\Counter.h"
+#include "..\..\gfx\gui\Button.h"
+#include "..\..\gfx\gui\DropDown.h"
+#include "..\..\gfx\gui\List.h"
+#include "..\..\gfx\gui\Panel.h"
+#include "..\..\gfx\gui\Slider.h"
+#include "..\..\gfx\gui\TabBar.h"
+#include "..\..\gfx\gui\Text.h"
+#include "..\..\gfx\gui\TextField.h"
+#include "..\..\gfx\gui\Tileset.h"
+#include "..\..\gfx\gui\Toolbar.h"
 
 class Editor
 {

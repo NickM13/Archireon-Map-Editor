@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma warning( disable : 6031 )
-
 #include "engine\utils\variable\datatype\Macros.h"
 #include "engine\utils\variable\datatype\Rectangle.h"
 #include "engine\utils\variable\datatype\Vector2.h"
@@ -21,6 +19,7 @@ public:
 		Uint16 m_frequency;
 		std::string m_portalDest;
 		Uint16 m_destX, m_destY;
+		Uint8 m_density;
 
 		WorldObject(std::string p_name, Uint16 p_interactionType, Uint16 p_tileTex, Uint16 p_frequency = 0, std::string p_portalDest = "", Uint16 p_destX = 0, Uint16 p_destY = 0)
 		{
@@ -96,7 +95,7 @@ public:
 	void redo();
 
 	bool isFilling() {return m_filling;};
-	void startFill(Uint16 p_layer, Uint16 p_id, Vector2<Sint32> p_pos);
+	void startFill(Sint8 p_layer, Uint16 p_id, Vector2<Sint32> p_pos);
 	void moveFill(Vector2<Sint32> p_pos);
 	void stopFill();
 
@@ -128,7 +127,8 @@ protected:
 
 
 	bool m_filling;
-	Uint16 m_fillLayer, m_fillTileId;
+	Sint8 m_fillLayer;
+	Uint16 m_fillTileId;
 	Vector2<Sint32> m_fillStart, m_fillEnd;
 
 

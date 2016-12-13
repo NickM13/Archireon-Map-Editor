@@ -62,23 +62,18 @@ void Editor::init()
 
 
 
-	m_guiWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>(0, 170), Vector2<Sint32>(256, 1), 1), PANEL_ALIGN_TOP);
+	m_guiWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>(0, 204), Vector2<Sint32>(256, 1), 1), PANEL_ALIGN_TOP);
 
 	m_guiWorldPortal->addComponent(new TextField("TEXTFIELD_PORTAL", "Destination ", {(m_guiWorldPortal->getSize().x - (256)) / 2, 416}, Vector2<Sint32>(256, 1), 1));
 	m_guiWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_X", "X:", {0, 440}, {0, 500}, 1, 0));
 	m_guiWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_Y", "Y:", {0, 460}, {0, 500}, 1, 0));
 
-	m_guiWorld->addComponent(new CDropDown("DROPDOWN_INTERACT", "Interaction Type", {0, 296}, {264, 32}, 1), PANEL_ALIGN_TOP);
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
+	m_guiWorld->addComponent(new CDropDown("DROPDOWN_INTERACT", "Interaction Type", {0, 250}, {264, 32}, 1), PANEL_ALIGN_TOP);
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setPriorityLayer(5);
 
 	m_guiWorldSwitch->addComponent(new CCounter("COUNTER_SWITCH_FREQUENCY", "Freq.", {0, 440}, {0, 255}, 1, 0));
 
-	m_guiWorld->addComponent(new CButton("BUTTON_DELETE", "", LTexture::getInstance().getImage("gui\\Trash.png"), {3, 646}, {24, 24}, 1), PANEL_ALIGN_TOP_RIGHT);
+	m_guiWorld->addComponent(new CButton("BUTTON_DELETE", "", LTexture::getInstance().getImage("gui\\Trash.png"), {6, 6}, {24, 24}, 1), PANEL_ALIGN_TOP_RIGHT);
 
 
 
@@ -116,8 +111,8 @@ void Editor::init()
 
 
 	m_tileSetGround = new CTileSet("TILESET_GROUND", "Ground Tile Set", {0, 34}, {256, 256}, 32, m_map->getTextureGround(), 1);
-	m_tileSetWorld = new CTileSet("TILESET_WORLD", "World Tile Set", {0, 360}, {256, 256}, 32, m_map->getTextureWorld(), 1);
-	m_tileSetEntity = new CTileSet("TILESET_ENTITY", "Spritesheet", {0, 92}, {256, 256}, 32, Texture(), 1);
+	m_tileSetWorld = new CTileSet("TILESET_WORLD", "World Tile Set", {0, 318}, {256, 256}, 32, m_map->getTextureWorld(), 1);
+	m_tileSetEntity = new CTileSet("TILESET_ENTITY", "Spritesheet", {0, 82}, {256, 256}, 32, Texture(), 1);
 	m_tileSetSky = new CTileSet("TILESET_SKY", "Sky Tile Set", {0, 32}, {256, 256}, 32, m_map->getTextureSky(), 1);
 	m_tileSetStamps = new CTileSet("TILESET_WORLD", "TODO: Preview", {0, 88}, {256, 256}, 32, Texture(), 1);
 
@@ -129,7 +124,7 @@ void Editor::init()
 
 
 
-	m_listWorld = new CList("LIST_WORLD", "World Object List", {0, 32}, {256, 4}, 32, m_map->getTextureWorld(), 1);
+	m_listWorld = new CList("LIST_WORLD", "World Object List", {0, 64}, {256, 4}, 32, m_map->getTextureWorld(), 1);
 	m_listWorld->addItem({"None", 0});
 	m_map->addWorldObject(Map::WorldObject("None", 0, 0));
 	m_guiWorld->addComponent(m_listWorld, PANEL_ALIGN_TOP);
@@ -190,7 +185,7 @@ std::string Editor::getPause()
 void Editor::input()
 {
 	Vector2<Sint32> _mousePos = Globals::getInstance().m_mousePos;
-	Sint8 _rValue = 0; // input flags: 1 = mouse click, 2 = key press, 4 = mouse scroll
+	Sint8 _rValue = 0; // Input flags: 1 = mouse click, 2 = key press, 4 = mouse scroll
 	Vector2<GLfloat> _camPos = m_camPos * (TILE_SIZE + m_zoom);
 
 	m_guiAll->input(_rValue, Globals::getInstance().m_keyStates, Globals::getInstance().m_mouseStates, _mousePos);
@@ -228,39 +223,36 @@ void Editor::input()
 	if(getPause() == "" && Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] != 0 && Globals::getInstance().m_keyStates[GLFW_KEY_Y] == 1)
 		m_map->redo();
 
-	if(Globals::getInstance().m_mouseStates[0] == 1)
+	if(Globals::getInstance().m_mouseStates[0] == 1 && m_mouseInArea)
 	{
-		if(m_mouseInArea)
+		if(!m_lmbDown)
 		{
-			if(!m_lmbDown)
+			if(Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_SHIFT] == 0)
+				m_map->startEdit();
+			else
 			{
-				if(Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_SHIFT] == 0)
-					m_map->startEdit();
-				else
+				switch(m_selectLayer->getSelectedButton())
 				{
-					switch(m_selectLayer->getSelectedButton())
-					{
-					case 0:
-						m_map->startFill(0, m_tileSetGround->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
-						break;
-					case 1:
-						m_map->startFill(1, m_listWorld->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
-						break;
-					case 2:
-						m_map->startEdit();
-						break;
-					case 3:
-						m_map->startFill(3, m_tileSetSky->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
-						break;
-					}
+				case 0:
+					m_map->startFill(0, m_tileSetGround->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+					break;
+				case 1:
+					m_map->startFill(1, m_listWorld->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+					break;
+				case 2:
+					m_map->startEdit();
+					break;
+				case 3:
+					m_map->startFill(3, m_tileSetSky->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+					break;
 				}
-				m_lmbDown = true;
 			}
-			if(m_selectLayer->getSelectedButton() == 4)
-				m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
+			m_lmbDown = true;
 		}
+		if(m_selectLayer->getSelectedButton() == 4)
+			m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
 	}
-	if(Globals::getInstance().m_mouseStates[1] == 1)
+	if(Globals::getInstance().m_mouseStates[1] == 1 && m_mouseInArea)
 	{
 		if(m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)))
 			m_rmbDown = true;
@@ -278,9 +270,7 @@ void Editor::input()
 	if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)
 	{
 		if(m_map->isFilling())
-		{
 			m_map->moveFill(Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
-		}
 		else
 		{
 			switch(m_selectLayer->getSelectedButton())
@@ -299,9 +289,7 @@ void Editor::input()
 				break;
 			case 4:
 				if(m_listStamps->getSelectedItem() == 0)
-				{
 					m_selectEnd = {Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))};
-				}
 				else
 				{
 					Stamp _selected = m_stamps[m_listStamps->getSelectedItem()];
@@ -610,7 +598,6 @@ void Editor::render()
 	{
 		m_map->render(m_camPos, m_zoom);
 
-
 		Vector2<Sint32> _topLeft, _botRight;
 		_topLeft = Vector2<Sint32>(min(m_selectStart.x * TILE_SIZE, m_selectEnd.x * TILE_SIZE), min(m_selectStart.y * TILE_SIZE, m_selectEnd.y * TILE_SIZE));
 		_botRight = Vector2<Sint32>(max(m_selectStart.x * TILE_SIZE, m_selectEnd.x * TILE_SIZE), max(m_selectStart.y * TILE_SIZE, m_selectEnd.y * TILE_SIZE)) + TILE_SIZE;
@@ -686,4 +673,38 @@ void Editor::render()
 	glPopMatrix();
 
 	m_guiAll->render();
+
+	std::string _tooltip = Globals::getInstance().m_tooltip;
+
+	if(_tooltip != "")
+	{
+		Vector2<Sint32> _size = Vector2<Sint32>(Font::getInstance().getMessageWidth(_tooltip).x + 12, Font::getInstance().getSpacingHeight() * Font::getInstance().getMessageWidth(_tooltip).y + 6);
+
+		glPushMatrix();
+		{
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glTranslatef(m_mouseBuffer.x, m_mouseBuffer.y, 0);
+			glTranslatef((m_mouseBuffer.x - _size.x > -(Globals::getInstance().m_screenSize.x / 2) ? -_size.x : 0), (m_mouseBuffer.y - _size.y < -(Globals::getInstance().m_screenSize.y / 2) ? 0 : -_size.y), 0);
+			glBegin(GL_QUADS);
+			{
+				glColor4f(0, 0, 0, 0.5f);
+				glVertex2f(-1, -1);
+				glVertex2f(_size.x + 1, -1);
+				glVertex2f(_size.x + 1, _size.y + 1);
+				glVertex2f(-1, _size.y + 1);
+
+				glColor4f(1, 1, 1, 0.05f);
+				glVertex2f(0, 0);
+				glVertex2f(_size.x, 0);
+				glVertex2f(_size.x, _size.y);
+				glVertex2f(0, _size.y);
+			}
+			glEnd();
+			glColor3f(1, 1, 1);
+			Font::getInstance().setAlignment(ALIGN_CENTER);
+			Font::getInstance().print(_tooltip, _size.x / 2, Font::getInstance().getHeight() + 2);
+		}
+		glPopMatrix();
+		Globals::getInstance().m_tooltip = "";
+	}
 }

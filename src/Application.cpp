@@ -122,6 +122,10 @@ void Application::mousePressCallback(GLFWwindow* p_window, int p_button, int p_s
 
 void Application::mouseMovedCallback(GLFWwindow* p_window, double p_x, double p_y)
 {
+	if(Globals::getInstance().m_mousePos.x != Sint32(p_x - m_screenSize.x / 2) && Globals::getInstance().m_mousePos.y != Sint32(p_y - m_screenSize.y / 2))
+		Globals::getInstance().m_mouseMoved = true;
+	else
+		Globals::getInstance().m_mouseMoved = false;
 	Globals::getInstance().m_mousePos = Vector2<Sint32>(Sint32(p_x - m_screenSize.x / 2), Sint32(p_y - m_screenSize.y / 2));
 }
 
@@ -196,6 +200,7 @@ void Application::update()
 
 void Application::render()
 {
+	glLoadIdentity();
 	Game::getInstance().render();
 
 	glfwSwapBuffers(m_mainWindow);

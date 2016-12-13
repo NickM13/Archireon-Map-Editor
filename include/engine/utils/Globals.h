@@ -3,6 +3,7 @@
 #include "engine\utils\variable\datatype\Vector2.h"
 #include "engine\utils\Singleton.h"
 #include <vector>
+#include <string>
 
 class Globals : public Singleton< Globals >
 {
@@ -12,9 +13,12 @@ public:
 	Globals(const Globals&) {};
 	Globals operator=(const Globals&) {};
 
+	std::string m_tooltip;
 	float m_fps;
+	float m_deltaTime;
 	Vector2<Sint32> m_screenSize;
 	Vector2<Sint32> m_mousePos;
+	bool m_mouseMoved;
 	bool m_developer;
 	Sint8 m_keyStates[1024];
 	Sint8 m_specStates[256];

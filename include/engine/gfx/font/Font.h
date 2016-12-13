@@ -26,7 +26,7 @@ public:
 	void clean();
 
 	Sint16 getHeight() {return m_height;};
-	Sint32 getMessageWidth(std::string p_msg);
+	Vector2<Sint32> getMessageWidth(std::string p_msg);
 	GLfloat getSpacingHeight() {return m_height * 1.8f;};	/*Value with height multiplied*/
 	GLfloat getSpacing() {return 1.8f;};					/*Value without height multiplied*/
 

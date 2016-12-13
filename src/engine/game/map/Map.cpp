@@ -223,7 +223,7 @@ void Map::startEdit()
 {
 	m_currentUndoEdit = Edit();
 	m_currentRedoEdit = Edit();
-	for(Uint16 i = m_undoEdits.size(); i > m_cEdit + 1; i--)
+	for(Uint16 i = Uint16(m_undoEdits.size()); i > m_cEdit + 1; i--)
 	{
 		m_undoEdits.pop_back();
 		m_redoEdits.pop_back();
@@ -275,7 +275,7 @@ void Map::redo()
 	}
 }
 
-void Map::startFill(Uint16 p_layer, Uint16 p_id, Vector2<Sint32> p_pos)
+void Map::startFill(Sint8 p_layer, Uint16 p_id, Vector2<Sint32> p_pos)
 {
 	m_fillLayer = p_layer;
 	m_fillTileId = p_id;
@@ -309,12 +309,18 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 	_tilesheetSize = getTextureGround().getSize();
 	glBindTexture(GL_TEXTURE_2D, getTextureGround().getId());
 
-	GLfloat _texCorrection = 1.f / (_tilesheetSize.x * 2);
+	Vector2<GLfloat> _texCorrection = Vector2<GLfloat>(0.5f, 0.5f) / _tilesheetSize;
 	p_camPos = p_camPos + Vector2<GLfloat>(1, 1);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glPushMatrix();
 	{
-		glScalef(_tileSize, _tileSize, 1);
+		if(_tileSize != m_tileSize)
+			glScalef(_tileSize, _tileSize, 1);
+		else
+			glScalef(m_tileSize, m_tileSize, 1);
 		if(m_layerVisible[0]) // Ground
 		{
 			for(Sint32 x = Sint32(floor(m_viewSize.x / _tileSize)) - 1; x <= Sint32(ceil(m_viewSize.w / _tileSize) - 1); x++)
@@ -331,23 +337,23 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 
 							glBegin(GL_QUADS);
 							{
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 							}
@@ -373,23 +379,23 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 							glTranslatef(-p_camPos.x + 1, -p_camPos.y + 1, 0);
 							glBegin(GL_QUADS);
 							{
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
@@ -406,7 +412,7 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 
 
 		_tilesheetSize = getTextureWorld().getSize();
-		_texCorrection = 1.f / (_tilesheetSize.x * 2);
+		_texCorrection = Vector2<GLfloat>(0.5f, 0.5f) / _tilesheetSize;
 		glBindTexture(GL_TEXTURE_2D, getTextureWorld().getId());
 
 		if(m_layerVisible[1]) // World
@@ -425,23 +431,23 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 
 							glBegin(GL_QUADS);
 							{
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 							}
@@ -587,23 +593,23 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 							glTranslatef(-p_camPos.x + 1, -p_camPos.y + 1, 0);
 							glBegin(GL_QUADS);
 							{
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
@@ -620,7 +626,6 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 
 		Font::getInstance().setAlignment(ALIGN_CENTER);
 
-		_texCorrection = 0;
 		if(m_layerVisible[2]) // Entities
 		{
 			glColor3f(1, 1, 1);
@@ -628,10 +633,11 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 			{
 				glBindTexture(GL_TEXTURE_2D, m_entities[i].m_entityTex.getId());
 				_tilesheetSize = m_entities[i].m_entityTex.getSize();
-				if(p_zoom != 0)
-					_texCorrection = 1.f / (_tilesheetSize.x * 2);
+				_texCorrection = Vector2<GLfloat>(0.5f, 0.5f) / _tilesheetSize;
 				glPushMatrix();
 				{
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 					glTranslatef(GLfloat(m_entities[i].m_pos.x + 1) - p_camPos.x, GLfloat(m_entities[i].m_pos.y + 1) - p_camPos.y, 0);
 					glBegin(GL_QUADS);
 					{
@@ -645,13 +651,13 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 						}
 						else
 						{
-							glTexCoord2f((1.f / _tilesheetSize.x) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize))) + _texCorrection,  -(floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / _tilesheetSize.y)));
+							glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + _texCorrection.x,  1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / (_tilesheetSize.y / m_tileSize)) - _texCorrection.y));
 							glVertex2f(0, 1);
-							glTexCoord2f((1.f / _tilesheetSize.x) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize))) + 1.f / _tilesheetSize.x - _texCorrection,  -(floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / _tilesheetSize.y)));
+							glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + (1.f / (_tilesheetSize.x / m_tileSize)) - _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / (_tilesheetSize.y / m_tileSize)) - _texCorrection.y));
 							glVertex2f(1, 1);
-							glTexCoord2f((1.f / _tilesheetSize.x) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize))) + 1.f / _tilesheetSize.x - _texCorrection,  -(floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize)));
+							glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + (1.f / (_tilesheetSize.x / m_tileSize)) - _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + _texCorrection.y));
 							glVertex2f(1, 0);
-							glTexCoord2f((1.f / _tilesheetSize.x) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize))) + _texCorrection,  -(floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize)));
+							glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + _texCorrection.x,  1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + _texCorrection.y));
 							glVertex2f(0, 0);
 						}
 					}
@@ -664,8 +670,11 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 
 
 		_tilesheetSize = getTextureSky().getSize();
-		_texCorrection = 1.f / (_tilesheetSize.x * 2);
+		_texCorrection = Vector2<GLfloat>(0.5f, 0.5f) / _tilesheetSize;
 		glBindTexture(GL_TEXTURE_2D, getTextureSky().getId());
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		if(m_layerVisible[3]) // Sky
 		{
@@ -683,23 +692,23 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 
 							glBegin(GL_QUADS);
 							{
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 							}
@@ -725,23 +734,23 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 							glTranslatef(-p_camPos.x + 1, -p_camPos.y + 1, 0);
 							glBegin(GL_QUADS);
 							{
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection);
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1 - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize))) - _texCorrection.y);
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y - (y == (floor(m_viewSize.y) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) - 1 : fmod(-p_camPos.y, 1)) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + 1.f / (_tilesheetSize.x / m_tileSize) - _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x + 1 - (x == (ceil(m_viewSize.w) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) : fmod(-p_camPos.x, 1) + 1) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
-								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection),
-									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection));
+								glTexCoord2f(GLfloat(GLfloat(_tile % (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.x / m_tileSize) + _texCorrection.x),
+									GLfloat(1.f - (floor(_tile / (_tilesheetSize.x / m_tileSize)) / (_tilesheetSize.y / m_tileSize) + 1.f / (_tilesheetSize.y / m_tileSize)) + _texCorrection.y));
 								glVertex2f(GLfloat(x - (x == (floor(m_viewSize.x) - 1) ? (p_camPos.x < 0 ? fmod(-p_camPos.x - 1, 1) - 1 : fmod(-p_camPos.x, 1)) : 0)),
 									GLfloat(y + 1 - (y == (ceil(m_viewSize.h) - 1) ? (p_camPos.y < 0 ? fmod(-p_camPos.y - 1, 1) : fmod(-p_camPos.y, 1) + 1) : 0)));
 
@@ -767,25 +776,25 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 				glBegin(GL_QUADS);
 				{
 					glVertex2f(0, 0);
-					glVertex2f(abs(m_fillStart.x - m_fillEnd.x) + 1, 0);
-					glVertex2f(abs(m_fillStart.x - m_fillEnd.x) + 1, abs(m_fillStart.y - m_fillEnd.y) + 1);
-					glVertex2f(0, abs(m_fillStart.y - m_fillEnd.y) + 1);
+					glVertex2f(GLfloat(abs(m_fillStart.x - m_fillEnd.x)) + 1, 0);
+					glVertex2f(GLfloat(abs(m_fillStart.x - m_fillEnd.x)) + 1, GLfloat(abs(m_fillStart.y - m_fillEnd.y)) + 1);
+					glVertex2f(0, GLfloat(abs(m_fillStart.y - m_fillEnd.y)) + 1);
 				}
 				glEnd();
 				glColor4f(0.5f, 0.5f, 1, 0.5f);
 				glBegin(GL_LINES);
 				{
-					glVertex2f(0, abs(m_fillStart.y - m_fillEnd.y) + 1);
+					glVertex2f(0, GLfloat(abs(m_fillStart.y - m_fillEnd.y)) + 1);
 					glVertex2f(0, 0);
 
 					glVertex2f(0, 0);
-					glVertex2f(abs(m_fillStart.x - m_fillEnd.x) + 1, 0);
+					glVertex2f(GLfloat(abs(m_fillStart.x - m_fillEnd.x)) + 1, 0);
 
-					glVertex2f(abs(m_fillStart.x - m_fillEnd.x) + 1, 0);
-					glVertex2f(abs(m_fillStart.x - m_fillEnd.x) + 1, abs(m_fillStart.y - m_fillEnd.y) + 1);
+					glVertex2f(GLfloat(abs(m_fillStart.x - m_fillEnd.x)) + 1, 0);
+					glVertex2f(GLfloat(abs(m_fillStart.x - m_fillEnd.x)) + 1, GLfloat(abs(m_fillStart.y - m_fillEnd.y)) + 1);
 
-					glVertex2f(abs(m_fillStart.x - m_fillEnd.x) + 1, abs(m_fillStart.y - m_fillEnd.y) + 1);
-					glVertex2f(0, abs(m_fillStart.y - m_fillEnd.y) + 1);
+					glVertex2f(GLfloat(abs(m_fillStart.x - m_fillEnd.x)) + 1, GLfloat(abs(m_fillStart.y - m_fillEnd.y)) + 1);
+					glVertex2f(0, GLfloat(abs(m_fillStart.y - m_fillEnd.y)) + 1);
 				}
 				glEnd();
 
@@ -836,7 +845,7 @@ void Map::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
 	glPopMatrix();
 	if(m_layerVisible[2])
 		for(Uint16 i = 1; i < m_entities.size(); i++)
-			Font::getInstance().print(m_entities[i].m_name, (GLfloat(m_entities[i].m_pos.x + 1) * _tileSize - p_camPos.x * _tileSize) + _tileSize / 2, (GLfloat(m_entities[i].m_pos.y + 1) * _tileSize - p_camPos.y * _tileSize) - Font::getInstance().getHeight() / 2 - 1);
+			Font::getInstance().print(m_entities[i].m_name, Sint32(GLfloat(m_entities[i].m_pos.x + 1) * _tileSize - p_camPos.x * _tileSize) + _tileSize / 2, Sint32(GLfloat(m_entities[i].m_pos.y + 1) * _tileSize - p_camPos.y * _tileSize) - Font::getInstance().getHeight() / 2 - 1);
 }
 
 void Map::save()

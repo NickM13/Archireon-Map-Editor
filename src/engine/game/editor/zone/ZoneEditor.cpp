@@ -11,7 +11,57 @@ void ZoneEditor::init()
 
 	Editor::init();
 
-	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\ZoneIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER);
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setFunction([]()
+	{
+		Sint8 _sel = ZoneEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
+		Sint8 _pSel = ZoneEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getPrevSelectedItem();
+		if(_sel != _pSel)
+		{
+			switch(_sel)
+			{
+			case 0:
+
+				break;
+			case 1:
+
+				break;
+			case 2:
+
+				break;
+			case 3:
+
+				break;
+			case 4:
+
+				break;
+			}
+			switch(_pSel)
+			{
+			case 0:
+
+				break;
+			case 1:
+
+				break;
+			case 2:
+
+				break;
+			case 3:
+
+				break;
+			case 4:
+
+				break;
+			}
+		}
+	});
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
+
+	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\ZoneIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER)->setTooltip("This is a tooltip");
 
 	m_toolbarMenu->addButton("", "File");
 	{

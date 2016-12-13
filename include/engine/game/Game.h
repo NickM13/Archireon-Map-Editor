@@ -11,20 +11,6 @@
 #include "editor\board\BoardEditor.h"
 #include "editor\zone\ZoneEditor.h"
 
-#include "..\gfx\gui\container\Container.h"
-#include "..\gfx\gui\container\ContainerPanel.h"
-#include "..\gfx\gui\counter\Counter.h"
-#include "..\gfx\gui\button\Button.h"
-#include "..\gfx\gui\dropdown\DropDown.h"
-#include "..\gfx\gui\list\List.h"
-#include "..\gfx\gui\panel\Panel.h"
-#include "..\gfx\gui\slider\Slider.h"
-#include "..\gfx\gui\tabbar\TabBar.h"
-#include "..\gfx\gui\text\Text.h"
-#include "..\gfx\gui\text\TextField.h"
-#include "..\gfx\gui\tileset\Tileset.h"
-#include "..\gfx\gui\toolbar\Toolbar.h"
-
 #include <vector>
 
 class Game : public Singleton<Game>
