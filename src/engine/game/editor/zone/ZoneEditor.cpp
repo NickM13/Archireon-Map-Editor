@@ -11,57 +11,120 @@ void ZoneEditor::init()
 
 	Editor::init();
 
+	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\BoardIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER)->setTooltip("Switch to Battlefield editor");
+
+	m_guiWorldSwitch = new Container("GUI_SWITCH", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldSolidSwitch = new Container("GUI_SOLID_SWITCH", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldPortal = new Container("GUI_PORTAL", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldDirection = new Container("GUI_DIRECTION", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+
+	m_guiWorldSwitch->addComponent(new CSlider("SLIDER_FREQUENCY", "Frequency", {0, 0}, 252, 255, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_guiWorldSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(ZoneEditor::getInstance().m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->getValue());
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_frequency = ZoneEditor::getInstance().m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->getValue();
+	})->setTooltip("Frequency of switch - which other switches\n or portals it aligns with.\nFreq. 0 means deactive.");
+	m_guiWorldSwitch->addComponent(new NumberField("NUMFIELD_FREQUENCY", "", {0, 18}, {252, 1}, {0, 255}, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->setValue(ZoneEditor::getInstance().m_guiWorldSwitch->findComponent("NUMFIELD_FREQUENCY")->getValue());
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_frequency = ZoneEditor::getInstance().m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->getValue();
+	});
+
+	m_guiWorldSolidSwitch->addComponent(new CSlider("SLIDER_FREQUENCY", "Frequency", {0, 0}, 252, 255, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_guiWorldSolidSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(ZoneEditor::getInstance().m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->getValue());
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_frequency = ZoneEditor::getInstance().m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->getValue();
+	})->setTooltip("Frequency of solid - which switch needs\n to be active to pass.\nFreq. 0 means solid.");
+	m_guiWorldSolidSwitch->addComponent(new NumberField("NUMFIELD_FREQUENCY", "", {0, 18}, {252, 1}, {0, 255}, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->setValue(ZoneEditor::getInstance().m_guiWorldSolidSwitch->findComponent("NUMFIELD_FREQUENCY")->getValue());
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_frequency = ZoneEditor::getInstance().m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->getValue();
+	});
+
+	m_guiWorldPortal->addComponent(new CSlider("SLIDER_FREQUENCY", "Frequency", {0, 0}, 252, 255, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_guiWorldPortal->findComponent("NUMFIELD_FREQUENCY")->setValue(ZoneEditor::getInstance().m_guiWorldPortal->findComponent("SLIDER_FREQUENCY")->getValue());
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_frequency = ZoneEditor::getInstance().m_guiWorldPortal->findComponent("SLIDER_FREQUENCY")->getValue();
+	})->setTooltip("Frequency of portal - which switch needs\n to be active to use.\nFreq. 0 means always active.");
+	m_guiWorldPortal->addComponent(new NumberField("NUMFIELD_FREQUENCY", "", {0, 18}, {252, 1}, {0, 255}, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_guiWorldPortal->findComponent("SLIDER_FREQUENCY")->setValue(ZoneEditor::getInstance().m_guiWorldPortal->findComponent("NUMFIELD_FREQUENCY")->getValue());
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_frequency = ZoneEditor::getInstance().m_guiWorldPortal->findComponent("SLIDER_FREQUENCY")->getValue();
+	});
+
+	m_guiWorldPortal->addComponent(new CText("TEXT_POS", "Destination", {0, 58}, {200, 24}, ALIGN_CENTER, Color(24, 24, 24, 255)), PANEL_ALIGN_CENTER);
+	m_guiWorldPortal->addComponent(new TextField("TEXTFIELD_NAME", "Zone Name", {0, 66}, {252, 1}, 1), PANEL_ALIGN_CENTER)->setFunction([]() 
+	{
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_portalDest = ZoneEditor::getInstance().m_guiWorldPortal->findComponent("TEXTFIELD_NAME")->getTitle();
+	})->setTooltip("Leave blank for current zone.");
+	m_guiWorldPortal->addComponent(new NumberField("NUMFIELD_X", "X:", {0, 96}, {92, 1}, {0, 10000}, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_destX = ZoneEditor::getInstance().m_guiWorldPortal->findComponent("NUMFIELD_X")->getValue();
+	});
+	m_guiWorldPortal->addComponent(new NumberField("NUMFIELD_Y", "Y:", {0, 120}, {92, 1}, {0, 10000}, 0), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_destY = ZoneEditor::getInstance().m_guiWorldPortal->findComponent("NUMFIELD_Y")->getValue();
+	});
+
+	m_guiWorldDirection->addComponent(new CDropDown("DROPDOWN_DIRECTION", "Direction", {0, 0}, {264, 32}, 1), PANEL_ALIGN_CENTER)->setFunction([]()
+	{
+		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_direction = ZoneEditor::getInstance().m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->getSelectedItem();
+	})->setTooltip("Which direction the unit is pushed when stepping on this tile");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Up");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Right");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Down");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Left");
+	m_guiWorldDirection->updateSize();
+
+	m_guiWorld->addComponent(m_guiWorldSwitch, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldSolidSwitch, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldPortal, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldDirection, PANEL_ALIGN_CENTER);
+
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setFunction([]()
 	{
-		Sint8 _sel = ZoneEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
-		Sint8 _pSel = ZoneEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getPrevSelectedItem();
+		Sint16 _sel = ZoneEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
+		Sint16 _pSel = ZoneEditor::getInstance().m_guiWorld->findComponent("DROPDOWN_INTERACT")->getPrevSelectedItem();
 		if(_sel != _pSel)
 		{
 			switch(_sel)
 			{
-			case 0:
-
+			case 2: // Switch
+				ZoneEditor::getInstance().m_guiWorldSwitch->setVisible(true);
 				break;
-			case 1:
-
+			case 3: // Solid Switch
+				ZoneEditor::getInstance().m_guiWorldSolidSwitch->setVisible(true);
 				break;
-			case 2:
-
+			case 4: // Portal
+				ZoneEditor::getInstance().m_guiWorldPortal->setVisible(true);
 				break;
-			case 3:
-
-				break;
-			case 4:
-
+			case 5: // Directional
+				ZoneEditor::getInstance().m_guiWorldDirection->setVisible(true);
 				break;
 			}
 			switch(_pSel)
 			{
-			case 0:
-
+			case 2: // Switch
+				ZoneEditor::getInstance().m_guiWorldSwitch->setVisible(false);
 				break;
-			case 1:
-
+			case 3: // Solid Switch
+				ZoneEditor::getInstance().m_guiWorldSolidSwitch->setVisible(false);
 				break;
-			case 2:
-
+			case 4: // Portal
+				ZoneEditor::getInstance().m_guiWorldPortal->setVisible(false);
 				break;
-			case 3:
-
-				break;
-			case 4:
-
+			case 5: // Directional
+				ZoneEditor::getInstance().m_guiWorldDirection->setVisible(false);
 				break;
 			}
 		}
+		ZoneEditor::getInstance().m_guiWorld->calcSize();
 	});
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
-
-	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\ZoneIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER)->setTooltip("This is a tooltip");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Directional");
 
 	m_toolbarMenu->addButton("", "File");
 	{
@@ -306,4 +369,52 @@ void ZoneEditor::init()
 	m_map->setLayerVisible(1, m_guiLeftLayer->findComponent("BUTTON_WORLD_VISIBLE")->isSelected() != 0);
 	m_map->setLayerVisible(2, m_guiLeftLayer->findComponent("BUTTON_ENTITY_VISIBLE")->isSelected() != 0);
 	m_map->setLayerVisible(3, m_guiLeftLayer->findComponent("BUTTON_SKY_VISIBLE")->isSelected() != 0);
+}
+
+void ZoneEditor::input()
+{
+	Editor::input();
+}
+
+void ZoneEditor::update()
+{
+	Editor::update();
+
+	switch(m_selectLayer->getSelectedButton())
+	{
+	case 1:
+		if(m_listWorld->isUpdated() != 0)
+		{
+			m_guiWorld->setVisible(true);
+			if((m_listWorld->isUpdated() & 2) == 2) // New item
+			{
+
+			}
+			if((m_listWorld->isUpdated() & 1) == 1) // Switch item
+			{
+				m_guiWorldSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldSolidSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldPortal->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldPortal->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldPortal->findComponent("TEXTFIELD_NAME")->setTitle(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
+				m_guiWorldPortal->findComponent("NUMFIELD_X")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
+				m_guiWorldPortal->findComponent("NUMFIELD_Y")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
+				m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_direction);
+			}
+		}
+		else if(m_guiWorld->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listWorld->getSelectedItem() != 0 && m_listWorld->getSelectedItem() < m_listWorld->getListSize())
+		{
+			m_guiWorldSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldSolidSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldPortal->findComponent("TEXTFIELD_NAME")->setTitle(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
+			m_guiWorldPortal->findComponent("NUMFIELD_X")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
+			m_guiWorldPortal->findComponent("NUMFIELD_Y")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
+			m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_direction);
+		}
+		break;
+	}
 }

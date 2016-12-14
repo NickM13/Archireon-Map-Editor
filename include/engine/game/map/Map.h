@@ -16,12 +16,13 @@ public:
 		std::string m_name;
 		Uint16 m_interactionType;
 		Uint16 m_tileTex;
-		Uint16 m_frequency;
+		Uint8 m_frequency;
 		std::string m_portalDest;
-		Uint16 m_destX, m_destY;
-		Uint8 m_density;
+		Sint16 m_destX, m_destY;
+		Sint8 m_slowCount;
+		Sint8 m_direction; // Up=0, Right, Down, Left
 
-		WorldObject(std::string p_name, Uint16 p_interactionType, Uint16 p_tileTex, Uint16 p_frequency = 0, std::string p_portalDest = "", Uint16 p_destX = 0, Uint16 p_destY = 0)
+		WorldObject(std::string p_name, Uint16 p_interactionType, Uint16 p_tileTex, Uint8 p_frequency = 0, std::string p_portalDest = "", Uint16 p_destX = 0, Uint16 p_destY = 0)
 		{
 			m_name = p_name;
 			m_interactionType = p_interactionType;
@@ -30,6 +31,7 @@ public:
 			m_portalDest = p_portalDest;
 			m_destX = p_destX;
 			m_destY = p_destY;
+			m_direction = 0;
 		}
 	};
 	struct Entity
@@ -158,4 +160,6 @@ protected:
 	std::vector<Edit> m_redoEdits; // For redoing
 	Sint32 m_cEdit; // Current edit counter, for redoing
 	bool m_editting;
+
+	std::vector<Color> m_worldColors;
 };

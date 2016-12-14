@@ -6,6 +6,8 @@ Container::Container(std::string p_compName, Vector2<Sint32> p_pos, Vector2<Sint
 	m_pos = p_pos;
 	m_size = p_size;
 	m_visible = p_visible;
+
+	m_contentArea = Vector4<Sint32>();
 }
 
 Component* Container::addComponent(Component* p_component, Sint8 p_alignment)
@@ -43,11 +45,11 @@ Component* Container::addComponent(Component* p_component, Sint8 p_alignment)
 		p_component->setPosition(p_component->getPosition() + Vector2<Sint32>(Sint32(m_size.x - p_component->getSize().x), Sint32(m_size.y - p_component->getSize().y)) + Vector2<Sint32>(Sint32(p_component->getPosition().x * -2), Sint32(p_component->getPosition().y * -2)));
 		break;
 	}
-	m_componentList.push_back({p_alignment, p_component});
 	if(m_componentList.empty())
 		m_contentArea = Vector4<Sint32>(p_component->getRealPosition().x, p_component->getRealPosition().y, p_component->getRealPosition().x + p_component->getSize().x, p_component->getRealPosition().y + p_component->getSize().y);
 	else if(p_component->isVisible())
 		m_contentArea = Vector4<Sint32>(min(p_component->getRealPosition().x, m_contentArea.x), min(p_component->getRealPosition().y, m_contentArea.y), max(p_component->getRealPosition().x + p_component->getRealSize().x, m_contentArea.z), max(p_component->getRealPosition().y + p_component->getRealSize().y, m_contentArea.w));
+	m_componentList.push_back({p_alignment, p_component});
 	return p_component;
 }
 Container::Component* Container::findComponent(std::string p_compName)
@@ -73,6 +75,16 @@ Vector2<Sint32> Container::getRealPosition()
 Vector2<Sint32> Container::getRealSize()
 {
 	return Vector2<Sint32>(m_contentArea.z - m_contentArea.x, m_contentArea.w - m_contentArea.y);
+}
+
+void Container::updateSize()
+{
+	m_contentArea = Vector4<Sint32>();
+	for(Uint16 i = 0; i < m_componentList.size(); i++)
+	{
+		if(m_componentList[i].m_component->isVisible())
+			m_contentArea = Vector4<Sint32>(min(m_componentList[i].m_component->getRealPosition().x, m_contentArea.x), min(m_componentList[i].m_component->getRealPosition().y, m_contentArea.y), max(m_componentList[i].m_component->getRealPosition().x + m_componentList[i].m_component->getRealSize().x, m_contentArea.z), max(m_componentList[i].m_component->getRealPosition().y + m_componentList[i].m_component->getRealSize().y, m_contentArea.w));
+	}
 }
 
 void Container::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)

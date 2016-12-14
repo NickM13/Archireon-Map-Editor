@@ -111,6 +111,9 @@
     <ClCompile Include="src\engine\gfx\gui\_Component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\gfx\gui\NumberField.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\engine\game\Game.h">
@@ -237,6 +240,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\engine\gfx\gui\_Component.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\gfx\gui\NumberField.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

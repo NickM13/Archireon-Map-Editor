@@ -42,6 +42,8 @@ Component* ContainerPanel::addComponent(Component* p_component, Sint8 p_alignmen
 
 void ContainerPanel::calcSize(Vector2<Sint32> p_offset)
 {
+	if(p_offset.getLength() == 0)
+		m_minScroll = m_maxScroll = Vector2<Sint32>();
 	m_contentArea = Vector4<Sint32>();
 	for (Uint16 i = 0; i < m_componentList.size(); i++)
 	{
@@ -71,7 +73,7 @@ void ContainerPanel::calcSize(Vector2<Sint32> p_offset)
 			break;
 		}
 		if(_component->isVisible())
-			m_contentArea = Vector4<Sint32>(min(_component->getRealPosition().x, m_contentArea.x), min(_component->getRealPosition().y, m_contentArea.y), max(_component->getRealPosition().x + _component->getRealSize().x, m_contentArea.z), max(_component->getRealPosition().y + _component->getRealSize().y, m_contentArea.w));
+			m_contentArea = Vector4<Sint32>(min(_component->getRealPosition().x, m_contentArea.x), min(_component->getRealPosition().y, m_contentArea.y), max(_component->getRealPosition().x + _component->getRealSize().x, m_contentArea.z), max(_component->getRealPosition().y + _component->getRealSize().y + 8, m_contentArea.w));
 	}
 
 	m_minScroll.x = min(m_minScroll.x, m_contentArea.x);

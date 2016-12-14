@@ -12,6 +12,14 @@ BoardMap::BoardMap(Vector2<Uint16> p_boardSize)
 	m_mapSize = p_boardSize;
 	m_initialized = false;
 	init();
+	m_worldColors.push_back(Color()); // None
+	m_worldColors.push_back(Color(255, 0, 0, 255)); // Solid
+	m_worldColors.push_back(Color(255, 255, 255, 255)); // Slow
+	m_worldColors.push_back(Color(255, 255, 0, 255)); // Trap
+	m_worldColors.push_back(Color(0, 255, 0, 255)); // Switch
+	m_worldColors.push_back(Color(0, 0, 0, 255)); // Solid Switch
+	m_worldColors.push_back(Color(255, 0, 255, 255)); // Portal
+	m_worldColors.push_back(Color(0, 255, 255, 255)); // Directional
 }
 BoardMap::~BoardMap()
 {

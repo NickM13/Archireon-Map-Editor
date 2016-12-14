@@ -20,14 +20,18 @@ void CSlider::setMaxValue(Sint16 p_value)
 		m_numValue = m_maxValue;
 }
 
-void CSlider::setValue(Sint16 p_value)
+void CSlider::setValue(Sint32 p_value)
 {
-	if(p_value < 0)
-		m_numValue = 0;
-	else if(p_value > m_maxValue)
-		m_numValue = m_maxValue;
-	else
-		m_numValue = p_value;
+	if(m_numValue != p_value)
+	{
+		if(p_value < 0)
+			m_numValue = 0;
+		else if(p_value > m_maxValue)
+			m_numValue = m_maxValue;
+		else
+			m_numValue = p_value;
+		callFunction();
+	}
 }
 
 void CSlider::addValue(Sint16 p_value)
@@ -37,7 +41,6 @@ void CSlider::addValue(Sint16 p_value)
 
 void CSlider::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 {
-	m_slideValue = m_numValue * ((m_length - 8) / (m_maxValue - 0.5f));
 	if(((p_interactFlags & 1) == 0) || m_held)
 	{
 		switch(p_mouseStates[0])
@@ -45,18 +48,17 @@ void CSlider::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseSt
 		case 0:
 			break;
 		case 1:
-			if(p_mousePos.x >= m_pos.x + m_slideValue - 6 && p_mousePos.x < m_pos.x + m_slideValue + 6 &&
+			if(p_mousePos.x >= m_pos.x - 6 && p_mousePos.x < m_pos.x + m_length + 6 &&
 			   p_mousePos.y >= m_pos.y - m_height / 2 && p_mousePos.y < m_pos.y + m_height / 2)
 			{
 				m_held = true;
-				m_holdPos = p_mousePos;
 			}
 			break;
 		case 2:
 			if(m_held)
 			{
 				m_slideValue = p_mousePos.x - m_pos.x;
-				setValue(m_slideValue / ((m_length - 8) / (m_maxValue - 0.5f)));
+				setValue(Sint32((m_slideValue / GLfloat(m_maxValue)) * (m_length + 6)));
 			}
 			break;
 		case 3:
@@ -80,7 +82,7 @@ void CSlider::update(Vector2<Sint32> p_pos)
 }
 void CSlider::render()
 {
-	m_slideValue = m_numValue * ((m_length - 6) / (m_maxValue - 0.5f));
+	m_slideValue = Sint32((m_numValue / GLfloat(m_maxValue)) * m_length);
 	glPushMatrix();
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);

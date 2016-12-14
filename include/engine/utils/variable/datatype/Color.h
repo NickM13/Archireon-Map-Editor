@@ -8,7 +8,7 @@ struct Color
 {
 	unsigned char r, g, b, a;
 
-	Color(unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 0)
+	Color(unsigned char r = 0, unsigned char g = 0, unsigned char b = 0, unsigned char a = 255)
 	{
 		this->r = r;
 		this->g = g;
@@ -21,7 +21,7 @@ struct Color
 		glColor4f(GLfloat(r) / 255.f * p_mod, GLfloat(g) / 255.f * p_mod, GLfloat(b) / 255.f * p_mod, GLfloat(a) / 255.f);
 	}
 
-	void useColor(GLfloat p_modR, GLfloat p_modG, GLfloat p_modB, GLfloat p_modA)
+	void useColor(GLfloat p_modR, GLfloat p_modG, GLfloat p_modB, GLfloat p_modA = 255)
 	{
 		glColor4f(GLfloat(r) / 255.f * p_modR, GLfloat(g) / 255.f * p_modG, GLfloat(b) / 255.f * p_modB, GLfloat(a) / 255.f * p_modA);
 	}

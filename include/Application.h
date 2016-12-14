@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning (disable:4244)
 
 #include "engine\utils\Globals.h"
 #include "engine\utils\OpenGL.h"

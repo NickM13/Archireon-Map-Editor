@@ -13,7 +13,7 @@ class Component
 {
 protected:
 	typedef void(*function)();
-	function m_function;
+	function m_function = 0;
 	struct ColorTheme
 	{
 		Color m_back;
@@ -89,7 +89,7 @@ public:
 	void renderFill(bool p_setColor = true);
 	virtual void render();
 	virtual Sint8 isSelected();
-	void setValue(Sint16 p_value);
+	virtual void setValue(Sint32 p_value);
 	Sint32& getValue();
 	Sint8 getPriorityLayer();
 	void setPriorityLayer(Sint8 p_priority);

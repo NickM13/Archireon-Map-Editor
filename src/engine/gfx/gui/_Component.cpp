@@ -424,7 +424,7 @@ Sint8 Component::isSelected()
 	return m_selected;
 }
 
-void Component::setValue(Sint16 p_value)
+void Component::setValue(Sint32 p_value)
 {
 	m_numValue = p_value;
 }

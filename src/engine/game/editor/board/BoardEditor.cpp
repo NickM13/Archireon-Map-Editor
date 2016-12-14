@@ -11,20 +11,38 @@ void BoardEditor::init()
 
 	Editor::init();
 
-	m_guiWorldSlow = new Container("GUI_SLOW", {0, 600}, {m_guiLeftDetail->getSize().x, 32}, false);
-	m_guiWorldTrap = new Container(*m_guiWorldSlow);
-	m_guiWorldSwitch = new Container(*m_guiWorldSlow);
-	m_guiWorldSolidSwitch = new Container(*m_guiWorldSlow);
-	m_guiWorldPortal = new Container(*m_guiWorldSlow);
+	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\ZoneIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER)->setTooltip("Switch to World editor");
 
-	m_guiWorldSlow->addComponent(new CSlider("SLIDER_SLOW", "Slow", {0, 0}, 252, 20, 10, 1), PANEL_ALIGN_CENTER);
+	m_guiWorldSlow = new Container("GUI_SLOW", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldTrap = new Container("GUI_TRAP", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldSwitch = new Container("GUI_SWITCH", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldSolidSwitch = new Container("GUI_SOLID_SWITCH", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldPortal = new Container("GUI_PORTAL", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
+	m_guiWorldDirection = new Container("GUI_DIRECTION", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
 
+	m_guiWorldSlow->addComponent(new CSlider("SLIDER_SLOW", "Slow", {0, 0}, 252, 10, 2, 1), PANEL_ALIGN_CENTER)->setTooltip("How many movements it takes to walk through.");
 
-	m_guiWorld->addComponent(m_guiWorldSlow);
-	m_guiWorld->addComponent(m_guiWorldTrap);
-	m_guiWorld->addComponent(m_guiWorldSwitch);
-	m_guiWorld->addComponent(m_guiWorldSolidSwitch);
-	m_guiWorld->addComponent(m_guiWorldPortal);
+	m_guiWorldTrap->addComponent(new CSlider("SLIDER_TURNS", "Turns", {0, 0}, 252, 10, 2, 1), PANEL_ALIGN_CENTER)->setTooltip("How many turns this trap will hold a unit.");
+
+	m_guiWorldSwitch->addComponent(new CSlider("SLIDER_FREQUENCY", "Frequency", {0, 0}, 252, 255, 0, 1), PANEL_ALIGN_CENTER)->setTooltip("Frequency of switch - which other switches\n or portals it aligns with.\nFreq. 0 means deactive.");
+
+	m_guiWorldSolidSwitch->addComponent(new CSlider("SLIDER_FREQUENCY", "Frequency", {0, 0}, 252, 255, 0, 1), PANEL_ALIGN_CENTER)->setTooltip("Frequency of solid - which switch needs\n to be active to pass.\nFreq. 0 means solid.");
+
+	m_guiWorldPortal->addComponent(new CSlider("SLIDER_FREQUENCY", "Frequency", {0, 0}, 252, 255, 0, 1), PANEL_ALIGN_CENTER)->setTooltip("Frequency of portal - which switch needs\n to be active to use.\nFreq. 0 means always active.");
+
+	m_guiWorldDirection->addComponent(new CDropDown("DROPDOWN_DIRECTION", "Direction", {0, 0}, {264, 32}, 1), PANEL_ALIGN_CENTER)->setTooltip("Which direction the unit is pushed when stepping on this tile");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Up");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Right");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Down");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Left");
+	m_guiWorldDirection->updateSize();
+
+	m_guiWorld->addComponent(m_guiWorldSlow, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldTrap, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldSwitch, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldSolidSwitch, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldPortal, PANEL_ALIGN_CENTER);
+	m_guiWorld->addComponent(m_guiWorldDirection, PANEL_ALIGN_CENTER);
 
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setFunction([]()
 	{
@@ -49,6 +67,9 @@ void BoardEditor::init()
 			case 6: // Portal
 				BoardEditor::getInstance().m_guiWorldPortal->setVisible(true);
 				break;
+			case 7: // Directional
+				BoardEditor::getInstance().m_guiWorldDirection->setVisible(true);
+				break;
 			}
 			switch(_pSel)
 			{
@@ -67,6 +88,9 @@ void BoardEditor::init()
 			case 6: // Portal
 				BoardEditor::getInstance().m_guiWorldPortal->setVisible(false);
 				break;
+			case 7: // Directional
+				BoardEditor::getInstance().m_guiWorldDirection->setVisible(false);
+				break;
 			}
 			BoardEditor::getInstance().m_guiWorld->calcSize();
 		}
@@ -78,8 +102,7 @@ void BoardEditor::init()
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
-
-	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\BoardIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER);
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Directional");
 
 	m_toolbarMenu->addButton("", "File");
 	{
@@ -305,4 +328,14 @@ void BoardEditor::init()
 	m_map->setLayerVisible(1, m_guiLeftLayer->findComponent("BUTTON_WORLD_VISIBLE")->isSelected() != 0);
 	m_map->setLayerVisible(2, m_guiLeftLayer->findComponent("BUTTON_ENTITY_VISIBLE")->isSelected() != 0);
 	m_map->setLayerVisible(3, m_guiLeftLayer->findComponent("BUTTON_SKY_VISIBLE")->isSelected() != 0);
+}
+
+void BoardEditor::input()
+{
+	Editor::input();
+}
+
+void BoardEditor::update()
+{
+	Editor::update();
 }

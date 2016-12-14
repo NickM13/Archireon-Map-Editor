@@ -74,14 +74,15 @@ std::string TextField::getTitle()
 void TextField::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
 {
 	p_mousePos = p_mousePos - m_pos;
-	if(p_mouseStates[0] == 1)
+	if((p_interactFlags & 1) == 0 && p_mousePos.x >= 0 && p_mousePos.x < m_size.x
+		&& p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
 	{
-		if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x
-			&& p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
+		addTooltip();
+		if(p_mouseStates[0] == 1)
 			m_selected = 1;
-		else
-			m_selected = 0;
 	}
+	else if(p_mouseStates[0] == 1)
+		m_selected = 0;
 	if(((p_interactFlags & 2) == 0) && m_selected != 0)
 	{
 		p_interactFlags += 2;
@@ -286,6 +287,7 @@ void TextField::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouse
 					}
 				}
 			}
+			callFunction();
 		}
 	}
 

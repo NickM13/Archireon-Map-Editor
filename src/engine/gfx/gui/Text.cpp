@@ -9,35 +9,22 @@ CText::CText(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos,
 	m_size = p_size;
 	m_align = p_align;
 	m_color = p_fontColor;
-
-	m_selected = 0;
-
-	splitTitle();
-}
-
-void CText::setTitle(std::string p_title)
-{
-	m_title = p_title;
-	splitTitle();
-}
-void CText::splitTitle()
-{
-	m_text.clear();
-	Uint16 _i = 0;
-	for(Uint16 i = 0; i < m_title.length() - 1; i++)
-	{
-		if(m_title[i] == '\n')
-		{
-			m_text.push_back(m_title.substr(_i, i - _i));
-			_i = i + 1;
-		}
-	}
-	m_text.push_back(m_title.substr(_i, m_title.length() - _i));
 }
 
 void CText::render()
 {
 	m_color.useColor();
 	Font::getInstance().setAlignment(m_align);
-	Font::getInstance().print(m_title, m_pos.x, m_pos.y);
+	switch(m_align)
+	{
+	case ALIGN_LEFT:
+		Font::getInstance().print(m_title, m_pos.x, m_pos.y);
+		break;
+	case ALIGN_CENTER:
+		Font::getInstance().print(m_title, m_pos.x + m_size.x / 2, m_pos.y);
+		break;
+	case ALIGN_RIGHT:
+		Font::getInstance().print(m_title, m_pos.x + m_size.x, m_pos.y);
+		break;
+	}
 }

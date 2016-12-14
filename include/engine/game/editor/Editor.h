@@ -6,19 +6,20 @@
 
 #include "engine\game\map\Map.h"
 
-#include "..\..\gfx\gui\Container.h"
-#include "..\..\gfx\gui\ContainerPanel.h"
-#include "..\..\gfx\gui\Counter.h"
-#include "..\..\gfx\gui\Button.h"
-#include "..\..\gfx\gui\DropDown.h"
-#include "..\..\gfx\gui\List.h"
-#include "..\..\gfx\gui\Panel.h"
-#include "..\..\gfx\gui\Slider.h"
-#include "..\..\gfx\gui\TabBar.h"
-#include "..\..\gfx\gui\Text.h"
-#include "..\..\gfx\gui\TextField.h"
-#include "..\..\gfx\gui\Tileset.h"
-#include "..\..\gfx\gui\Toolbar.h"
+#include "engine\gfx\gui\Container.h"
+#include "engine\gfx\gui\ContainerPanel.h"
+#include "engine\gfx\gui\Counter.h"
+#include "engine\gfx\gui\Button.h"
+#include "engine\gfx\gui\DropDown.h"
+#include "engine\gfx\gui\List.h"
+#include "engine\gfx\gui\NumberField.h"
+#include "engine\gfx\gui\Panel.h"
+#include "engine\gfx\gui\Slider.h"
+#include "engine\gfx\gui\TabBar.h"
+#include "engine\gfx\gui\Text.h"
+#include "engine\gfx\gui\TextField.h"
+#include "engine\gfx\gui\Tileset.h"
+#include "engine\gfx\gui\Toolbar.h"
 
 class Editor
 {
@@ -45,7 +46,6 @@ protected:
 	Container* m_guiAll, *m_guiTop, *m_guiLeft;
 	Container* m_guiLeftLayer, *m_guiLeftDetail;
 	ContainerPanel* m_guiGround, *m_guiWorld, *m_guiEntity, *m_guiSky, *m_guiStamp;
-	Container* m_guiWorldSwitch, *m_guiWorldPortal;
 	CTileSet* m_tileSetGround, *m_tileSetWorld, *m_tileSetEntity, *m_tileSetSky, *m_tileSetStamps;
 	CList* m_listWorld, *m_listStamps;
 	CTabBar* m_tabWorld, *m_tabEntity, *m_tabStamps;

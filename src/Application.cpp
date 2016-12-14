@@ -195,7 +195,7 @@ void Application::update()
 			Globals::getInstance().m_mouseStates[i] = 0;
 	}
 
-	glfwSetWindowTitle(m_mainWindow, std::string("ArchMapEditor v0.1 - Map: \"" /*+ Game::getInstance().getZoneName() + "\""*/).c_str());
+	glfwSetWindowTitle(m_mainWindow, std::string("ArchMapEditor v1.0.0" /*+ Game::getInstance().getZoneName() + "\""*/).c_str());
 }
 
 void Application::render()

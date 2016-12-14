@@ -28,4 +28,7 @@ public:
 
 	Sint16 getSelectedItem();
 	Sint16 getPrevSelectedItem();
+
+	Vector2<Sint32> getRealPosition();
+	Vector2<Sint32> getRealSize();
 };

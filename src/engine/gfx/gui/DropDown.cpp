@@ -39,27 +39,28 @@ void CDropDown::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouse
 	m_update = false;
 	if((p_interactFlags & 1) == 0)
 	{
-		if(p_mouseStates[0] == 1)
+		if(m_selected == 0)
 		{
-			if(m_selected == 0)
+			if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x &&
+				p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
 			{
-				if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x &&
-					p_mousePos.y >= 0 && p_mousePos.y < m_size.y)
+				addTooltip();
+				if(p_mouseStates[0] == 1)
 				{
 					m_selected = 1;
 					p_interactFlags += 1;
 				}
 			}
-			else
+		}
+		else if(p_mouseStates[0] == 1)
+		{
+			m_selected = 0;
+			if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x && p_mousePos.y >= m_size.y && p_mousePos.y < m_size.y * Sint32(m_itemList.size() + 1))
 			{
-				m_selected = 0;
-				if(p_mousePos.x >= 0 && p_mousePos.x < m_size.x && p_mousePos.y >= m_size.y && p_mousePos.y < m_size.y * Sint32(m_itemList.size() + 1))
-				{
-					m_selectedItem = p_mousePos.y / m_size.y - 1;
-					callFunction();
-					m_update = true;
-					p_interactFlags += 1;
-				}
+				m_selectedItem = p_mousePos.y / m_size.y - 1;
+				callFunction();
+				m_update = true;
+				p_interactFlags += 1;
 			}
 		}
 	}
@@ -186,4 +187,13 @@ Sint16 CDropDown::getSelectedItem()
 Sint16 CDropDown::getPrevSelectedItem()
 {
 	return m_prevSelectedItem;
+}
+
+Vector2<Sint32> CDropDown::getRealPosition()
+{
+	return Vector2<Sint32>(m_size.x, m_size.y);
+}
+Vector2<Sint32> CDropDown::getRealSize()
+{
+	return Vector2<Sint32>(m_size.x, (m_size.y) * (m_itemList.size() + 1));
 }

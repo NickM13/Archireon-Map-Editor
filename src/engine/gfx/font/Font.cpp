@@ -120,7 +120,7 @@ Vector2<Sint32> Font::getMessageWidth(std::string p_msg)
 {
 	Sint32 _y = 1;
 	Sint32 _rVal = 0, _rMaxVal = 0;
-	for(Sint32 i = 0; i < p_msg.length(); i++)
+	for(Sint32 i = 0; i < Sint32(p_msg.length()); i++)
 	{
 		if(p_msg[i] == '\n')
 		{
@@ -210,7 +210,7 @@ void Font::print(std::string message, Sint32 x, Sint32 y)
 			GLfloat modelview_matrix[16];
 			glGetFloatv(GL_MODELVIEW_MATRIX, modelview_matrix);
 
-			for(int i=0; i < lines.size(); i++) {
+			for(Sint32 i=0; i < Sint32(lines.size()); i++) {
 				glPushMatrix();
 				{
 					glLoadIdentity();

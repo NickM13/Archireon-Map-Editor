@@ -12,6 +12,12 @@ ZoneMap::ZoneMap(Vector2<Uint16> p_zoneSize)
 	m_mapSize = p_zoneSize;
 	m_initialized = false;
 	init();
+	m_worldColors.push_back(Color()); // None
+	m_worldColors.push_back(Color(255, 0, 0, 255)); // Solid
+	m_worldColors.push_back(Color(0, 255, 0, 255)); // Switch
+	m_worldColors.push_back(Color(255, 255, 0, 255)); // Solid Switch
+	m_worldColors.push_back(Color(255, 0, 255, 255)); // Portal
+	m_worldColors.push_back(Color(0, 255, 255, 255)); // Directional
 }
 ZoneMap::~ZoneMap()
 {
@@ -93,14 +99,13 @@ void ZoneMap::save(std::string p_zoneName)
 
 				break;
 			case 2: // SWITCH
-				_objData.push_back(Uint8((m_worldObjects[i].m_frequency & 0xFF00) >> 8));
-				_objData.push_back(Uint8((m_worldObjects[i].m_frequency & 0xFF)));
+				_objData.push_back(Uint8(m_worldObjects[i].m_frequency));
 				break;
 			case 3: // SOLID SWITCH
-				_objData.push_back(Uint8((m_worldObjects[i].m_frequency & 0xFF00) >> 8));
-				_objData.push_back(Uint8((m_worldObjects[i].m_frequency & 0xFF)));
+				_objData.push_back(Uint8(m_worldObjects[i].m_frequency));
 				break;
 			case 4: // PORTAL
+				_objData.push_back(Uint8(m_worldObjects[i].m_frequency));
 				_objData.push_back(Uint8(min(m_worldObjects[i].m_portalDest.length(), 128)));
 				for(Uint16 j = 0; j < Uint16(min(m_worldObjects[i].m_portalDest.length(), 128)); j++)
 					_objData.push_back(m_worldObjects[i].m_portalDest[j]);
@@ -109,8 +114,8 @@ void ZoneMap::save(std::string p_zoneName)
 				_objData.push_back(Uint8((m_worldObjects[i].m_destY & 0xFF00) >> 8));
 				_objData.push_back(Uint8((m_worldObjects[i].m_destY & 0xFF)));
 				break;
-			default:
-
+			case 5: // DIRECTION
+				_objData.push_back(Uint8(m_worldObjects[i].m_direction));
 				break;
 			}
 
@@ -385,12 +390,13 @@ bool ZoneMap::load(std::string p_zoneName)
 
 				break;
 			case 2: // SWITCH
-				m_worldObjects[i].m_frequency = FileExt::readShort(_data, _index);
+				m_worldObjects[i].m_frequency = FileExt::readChar(_data, _index);
 				break;
 			case 3: // SOLID SWITCH
-				m_worldObjects[i].m_frequency = FileExt::readShort(_data, _index);
+				m_worldObjects[i].m_frequency = FileExt::readChar(_data, _index);
 				break;
 			case 4: // PORTAL
+				m_worldObjects[i].m_frequency = FileExt::readChar(_data, _index);
 				_objName = "";
 				_objNameLen = FileExt::readChar(_data, _index);
 				for(Uint16 j = 0; j < Uint16(_objNameLen); j++)
@@ -398,6 +404,9 @@ bool ZoneMap::load(std::string p_zoneName)
 				m_worldObjects[i].m_portalDest = _objName;
 				m_worldObjects[i].m_destX = FileExt::readShort(_data, _index);
 				m_worldObjects[i].m_destY = FileExt::readShort(_data, _index);
+				break;
+			case 5: // DIRECTION
+				m_worldObjects[i].m_direction = FileExt::readChar(_data, _index);
 				break;
 			}
 		}

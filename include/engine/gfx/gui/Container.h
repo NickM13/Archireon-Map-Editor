@@ -42,6 +42,8 @@ public:
 	Vector2<Sint32> getRealPosition();
 	Vector2<Sint32> getRealSize();
 
+	void updateSize();
+
 	void input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos);
 	void update(GLfloat p_updateTime);
 	void render();

@@ -48,12 +48,6 @@ void Editor::init()
 	m_guiSky = new ContainerPanel("CONTAINER_LEFT_SKY", "", {0, 0}, m_guiLeftDetail->getSize(), 0, false, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 	m_guiStamp = new ContainerPanel("CONTAINER_LEFT_STAMP", "", {0, 0}, m_guiLeftDetail->getSize(), 0, false, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE);
 
-	m_guiWorldSwitch = new Container("CONTAINER_RIGHT_WORLD_SWITCH", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, false);
-	m_guiWorldPortal = new Container("CONTAINER_RIGHT_WORLD_PORTAL", {0, 0}, {288, Globals::getInstance().m_screenSize.y}, false);
-
-	//m_guiWorld->addComponent(m_guiWorldSwitch); Keeping these containers for reference, because some of their data is saved in the map file
-	//m_guiWorld->addComponent(m_guiWorldPortal); Not sure if that statement is true anymore, I might have deleted stuff but too tired to check
-
 	m_guiLeftDetail->addComponent(m_guiGround);
 	m_guiLeftDetail->addComponent(m_guiWorld);
 	m_guiLeftDetail->addComponent(m_guiEntity);
@@ -64,14 +58,8 @@ void Editor::init()
 
 	m_guiWorld->addComponent(new TextField("TEXTFIELD_OBJECT_NAME", "Object Name", Vector2<Sint32>(0, 204), Vector2<Sint32>(256, 1), 1), PANEL_ALIGN_TOP);
 
-	m_guiWorldPortal->addComponent(new TextField("TEXTFIELD_PORTAL", "Destination ", {(m_guiWorldPortal->getSize().x - (256)) / 2, 416}, Vector2<Sint32>(256, 1), 1));
-	m_guiWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_X", "X:", {0, 440}, {0, 500}, 1, 0));
-	m_guiWorldPortal->addComponent(new CCounter("COUNTER_PORTAL_Y", "Y:", {0, 460}, {0, 500}, 1, 0));
-
 	m_guiWorld->addComponent(new CDropDown("DROPDOWN_INTERACT", "Interaction Type", {0, 250}, {264, 32}, 1), PANEL_ALIGN_TOP);
 	m_guiWorld->findComponent("DROPDOWN_INTERACT")->setPriorityLayer(5);
-
-	m_guiWorldSwitch->addComponent(new CCounter("COUNTER_SWITCH_FREQUENCY", "Freq.", {0, 440}, {0, 255}, 1, 0));
 
 	m_guiWorld->addComponent(new CButton("BUTTON_DELETE", "", LTexture::getInstance().getImage("gui\\Trash.png"), {6, 6}, {24, 24}, 1), PANEL_ALIGN_TOP_RIGHT);
 
@@ -313,7 +301,7 @@ void Editor::input()
 			}
 		}
 	}
-	else if(m_rmbDown && (_rValue & 1) == 0)
+	else if(m_rmbDown)
 	{
 		m_camPos = m_camPos + Vector2<GLfloat>(m_mouseBuffer - _mousePos) / (TILE_SIZE + m_zoom);
 
@@ -420,11 +408,6 @@ void Editor::update()
 				m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
 				m_guiWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
 				m_tileSetWorld->setSelectedTile(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
-
-				m_guiWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
-				m_guiWorldPortal->findComponent("COUNTER_PORTAL_X")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
-				m_guiWorldPortal->findComponent("COUNTER_PORTAL_Y")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
-				m_guiWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
 			}
 		}
 		else if(m_guiWorld->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listWorld->getSelectedItem() != 0 && m_listWorld->getSelectedItem() < m_listWorld->getListSize())
@@ -435,11 +418,6 @@ void Editor::update()
 			m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_name);
 			m_guiWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
 			m_tileSetWorld->setSelectedTile(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
-
-			m_guiWorldPortal->findComponent("TEXTFIELD_PORTAL")->setTitle(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
-			m_guiWorldPortal->findComponent("COUNTER_PORTAL_X")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
-			m_guiWorldPortal->findComponent("COUNTER_PORTAL_Y")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
-			m_guiWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
 		}
 		if(m_listWorld->getSelectedItem() != 0)
 		{
@@ -448,22 +426,6 @@ void Editor::update()
 			m_listWorld->getListItem(m_listWorld->getSelectedItem()).m_texId = m_tileSetWorld->getSelectedTile();
 			m_map->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType = m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
 			m_map->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex = m_tileSetWorld->getSelectedTile();
-			if(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal")
-			{
-				m_map->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest = m_guiWorldPortal->findComponent("TEXTFIELD_PORTAL")->getTitle();
-				m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destX = m_guiWorldPortal->findComponent("COUNTER_PORTAL_X")->getValue();
-				m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destY = m_guiWorldPortal->findComponent("COUNTER_PORTAL_Y")->getValue();
-			}
-			else if(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" || m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch")
-			{
-				m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency = m_guiWorldSwitch->findComponent("COUNTER_SWITCH_FREQUENCY")->getValue();
-			}
-		}
-		if(m_guiWorld->findComponent("DROPDOWN_INTERACT")->isUpdated())
-		{
-			m_guiWorldPortal->setVisible(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Portal");
-			m_guiWorldSwitch->setVisible(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Switch" ||
-				m_guiWorld->findComponent("DROPDOWN_INTERACT")->getItem(m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem()) == "Solid Switch");
 		}
 		break;
 	case 2: // ENTITIES

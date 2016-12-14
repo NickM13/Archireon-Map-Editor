@@ -36,6 +36,7 @@ void CButton::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseSt
 		p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
 		p_mousePos.y >= m_pos.y && p_mousePos.y <= m_pos.y + m_size.y)
 	{
+		addTooltip();
 		m_hover = true;
 		p_interactFlags += 1;
 	}
