@@ -33,7 +33,6 @@ void Editor::init()
 
 	m_guiLeftLayer->addComponent(new Panel("", "", {}, m_guiLeftLayer->getSize(), 0, true, LTexture::getInstance().loadImage("gui\\BarDrop.png"), COMPONENT_TEXTURE_STYLE_SCALE));
 
-
 	m_selectLayer = new CButtonRadio("RADIO_LAYER", "Layer", {-1, 0}, {m_guiLeftLayer->getSize().x, 128}, 1);
 	m_selectLayer->addButton(new CButtonToggle("RBUTTON_GROUND", "Ground", {5, 4}, {m_selectLayer->getSize().x / 2 - 65, 24}, 1));
 	m_selectLayer->addButton(new CButtonToggle("RBUTTON_WORLD", "World", {m_selectLayer->getSize().x / 2 + 60, 4}, {m_selectLayer->getSize().x / 2 - 65, 24}, 1));

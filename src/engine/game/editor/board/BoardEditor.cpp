@@ -228,6 +228,8 @@ void BoardEditor::init()
 		BoardEditor::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setState(1);
 	}), PANEL_ALIGN_TOP);
 
+	m_guiEntity->findComponent("DROPDOWN_TYPE")->addItem("Neutral")->addItem("Opponent")->addItem("Trader");
+
 
 	m_guiSaveMap = new Container("CONTAINER_SAVE_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{

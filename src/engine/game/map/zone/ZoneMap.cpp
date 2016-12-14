@@ -24,6 +24,36 @@ ZoneMap::~ZoneMap()
 	clear();
 }
 
+Uint16 ZoneMap::addEntity(Entity p_entity)
+{
+	m_entities.push_back(p_entity);
+	return Uint16(m_entities.size());
+}
+ZoneMap::Entity& ZoneMap::getEntity(Uint16 p_index)
+{
+	if (p_index < m_entities.size())
+		return m_entities[p_index];
+	return Entity();
+}
+Uint16 ZoneMap::getEntitySize()
+{
+	return Uint16(m_entities.size());
+}
+void ZoneMap::removeEntity(Uint16 p_index)
+{
+	m_entities.erase(m_entities.begin() + p_index);
+}
+void ZoneMap::setEntity(Uint16 p_index, Vector2<Sint32> p_pos)
+{
+	if (m_editting && p_index != 0)
+	{
+		if (m_currentUndoEdit.m_entity.id != p_index)
+			m_currentUndoEdit.m_entity = Edit::Entity(p_index, m_entities[p_index].m_pos);
+		m_currentRedoEdit.m_entity = Edit::Entity(p_index, p_pos);
+		m_entities[p_index].m_pos = p_pos;
+	}
+}
+
 void ZoneMap::save()
 {
 	save(m_mapName);

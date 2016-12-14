@@ -69,10 +69,7 @@ void ZoneEditor::init()
 	{
 		ZoneEditor::getInstance().m_map->getWorldObject(ZoneEditor::getInstance().m_listWorld->getSelectedItem()).m_direction = ZoneEditor::getInstance().m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->getSelectedItem();
 	})->setTooltip("Which direction the unit is pushed when stepping on this tile");
-	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Up");
-	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Right");
-	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Down");
-	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Left");
+	m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->addItem("Up")->addItem("Right")->addItem("Down")->addItem("Left");
 	m_guiWorldDirection->updateSize();
 
 	m_guiWorld->addComponent(m_guiWorldSwitch, PANEL_ALIGN_CENTER);
@@ -119,12 +116,8 @@ void ZoneEditor::init()
 		}
 		ZoneEditor::getInstance().m_guiWorld->calcSize();
 	});
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("None");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Switch");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Solid Switch");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Portal");
-	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("Directional");
+	m_guiWorld->findComponent("DROPDOWN_INTERACT")->addItem("None")->addItem("Solid")->addItem("Switch")->addItem("Solid Switch")->addItem("Portal")->addItem("Directional");
+	m_guiWorld->calcSize();
 
 	m_toolbarMenu->addButton("", "File");
 	{
@@ -268,6 +261,9 @@ void ZoneEditor::init()
 		ZoneEditor::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setTitle(ZoneEditor::getInstance().m_map->getEntity(ZoneEditor::getInstance().m_tabEntity->getSelectedItem()).m_interact);
 		ZoneEditor::getInstance().m_guiEntityIdle->findComponent("TEXTFIELD_SCRIPT")->setState(1);
 	}), PANEL_ALIGN_TOP);
+
+	m_guiEntity->findComponent("DROPDOWN_TYPE")->addItem("Neutral")->addItem("Opponent")->addItem("Trader");
+	
 
 
 	m_guiSaveMap = new Container("CONTAINER_SAVE_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
