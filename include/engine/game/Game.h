@@ -11,6 +11,9 @@
 #include "editor\board\BoardEditor.h"
 #include "editor\zone\ZoneEditor.h"
 
+#include "Items.h"
+#include "Cards.h"
+
 #include <vector>
 
 class Game : public Singleton<Game>
@@ -35,6 +38,8 @@ public:
 	void input();
 	void update();
 	void render();
+
+	void close();
 private:
 	struct Stamp
 	{

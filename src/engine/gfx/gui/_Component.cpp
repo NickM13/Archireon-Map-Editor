@@ -32,9 +32,41 @@ std::string Component::getItem(Uint16 p_index)
 {
 	return "";
 }
+Texture Component::getItemTexture(Uint16 p_index)
+{
+	return Texture();
+}
+Uint16 Component::getItemTexId(Uint16 p_index)
+{
+	return 0;
+}
 Component* Component::addItem(std::string p_item)
 {
 	return this;
+}
+Component* Component::addItem(std::string p_item, Texture p_texture, Uint16 p_texId)
+{
+	return this;
+}
+void Component::setItem(Uint16 p_index, std::string p_item)
+{
+
+}
+void Component::setItemTexId(Uint16 p_index, Uint16 p_texId)
+{
+
+}
+void Component::setItemTexture(Uint16 p_index, Texture p_texture)
+{
+	
+}
+void Component::removeItem(Uint16 p_index)
+{
+	
+}
+Uint16 Component::getItemCount()
+{
+	return 0;
 }
 Component* Component::setFunction(function p_func)
 {

@@ -16,8 +16,9 @@ public:
 	Sint16 getSelectedItem();
 	Uint8 isUpdated() {return m_updated;}
 
-	std::string getTab(Sint16 p_index);
 	Component* addItem(std::string p_title);
+	Uint16 getItemCount() {return m_tabList.size(); }
+	std::string getItem(Uint16 p_index) {return m_tabList[p_index]; }
 	void removeTab(Sint16 p_index);
 	void clear();
 	void setTab(Sint16 p_index, std::string p_title) {m_tabList[p_index] = p_title;};

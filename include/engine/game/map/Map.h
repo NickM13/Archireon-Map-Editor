@@ -21,18 +21,26 @@ public:
 		Sint16 m_destX, m_destY;
 		Sint8 m_slowCount;
 		Sint8 m_direction; // Up=0, Right, Down, Left
+		Uint8 m_lightValue;
 
-		WorldObject(std::string p_name, Uint16 p_interactionType, Uint16 p_tileTex, Uint8 p_frequency = 0, std::string p_portalDest = "", Uint16 p_destX = 0, Uint16 p_destY = 0)
+		WorldObject(std::string p_name, Uint16 p_interactionType, Uint16 p_tileTex)
 		{
 			m_name = p_name;
 			m_interactionType = p_interactionType;
 			m_tileTex = p_tileTex;
-			m_frequency = p_frequency;
-			m_portalDest = p_portalDest;
-			m_destX = p_destX;
-			m_destY = p_destY;
+			m_frequency = 0;
+			m_portalDest = "";
+			m_destX = 0;
+			m_destY = 0;
 			m_direction = 0;
+			m_lightValue = 0;
 		}
+	};
+	struct LightNode
+	{
+		Uint16 x, y;
+		GLfloat brightness;
+		LightNode(Uint16 p_x = 0, Uint16 p_y = 0, GLfloat p_brightness = 0) : x(p_x), y(p_y), brightness(p_brightness) {}
 	};
 public:
 	Map() {};
@@ -54,6 +62,7 @@ public:
 	void setLayerVisible(Sint16 p_layer, bool p_visible);
 	void setGridVisible(bool p_visible);
 
+	void setTime(GLfloat p_time) {m_time = p_time;};
 	void setName(std::string p_zoneName);
 	std::string getName();
 	Vector2<Uint16> getSize();
@@ -68,15 +77,24 @@ public:
 
 	void startEdit();
 	void stopEdit();
-	void undo();
-	void redo();
+	virtual void undo();
+	virtual void redo();
 
 	bool isFilling() {return m_filling;};
 	void startFill(Sint8 p_layer, Uint16 p_id, Vector2<Sint32> p_pos);
 	void moveFill(Vector2<Sint32> p_pos);
 	void stopFill();
 
-	void render(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
+	void addLight(LightNode p_node);
+	void updateLight();
+	void removeLight(Vector2<Uint16> p_pos);
+
+	virtual void render(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
+	void renderGround(Vector2<GLfloat> p_camPos, GLfloat p_tileSize);
+	void renderWorld(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
+	virtual void renderEntity(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
+	void renderSky(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
+	virtual void renderLighting(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
 
 	virtual void save();
 	virtual void save(std::string p_zoneName);
@@ -95,7 +113,15 @@ protected:
 	std::vector<WorldObject> m_worldObjects;
 
 	bool m_layerVisible[4];
-	Uint16** m_tileData[3]; // Is called tile data but also accounts for entity id
+	Uint16** m_tileData[3];
+	bool m_lightEnabled;
+	GLfloat** m_lightData;
+	GLfloat** m_lightDataCorners;
+	std::vector<LightNode> m_lightNodes;
+	bool m_lightNeedsUpdate;
+	bool m_dayCycle;
+	GLfloat m_time;
+	GLfloat m_dayLength;
 
 	Texture m_tileSheetGround, m_tileSheetWorld, m_tileSheetSky;
 
@@ -120,9 +146,9 @@ protected:
 		struct Entity
 		{
 			Entity() {}
-			Entity(Uint16 p_id, Vector2<Sint32> p_pos) : id(p_id), pos(p_pos)
+			Entity(Sint16 p_id, Vector2<Sint32> p_pos) : id(p_id), pos(p_pos)
 			{}
-			Uint16 id = 0;
+			Sint16 id = -1;
 			Vector2<Sint32> pos;
 		};
 		std::vector<Tile> m_tile;

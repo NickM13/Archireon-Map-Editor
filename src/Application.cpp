@@ -76,6 +76,11 @@ void Application::run()
 	glfwTerminate();
 }
 
+void Application::close()
+{
+	Game::getInstance().close();
+}
+
 void Application::keyCallback(GLFWwindow* p_window, int p_keycode, int p_scancode, int p_action, int p_mods)
 {
 	//std::cout << p_keycode << " " << p_scancode << " " << p_action << " " << p_mods << "\n";

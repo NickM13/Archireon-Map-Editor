@@ -10,6 +10,8 @@ bool Game::init()
 	m_editorState = ZONE;
 
 	Font::getInstance().init("res\\segoeui.ttf", 10);
+	Items::getInstance().init();
+	Cards::getInstance().init();
 
 	m_boardEditor = &BoardEditor::getInstance();
 	m_boardEditor->init();
@@ -104,4 +106,19 @@ void Game::render()
 
 	Font::getInstance().setAlignment(ALIGN_CENTER);
 	Font::getInstance().print(m_fadeMsg, 100, 0);
+}
+
+void Game::close()
+{
+	switch(m_editorState)
+	{
+	case BOARD:
+		m_boardEditor->autosave();
+		break;
+	case ZONE:
+		m_zoneEditor->autosave();
+		break;
+	}
+	Cards::getInstance().save();
+	Items::getInstance().save();
 }

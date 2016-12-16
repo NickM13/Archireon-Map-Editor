@@ -1,8 +1,9 @@
 #pragma once
 
-#pragma warning( disable : 6031 )
+#pragma warning(disable : 6031)
 
 #include "..\Map.h"
+#include "engine\game\Items.h"
 
 class ZoneMap : public Map
 {
@@ -15,6 +16,7 @@ public:
 		Uint16 m_entityTexId;
 		Uint8 m_entityType; // Neutral=0, Opponent, Trader
 		std::string m_interact, m_idle;
+		std::vector<Uint16> m_inventory;
 
 		Entity(std::string p_name = "", Texture p_entityTex = Texture())
 		{
@@ -37,11 +39,19 @@ public:
 	void removeEntity(Uint16 p_index);
 	void setEntity(Uint16 p_index, Vector2<Sint32> p_pos);
 
+	void undo();
+	void redo();
+
+	void render(Vector2<GLfloat> p_camPos, GLfloat p_zoom);
+	void renderEntity(Vector2<GLfloat> p_camPos, GLfloat p_tileSize);
+
 	void save();
 	void save(std::string p_zoneName);
 
 	bool load();
 	bool load(std::string p_zoneName);
+
+	void clear();
 private:
 	std::vector<Entity> m_entities;
 };

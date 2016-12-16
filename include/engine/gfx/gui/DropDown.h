@@ -25,7 +25,6 @@ public:
 	void render();
 
 	Uint8 isUpdated();
-
 	Sint16 getSelectedItem();
 	Sint16 getPrevSelectedItem();
 

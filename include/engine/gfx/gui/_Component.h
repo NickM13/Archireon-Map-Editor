@@ -57,7 +57,15 @@ public:
 	virtual Component* addComponent(Component* p_comp, Sint8 p_alignment = 0);
 	virtual Component* findComponent(std::string p_compName);
 	virtual std::string getItem(Uint16 p_index);
+	virtual Texture getItemTexture(Uint16 p_index); // For Lists
+	virtual Uint16 getItemTexId(Uint16 p_index); // For Lists
 	virtual Component* addItem(std::string p_item);
+	virtual Component* addItem(std::string p_item, Texture p_texture, Uint16 p_texId); // For Lists
+	virtual void setItem(Uint16 p_index, std::string p_item);
+	virtual void setItemTexId(Uint16 p_index, Uint16 p_texId); // For Lists
+	virtual void setItemTexture(Uint16 p_index, Texture p_texture); // For Lists
+	virtual void removeItem(Uint16 p_index);
+	virtual Uint16 getItemCount();
 	virtual Component* setFunction(function p_func);
 	Component* callFunction() { if(m_function != 0) m_function(); return this; };
 	virtual void setSelectedItem(Uint16 p_selectedItem);

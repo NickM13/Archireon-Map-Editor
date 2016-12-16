@@ -114,6 +114,12 @@
     <ClCompile Include="src\engine\gfx\gui\NumberField.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\game\Items.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\game\Cards.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\engine\game\Game.h">
@@ -245,6 +251,12 @@
     <ClInclude Include="include\engine\gfx\gui\NumberField.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\engine\game\Items.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\engine\game\Cards.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DevIL.dll" />
@@ -252,5 +264,7 @@
     <None Include="glfw3.dll" />
     <None Include="ILU.dll" />
     <None Include="ILUT.dll" />
+    <None Include=".gitignore" />
+    <None Include=".gitattributes" />
   </ItemGroup>
 </Project>

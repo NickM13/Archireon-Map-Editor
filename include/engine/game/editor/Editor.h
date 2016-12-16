@@ -29,7 +29,7 @@ public:
 
 	bool switchEditor();
 	
-	std::string getZoneName();
+	virtual std::string getZoneName();
 	void unpause();
 	void pause(std::string p_screen);
 	std::string getPause();
@@ -37,9 +37,10 @@ public:
 	virtual void input();
 	virtual void update();
 	virtual void render();
-protected:
-	Map* m_map;
 
+	virtual void autosave();
+	virtual void refresh();
+protected:
 	bool m_showGrid;
 
 	CToolbar* m_toolbarMenu;
@@ -48,11 +49,11 @@ protected:
 	ContainerPanel* m_guiGround, *m_guiWorld, *m_guiEntity, *m_guiSky, *m_guiStamp;
 	CTileSet* m_tileSetGround, *m_tileSetWorld, *m_tileSetEntity, *m_tileSetSky, *m_tileSetStamps;
 	CList* m_listWorld, *m_listStamps;
-	CTabBar* m_tabWorld, *m_tabEntity, *m_tabStamps;
+	CTabBar* m_tabEntity;
 
 	//Pause screens
 	Container* m_guiPause;
-	Sint16 m_cPauseScreen;
+	std::vector<Sint16> m_cPauseScreen;
 	std::vector<Container*> m_pauseScreens;
 	Container* m_guiSaveMap, *m_guiLoadMap, *m_guiClearMap, *m_guiResizeMap;
 	Container* m_guiEntityTex, *m_guiEntityInteract, *m_guiEntityIdle;

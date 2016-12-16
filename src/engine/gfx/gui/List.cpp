@@ -1,22 +1,25 @@
 #include "engine\gfx\gui\List.h"
 
-CList::CList(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_itemHeight, Texture p_tileSheet, Sint8 p_colorTheme)
+CList::CList(std::string p_compName, std::string p_title, Vector2<Sint32> p_pos, Vector2<Sint32> p_size, Uint16 p_itemHeight, Texture p_baseTileSheet, Sint8 p_colorTheme)
 {
 	m_compName = p_compName;
 	m_title = p_title;
 	m_pos = p_pos;
 	m_size = p_size;
-	m_tileSheet = p_tileSheet;
+	m_baseTileSheet = p_baseTileSheet;
 	m_itemHeight = p_itemHeight;
 	m_colorTheme = m_colorThemes[p_colorTheme];
 
 	m_scroll = 0;
 }
 
-void CList::addItem(ListItem p_item)
+Component* CList::addItem(std::string p_item, Uint16 p_texId, Texture p_texture)
 {
-	m_itemList.push_back(p_item);
+	if(p_texture.getId() == -1)
+		p_texture = m_baseTileSheet;
+	m_itemList.push_back(ListItem(p_item, p_texture, p_texId));
 	m_maxScroll = Sint16((m_itemList.size() - m_size.y + 1) * m_itemHeight);
+	return this;
 }
 void CList::removeItem(Uint16 p_index)
 {
@@ -24,13 +27,33 @@ void CList::removeItem(Uint16 p_index)
 	m_selectedItem--;
 	m_maxScroll = Sint16((m_itemList.size() - m_size.y + 1) * m_itemHeight);
 }
-CList::ListItem& CList::getListItem(Uint16 p_index)
+void CList::setItem(Uint16 p_index, std::string p_item)
 {
-	return m_itemList[p_index];
+	m_itemList[p_index].m_name = p_item;
 }
-Uint16 CList::getListSize()
+void CList::setItemTexId(Uint16 p_index, Uint16 p_texId)
 {
-	return Uint16(m_itemList.size());
+	m_itemList[p_index].m_texId = p_texId;
+}
+void CList::setItemTexture(Uint16 p_index, Texture p_texture)
+{
+	m_itemList[p_index].m_texture = p_texture;
+}
+Uint16 CList::getItemCount()
+{
+	return m_itemList.size();
+}
+std::string CList::getItem(Uint16 p_index)
+{
+	return m_itemList[p_index].m_name;
+}
+Texture CList::getItemTexture(Uint16 p_index)
+{
+	return m_itemList[p_index].m_texture;
+}
+Uint16 CList::getItemTexId(Uint16 p_index)
+{
+	return m_itemList[p_index].m_texId;
 }
 
 void CList::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStates, Vector2<Sint32> p_mousePos)
@@ -60,7 +83,7 @@ void CList::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseStat
 			}
 			if(Sint32((p_mousePos.y + (GLfloat(m_scroll) / m_itemHeight) * m_itemHeight) / m_itemHeight) == Sint32(m_itemList.size()))
 			{
-				addItem(ListItem(std::string("Item " + Util::numToString(m_itemList.size(), 0)), 0));
+				addItem(std::string("Item " + Util::numToString(m_itemList.size(), 0)), 0);
 				m_update = 3;
 				if(Sint32(m_itemList.size()) >= m_size.y)
 					m_scroll += m_itemHeight;
@@ -161,29 +184,30 @@ void CList::render()
 			}
 			glEnd();
 
-			if(m_tileSheet.getId() != -1)
+			glColor3f(1, 1, 1);
+			for(Uint16 i = 0; i < Uint16(m_size.y) + 1; i++)
 			{
-				glColor3f(1, 1, 1);
-				glBindTexture(GL_TEXTURE_2D, m_tileSheet.getId());
-				glBegin(GL_QUADS);
+				if(i + round(m_scroll / m_itemHeight) < m_itemList.size())
 				{
-					for(Uint16 i = 0; i < Uint16(m_size.y) + 1; i++)
+					Texture _tex = m_itemList[i + round(m_scroll / m_itemHeight)].m_texture;
+					if(_tex.getId() != -1)
 					{
-						if(i + round(m_scroll / m_itemHeight) < m_itemList.size())
+						glBindTexture(GL_TEXTURE_2D, _tex.getId());
+						Vector2<Sint32> _tileSizes = {_tex.getSize().x / m_itemHeight, _tex.getSize().y / m_itemHeight};
+						glBegin(GL_QUADS);
 						{
-							Vector2<Sint32> _tileSizes = {m_tileSheet.getSize().x / m_itemHeight, m_tileSheet.getSize().y / m_itemHeight};
-							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x,														1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y));
+							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x, 1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y));
 							glVertex2f(0, GLfloat(i * m_itemHeight));
-							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x + GLfloat(m_itemHeight) / m_tileSheet.getSize().x,	1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y));
+							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x + GLfloat(m_itemHeight) / _tex.getSize().x, 1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y));
 							glVertex2f(GLfloat(m_itemHeight), GLfloat(i * m_itemHeight));
-							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x + GLfloat(m_itemHeight) / m_tileSheet.getSize().x,	1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y + GLfloat(m_itemHeight) / m_tileSheet.getSize().y));
+							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x + GLfloat(m_itemHeight) / _tex.getSize().x, 1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y + GLfloat(m_itemHeight) / _tex.getSize().y));
 							glVertex2f(GLfloat(m_itemHeight), GLfloat((i + 1) * m_itemHeight));
-							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x,														1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y + GLfloat(m_itemHeight) / m_tileSheet.getSize().y));
+							glTexCoord2f(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId % _tileSizes.x) / _tileSizes.x, 1.f - (floor(GLfloat(m_itemList[i + m_scroll / m_itemHeight].m_texId) / _tileSizes.y) / _tileSizes.y + GLfloat(m_itemHeight) / _tex.getSize().y));
 							glVertex2f(0, GLfloat((i + 1) * m_itemHeight));
 						}
+						glEnd();
 					}
 				}
-				glEnd();
 			}
 
 			m_colorTheme.m_text.useColor();

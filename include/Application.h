@@ -1,5 +1,5 @@
-#pragma once
 #pragma warning (disable:4244)
+#pragma once
 
 #include "engine\utils\Globals.h"
 #include "engine\utils\OpenGL.h"
@@ -13,7 +13,7 @@ class Application : public Singleton<Application>
 public:
 	bool init();
 	void run();
-
+	void close();
 private:
 	GLFWwindow * m_mainWindow;
 	static Vector2<Uint16> m_screenSize;

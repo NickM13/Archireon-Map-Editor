@@ -1,4 +1,5 @@
 #include "engine\game\map\board\BoardMap.h"
+#include "engine\gfx\font\Font.h"
 
 #include <direct.h>
 #include <fstream>
@@ -17,13 +18,130 @@ BoardMap::BoardMap(Vector2<Uint16> p_boardSize)
 	m_worldColors.push_back(Color(255, 255, 255, 255)); // Slow
 	m_worldColors.push_back(Color(255, 255, 0, 255)); // Trap
 	m_worldColors.push_back(Color(0, 255, 0, 255)); // Switch
-	m_worldColors.push_back(Color(0, 0, 0, 255)); // Solid Switch
+	m_worldColors.push_back(Color(0, 0, 255, 255)); // Solid Switch
 	m_worldColors.push_back(Color(255, 0, 255, 255)); // Portal
 	m_worldColors.push_back(Color(0, 255, 255, 255)); // Directional
 }
 BoardMap::~BoardMap()
 {
 	clear();
+}
+
+Uint16 BoardMap::addEntity(Entity p_entity)
+{
+	m_entities.push_back(p_entity);
+	return Uint16(m_entities.size());
+}
+BoardMap::Entity& BoardMap::getEntity(Uint16 p_index)
+{
+	if(p_index < m_entities.size())
+		return m_entities[p_index];
+	return Entity();
+}
+Uint16 BoardMap::getEntitySize()
+{
+	return Uint16(m_entities.size());
+}
+void BoardMap::removeEntity(Uint16 p_index)
+{
+	m_entities.erase(m_entities.begin() + p_index);
+}
+void BoardMap::setEntity(Uint16 p_index, Vector2<Sint32> p_pos)
+{
+	if(m_editting && p_index != 0)
+	{
+		if(m_currentUndoEdit.m_entity.id != p_index)
+			m_currentUndoEdit.m_entity = Edit::Entity(p_index, m_entities[p_index].m_pos);
+		m_currentRedoEdit.m_entity = Edit::Entity(p_index, p_pos);
+		m_entities[p_index].m_pos = p_pos;
+	}
+}
+
+void BoardMap::undo()
+{
+	if(m_editting)
+		stopEdit();
+	if(m_cEdit >= 0)
+	{
+		Edit::Tile _tile;
+		m_editting = true;
+		for(Uint16 i = 0; i < m_undoEdits[m_cEdit].m_tile.size(); i++)
+		{
+			_tile = m_undoEdits[m_cEdit].m_tile[i];
+			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
+		}
+		m_entities[m_undoEdits[m_cEdit].m_entity.id].m_pos = m_undoEdits[m_cEdit].m_entity.pos;
+		m_cEdit--;
+		m_editting = false;
+	}
+}
+void BoardMap::redo()
+{
+	if(m_cEdit < Sint32(m_redoEdits.size()) - 1)
+	{
+		Edit::Tile _tile;
+		m_editting = true;
+		for(Uint16 i = 0; i < m_redoEdits[m_cEdit + 1].m_tile.size(); i++)
+		{
+			_tile = m_redoEdits[m_cEdit + 1].m_tile[i];
+			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
+		}
+		m_entities[m_redoEdits[m_cEdit + 1].m_entity.id].m_pos = m_redoEdits[m_cEdit + 1].m_entity.pos;
+		m_cEdit++;
+		m_editting = false;
+	}
+}
+
+void BoardMap::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
+{
+	GLfloat _tileSize = m_tileSize + p_zoom;
+	Map::render(p_camPos, p_zoom);
+	if(m_layerVisible[2])
+		for(Uint16 i = 1; i < m_entities.size(); i++)
+			Font::getInstance().print(m_entities[i].m_name, Sint32(GLfloat(m_entities[i].m_pos.x) * _tileSize - p_camPos.x * _tileSize) + _tileSize / 2, Sint32(GLfloat(m_entities[i].m_pos.y) * _tileSize - p_camPos.y * _tileSize) - Font::getInstance().getHeight() / 2 - 1);
+}
+
+void BoardMap::renderEntity(Vector2<GLfloat> p_camPos, GLfloat p_tileSize)
+{
+	Vector2<Sint32> _tilesheetSize;
+	Vector2<GLfloat> _texCorrection;
+	glColor3f(1, 1, 1);
+	for(Uint16 i = 1; i < m_entities.size(); i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, m_entities[i].m_entityTex.getId());
+		_tilesheetSize = m_entities[i].m_entityTex.getSize();
+		_texCorrection = Vector2<GLfloat>(0.5f, 0.5f) / _tilesheetSize;
+		glPushMatrix();
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTranslatef(GLfloat(m_entities[i].m_pos.x + 1) - p_camPos.x, GLfloat(m_entities[i].m_pos.y + 1) - p_camPos.y, 0);
+			glBegin(GL_QUADS);
+			{
+				if(_tilesheetSize.x == 0 || _tilesheetSize.y == 0)
+				{
+					glBindTexture(GL_TEXTURE_2D, 0);
+					glVertex2f(0, 1);
+					glVertex2f(1, 1);
+					glVertex2f(1, 0);
+					glVertex2f(0, 0);
+				}
+				else
+				{
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / (_tilesheetSize.y / m_tileSize)) - _texCorrection.y));
+					glVertex2f(0, 1);
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + (1.f / (_tilesheetSize.x / m_tileSize)) - _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / (_tilesheetSize.y / m_tileSize)) - _texCorrection.y));
+					glVertex2f(1, 1);
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + (1.f / (_tilesheetSize.x / m_tileSize)) - _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + _texCorrection.y));
+					glVertex2f(1, 0);
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + _texCorrection.y));
+					glVertex2f(0, 0);
+				}
+			}
+			glEnd();
+		}
+		glPopMatrix();
+	}
 }
 
 void BoardMap::save()
@@ -325,7 +443,6 @@ bool BoardMap::load(std::string p_zoneName)
 		delete[] _data;
 	}
 	_file.close();
-	std::cout << m_mapSize.x << " " << m_mapSize.y << std::endl;
 
 	Uint16 _tileCount;
 	Uint16 _tileId, _mapIndex;

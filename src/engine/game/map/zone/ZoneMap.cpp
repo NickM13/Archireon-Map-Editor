@@ -1,23 +1,30 @@
 #include "engine\game\map\zone\ZoneMap.h"
+#include "engine\gfx\font\Font.h"
 
 #include <direct.h>
 #include <fstream>
+#include <math.h>
 
 ZoneMap::ZoneMap()
 {
+	m_time = 0;
+	m_dayLength = 24;
 	m_initialized = false;
 }
 ZoneMap::ZoneMap(Vector2<Uint16> p_zoneSize)
 {
+	m_time = 0;
+	m_dayLength = 24;
 	m_mapSize = p_zoneSize;
 	m_initialized = false;
 	init();
 	m_worldColors.push_back(Color()); // None
 	m_worldColors.push_back(Color(255, 0, 0, 255)); // Solid
 	m_worldColors.push_back(Color(0, 255, 0, 255)); // Switch
-	m_worldColors.push_back(Color(255, 255, 0, 255)); // Solid Switch
+	m_worldColors.push_back(Color(0, 0, 255, 255)); // Solid Switch
 	m_worldColors.push_back(Color(255, 0, 255, 255)); // Portal
 	m_worldColors.push_back(Color(0, 255, 255, 255)); // Directional
+	m_worldColors.push_back(Color(255, 255, 0, 255)); // Light
 }
 ZoneMap::~ZoneMap()
 {
@@ -31,7 +38,7 @@ Uint16 ZoneMap::addEntity(Entity p_entity)
 }
 ZoneMap::Entity& ZoneMap::getEntity(Uint16 p_index)
 {
-	if (p_index < m_entities.size())
+	if(p_index < m_entities.size())
 		return m_entities[p_index];
 	return Entity();
 }
@@ -45,12 +52,102 @@ void ZoneMap::removeEntity(Uint16 p_index)
 }
 void ZoneMap::setEntity(Uint16 p_index, Vector2<Sint32> p_pos)
 {
-	if (m_editting && p_index != 0)
+	if(m_editting)
 	{
-		if (m_currentUndoEdit.m_entity.id != p_index)
+		if(m_currentUndoEdit.m_entity.id != p_index)
 			m_currentUndoEdit.m_entity = Edit::Entity(p_index, m_entities[p_index].m_pos);
 		m_currentRedoEdit.m_entity = Edit::Entity(p_index, p_pos);
 		m_entities[p_index].m_pos = p_pos;
+	}
+}
+
+void ZoneMap::undo()
+{
+	if(m_editting)
+		stopEdit();
+	if(m_cEdit >= 0)
+	{
+		Edit::Tile _tile;
+		m_editting = true;
+		for(Uint16 i = 0; i < m_undoEdits[m_cEdit].m_tile.size(); i++)
+		{
+			_tile = m_undoEdits[m_cEdit].m_tile[i];
+			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
+		}
+		if(m_undoEdits[m_cEdit].m_entity.id != -1)
+			m_entities[m_undoEdits[m_cEdit].m_entity.id].m_pos = m_undoEdits[m_cEdit].m_entity.pos;
+		m_cEdit--;
+		m_editting = false;
+	}
+}
+void ZoneMap::redo()
+{
+	if(m_cEdit < Sint32(m_redoEdits.size()) - 1)
+	{
+		Edit::Tile _tile;
+		m_editting = true;
+		for(Uint16 i = 0; i < m_redoEdits[m_cEdit + 1].m_tile.size(); i++)
+		{
+			_tile = m_redoEdits[m_cEdit + 1].m_tile[i];
+			setTile(_tile.layer, _tile.x, _tile.y, _tile.id);
+		}
+		if(m_redoEdits[m_cEdit + 1].m_entity.id != -1)
+		m_entities[m_redoEdits[m_cEdit + 1].m_entity.id].m_pos = m_redoEdits[m_cEdit + 1].m_entity.pos;
+		m_cEdit++;
+		m_editting = false;
+	}
+}
+
+void ZoneMap::render(Vector2<GLfloat> p_camPos, GLfloat p_zoom)
+{
+	GLfloat _tileSize = m_tileSize + p_zoom;
+	Map::render(p_camPos, p_zoom);
+	glColor3f(1, 1, 1);
+	if(m_layerVisible[2])
+		for(Uint16 i = 1; i < m_entities.size(); i++)
+			Font::getInstance().print(m_entities[i].m_name, Sint32(GLfloat(m_entities[i].m_pos.x) * _tileSize - p_camPos.x * _tileSize) + _tileSize / 2, Sint32(GLfloat(m_entities[i].m_pos.y) * _tileSize - p_camPos.y * _tileSize) - Font::getInstance().getHeight() / 2 - 1);
+}
+
+void ZoneMap::renderEntity(Vector2<GLfloat> p_camPos, GLfloat p_tileSize)
+{
+	Vector2<Sint32> _tilesheetSize;
+	Vector2<GLfloat> _texCorrection;
+	glColor3f(1, 1, 1);
+	for(Uint16 i = 0; i < m_entities.size(); i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, m_entities[i].m_entityTex.getId());
+		_tilesheetSize = m_entities[i].m_entityTex.getSize();
+		_texCorrection = Vector2<GLfloat>(0.5f, 0.5f) / _tilesheetSize;
+		glPushMatrix();
+		{
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTranslatef(GLfloat(m_entities[i].m_pos.x + 1) - p_camPos.x, GLfloat(m_entities[i].m_pos.y + 1) - p_camPos.y, 0);
+			glBegin(GL_QUADS);
+			{
+				if(_tilesheetSize.x == 0 || _tilesheetSize.y == 0)
+				{
+					glBindTexture(GL_TEXTURE_2D, 0);
+					glVertex2f(0, 1);
+					glVertex2f(1, 1);
+					glVertex2f(1, 0);
+					glVertex2f(0, 0);
+				}
+				else
+				{
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / (_tilesheetSize.y / m_tileSize)) - _texCorrection.y));
+					glVertex2f(0, 1);
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + (1.f / (_tilesheetSize.x / m_tileSize)) - _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + (1.f / (_tilesheetSize.y / m_tileSize)) - _texCorrection.y));
+					glVertex2f(1, 1);
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + (1.f / (_tilesheetSize.x / m_tileSize)) - _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + _texCorrection.y));
+					glVertex2f(1, 0);
+					glTexCoord2f(((1.f / (_tilesheetSize.x / m_tileSize)) * (m_entities[i].m_entityTexId % Sint32(ceil(GLfloat(_tilesheetSize.x) / m_tileSize)))) + _texCorrection.x, 1.f - ((1.f / (_tilesheetSize.y / m_tileSize)) * floor(m_entities[i].m_entityTexId / (GLfloat(_tilesheetSize.x) / m_tileSize)) / (GLfloat(_tilesheetSize.y) / m_tileSize) + _texCorrection.y));
+					glVertex2f(0, 0);
+				}
+			}
+			glEnd();
+		}
+		glPopMatrix();
 	}
 }
 
@@ -78,7 +175,7 @@ void ZoneMap::save(std::string p_zoneName)
 	_file.close();
 
 	// Save Ground
-	_file.open(std::string("map\\zones\\" + m_mapName + "\\Ground.tmf"));
+	_file.open(std::string("map\\zones\\" + m_mapName + "\\Ground.tmf"), std::ios::binary);
 	{
 		Uint16 _tCount = 0;
 		Uint16 _tile = m_tileData[0][0][0];
@@ -107,19 +204,17 @@ void ZoneMap::save(std::string p_zoneName)
 	_file.close();
 
 	// Save World
-	_file.open(std::string("map\\zones\\" + m_mapName + "\\World.tmf"));
+	_file.open(std::string("map\\zones\\" + m_mapName + "\\World.tmf"), std::ios::binary);
 	{
 		FileExt::writeShort(_file, Uint16(m_worldObjects.size()));
 		std::vector<Uint8> _objData;
 		for(Uint16 i = 0; i < Uint16(m_worldObjects.size()); i++)
 		{
-			_objData.push_back(Uint8(min(m_worldObjects[i].m_name.length(), 128)));
+			FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_name.length()));
 			for(Uint16 j = 0; j < Uint16(min(m_worldObjects[i].m_name.length(), 128)); j++)
-				_objData.push_back(m_worldObjects[i].m_name[j]);
-			_objData.push_back(Uint8((m_worldObjects[i].m_interactionType & 0xFF00) >> 8));
-			_objData.push_back(Uint8((m_worldObjects[i].m_interactionType & 0xFF)));
-			_objData.push_back(Uint8((m_worldObjects[i].m_tileTex & 0xFF00) >> 8));
-			_objData.push_back(Uint8((m_worldObjects[i].m_tileTex & 0xFF)));
+				FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_name[j]));
+			FileExt::writeShort(_file, Uint8(m_worldObjects[i].m_interactionType));
+			FileExt::writeShort(_file, Uint8(m_worldObjects[i].m_tileTex));
 			switch(m_worldObjects[i].m_interactionType)
 			{
 			case 0: // NONE
@@ -129,32 +224,26 @@ void ZoneMap::save(std::string p_zoneName)
 
 				break;
 			case 2: // SWITCH
-				_objData.push_back(Uint8(m_worldObjects[i].m_frequency));
+				FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_frequency));
 				break;
 			case 3: // SOLID SWITCH
-				_objData.push_back(Uint8(m_worldObjects[i].m_frequency));
+				FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_frequency));
 				break;
 			case 4: // PORTAL
-				_objData.push_back(Uint8(m_worldObjects[i].m_frequency));
-				_objData.push_back(Uint8(min(m_worldObjects[i].m_portalDest.length(), 128)));
+				FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_frequency));
+				FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_portalDest.length()));
 				for(Uint16 j = 0; j < Uint16(min(m_worldObjects[i].m_portalDest.length(), 128)); j++)
-					_objData.push_back(m_worldObjects[i].m_portalDest[j]);
-				_objData.push_back(Uint8((m_worldObjects[i].m_destX & 0xFF00) >> 8));
-				_objData.push_back(Uint8((m_worldObjects[i].m_destX & 0xFF)));
-				_objData.push_back(Uint8((m_worldObjects[i].m_destY & 0xFF00) >> 8));
-				_objData.push_back(Uint8((m_worldObjects[i].m_destY & 0xFF)));
+					FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_portalDest[j]));
+				FileExt::writeShort(_file, Uint8(m_worldObjects[i].m_destX));
+				FileExt::writeShort(_file, Uint8(m_worldObjects[i].m_destY));
 				break;
 			case 5: // DIRECTION
-				_objData.push_back(Uint8(m_worldObjects[i].m_direction));
+				FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_direction));
+				break;
+			case 6: // LIGHT
+				FileExt::writeChar(_file, Uint8(m_worldObjects[i].m_lightValue));
 				break;
 			}
-
-			FileExt::writeShort(_file, Uint16(_objData.size()));
-			for(Uint16 j = 0; j < Uint16(_objData.size()); j++)
-			{
-				FileExt::writeChar(_file, _objData[j]);
-			}
-			_objData.clear();
 		}
 
 
@@ -185,7 +274,7 @@ void ZoneMap::save(std::string p_zoneName)
 	_file.close();
 
 	// Save Sky
-	_file.open(std::string("map\\zones\\" + m_mapName + "\\Sky.tmf"));
+	_file.open(std::string("map\\zones\\" + m_mapName + "\\Sky.tmf"), std::ios::binary);
 	{
 		Uint16 _tCount = 0;
 		Uint16 _tile = m_tileData[2][0][0];
@@ -214,7 +303,7 @@ void ZoneMap::save(std::string p_zoneName)
 	_file.close();
 
 	// Save Entity Name and Position
-	_file.open(std::string("map\\zones\\" + m_mapName + "\\Entity.tmf"));
+	_file.open(std::string("map\\zones\\" + m_mapName + "\\Entity.tmf"), std::ios::binary);
 	{
 		FileExt::writeShort(_file, Uint16(m_entities.size()));
 
@@ -233,9 +322,9 @@ void ZoneMap::save(std::string p_zoneName)
 	_file.close();
 
 	// Save Entity Info
-	for(Uint16 i = 0; i < Uint16(m_entities.size()); i++)
+	for(Uint16 i = 1; i < Uint16(m_entities.size()); i++)
 	{
-		_file.open(std::string("map\\zones\\" + m_mapName + "\\entities\\" + m_entities[i].m_name + "\\Info.cfg"));
+		_file.open(std::string("map\\zones\\" + m_mapName + "\\entities\\" + m_entities[i].m_name + "\\Info.cfg"), std::ios::binary);
 		{
 			FileExt::writeChar(_file, m_entities[i].m_entityType);
 			FileExt::writeShort(_file, Uint16(m_entities[i].m_entityTex.getName().length()));
@@ -249,7 +338,7 @@ void ZoneMap::save(std::string p_zoneName)
 	// Save Entity Interact Scripts
 	for(Uint16 i = 0; i < Uint16(m_entities.size()); i++)
 	{
-		_file.open(std::string("map\\zones\\" + m_mapName + "\\entities\\" + m_entities[i].m_name + "\\Interact"));
+		_file.open(std::string("map\\zones\\" + m_mapName + "\\entities\\" + m_entities[i].m_name + "\\Interact"), std::ios::binary);
 		{
 			for(Uint16 j = 0; j < m_entities[i].m_interact.length(); j++)
 				FileExt::writeChar(_file, m_entities[i].m_interact[j]);
@@ -260,7 +349,7 @@ void ZoneMap::save(std::string p_zoneName)
 	// Save Entity Idle Script
 	for(Uint16 i = 0; i < Uint16(m_entities.size()); i++)
 	{
-		_file.open(std::string("map\\zones\\" + m_mapName + "\\entities\\" + m_entities[i].m_name + "\\Idle"));
+		_file.open(std::string("map\\zones\\" + m_mapName + "\\entities\\" + m_entities[i].m_name + "\\Idle"), std::ios::binary);
 		{
 			for(Uint16 j = 0; j < m_entities[i].m_idle.length(); j++)
 				FileExt::writeChar(_file, m_entities[i].m_idle[j]);
@@ -403,7 +492,6 @@ bool ZoneMap::load(std::string p_zoneName)
 
 		for(Uint16 i = 0; i < _objCount; i++)
 		{
-			FileExt::readShort(_data, _index); // Size of object chunk, if you want to skip this stuff
 			_objName = "";
 			_objNameLen = FileExt::readChar(_data, _index);
 			for(Uint16 j = 0; j < Uint16(_objNameLen); j++)
@@ -438,6 +526,9 @@ bool ZoneMap::load(std::string p_zoneName)
 			case 5: // DIRECTION
 				m_worldObjects[i].m_direction = FileExt::readChar(_data, _index);
 				break;
+			case 6: // LIGHT
+				m_worldObjects[i].m_lightValue = FileExt::readChar(_data, _index);
+				break;
 			}
 		}
 
@@ -450,6 +541,8 @@ bool ZoneMap::load(std::string p_zoneName)
 			for(Uint16 i = 0; i < _tileCount; i++)
 			{
 				m_tileData[1][_mapIndex % m_mapSize.x][int(floor(GLfloat(_mapIndex) / m_mapSize.x))] = _tileId;
+				if(m_worldObjects[_tileId].m_interactionType == 6)
+					addLight(LightNode(_mapIndex % m_mapSize.x, floor(GLfloat(_mapIndex) / m_mapSize.x), m_worldObjects[_tileId].m_lightValue));
 				_mapIndex++;
 			}
 		}
@@ -523,6 +616,8 @@ bool ZoneMap::load(std::string p_zoneName)
 	{
 		_file.open(std::string("map\\zones\\" + p_zoneName + "\\entities\\" + m_entities[i].m_name + "\\Info.cfg").c_str(), std::ios::binary);
 		{
+			if(!_file.good())
+				continue;
 			_index = 0;
 			_file.seekg(0, _file.end);
 			_length = Uint32(_file.tellg());
@@ -546,6 +641,8 @@ bool ZoneMap::load(std::string p_zoneName)
 	{
 		_file.open(std::string("map\\zones\\" + p_zoneName + "\\entities\\" + m_entities[i].m_name + "\\Interact").c_str(), std::ios::binary);
 		{
+			if(!_file.good())
+				continue;
 			_index = 0;
 			_file.seekg(0, _file.end);
 			_length = Uint32(_file.tellg());
@@ -563,6 +660,8 @@ bool ZoneMap::load(std::string p_zoneName)
 	{
 		_file.open(std::string("map\\zones\\" + p_zoneName + "\\entities\\" + m_entities[i].m_name + "\\Idle").c_str(), std::ios::binary);
 		{
+			if(!_file.good())
+				continue;
 			_index = 0;
 			_file.seekg(0, _file.end);
 			_length = Uint32(_file.tellg());
@@ -579,4 +678,20 @@ bool ZoneMap::load(std::string p_zoneName)
 	std::cout << "Complete." << std::endl;
 
 	return true;
+}
+
+void ZoneMap::clear()
+{
+	for(Uint16 x = 0; x < m_mapSize.x; x++)
+	{
+		for(Uint16 y = 0; y < m_mapSize.y; y++)
+		{
+		}
+		for(Uint16 i = 0; i < 3; i++)
+			delete[] m_tileData[i][x];
+	}
+	for(Uint16 i = 0; i < 3; i++)
+		delete[] m_tileData[i];
+	m_entities.clear();
+	m_worldObjects.clear();
 }

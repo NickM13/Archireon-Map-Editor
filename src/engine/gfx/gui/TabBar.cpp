@@ -23,13 +23,6 @@ void CTabBar::setSelected(Uint16 p_selected)
 	calcMaxScroll();
 }
 
-std::string CTabBar::getTab(Sint16 p_index)
-{
-	if(p_index < Sint16(m_tabList.size()))
-		return m_tabList[p_index];
-	return "";
-}
-
 Uint16 CTabBar::getTabCount()
 {
 	return Uint16(m_tabList.size());

@@ -58,7 +58,7 @@ void CSlider::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseSt
 			if(m_held)
 			{
 				m_slideValue = p_mousePos.x - m_pos.x;
-				setValue(Sint32((m_slideValue / GLfloat(m_maxValue)) * (m_length + 6)));
+				setValue(Sint32(round((m_slideValue / GLfloat(m_length)) * (m_maxValue))));
 			}
 			break;
 		case 3:

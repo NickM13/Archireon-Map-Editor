@@ -4,6 +4,9 @@
 void BoardEditor::init()
 {
 	m_map = new BoardMap(Vector2<Uint16>(24, 16));
+	m_map->load("_autosave");
+
+	m_camPos = Vector2<GLfloat>(GLfloat(m_map->getSize().x / 2), GLfloat(m_map->getSize().y / 2));
 
 	m_map->setTextureGround(LTexture::getInstance().getImage("TilesheetGround1.png"));
 	m_map->setTextureWorld(LTexture::getInstance().getImage("TilesheetWorld.png"));
@@ -11,7 +14,9 @@ void BoardEditor::init()
 
 	Editor::init();
 
-	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\ZoneIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER)->setTooltip("Switch to World editor");
+	m_map->addEntity(BoardMap::Entity("None", Texture()));
+
+	m_guiLeftLayer->addComponent(new CButton("BUTTON_EDITOR_TYPE", "", LTexture::getInstance().getImage("gui\\ZoneIcon.png"), {0, -15}, {24, 24}, 1), PANEL_ALIGN_CENTER)->setFunction([]() {BoardEditor::getInstance().autosave(); })->setTooltip("Switch to World editor");
 
 	m_guiWorldSlow = new Container("GUI_SLOW", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
 	m_guiWorldTrap = new Container("GUI_TRAP", {0, 300}, {m_guiLeftDetail->getSize().x, 32}, false);
@@ -230,6 +235,22 @@ void BoardEditor::init()
 
 	m_guiEntity->findComponent("DROPDOWN_TYPE")->addItem("Neutral")->addItem("Opponent")->addItem("Trader");
 
+	m_tileSetGround = new CTileSet("TILESET_GROUND", "Ground Tile Set", {0, 34}, {256, 256}, 32, m_map->getTextureGround(), 1);
+	m_tileSetWorld = new CTileSet("TILESET_WORLD", "World Tile Set", {0, 318}, {256, 256}, 32, m_map->getTextureWorld(), 1);
+	m_tileSetEntity = new CTileSet("TILESET_ENTITY", "Spritesheet", {0, 82}, {256, 256}, 32, Texture(), 1);
+	m_tileSetSky = new CTileSet("TILESET_SKY", "Sky Tile Set", {0, 32}, {256, 256}, 32, m_map->getTextureSky(), 1);
+	m_tileSetStamps = new CTileSet("TILESET_WORLD", "TODO: Preview", {0, 88}, {256, 256}, 32, Texture(), 1);
+
+	m_guiGround->addComponent(m_tileSetGround, PANEL_ALIGN_TOP);
+	m_guiWorld->addComponent(m_tileSetWorld, PANEL_ALIGN_TOP);
+	m_guiEntity->addComponent(m_tileSetEntity, PANEL_ALIGN_TOP);
+	m_guiSky->addComponent(m_tileSetSky, PANEL_ALIGN_TOP);
+	m_guiStamp->addComponent(m_tileSetStamps, PANEL_ALIGN_TOP);
+
+	m_listWorld = new CList("LIST_WORLD", "World Object List", {0, 64}, {256, 4}, 32, m_map->getTextureWorld(), 1);
+	m_listWorld->addItem("None", 0);
+	m_map->addWorldObject(Map::WorldObject("None", 0, 0));
+	m_guiWorld->addComponent(m_listWorld, PANEL_ALIGN_TOP);
 
 	m_guiSaveMap = new Container("CONTAINER_SAVE_MAP", {0, 0}, Globals::getInstance().m_screenSize, false);
 	{
@@ -252,12 +273,7 @@ void BoardEditor::init()
 			if(BoardEditor::getInstance().m_guiLoadMap->findComponent("TEXTFIELD_WORLD_NAME")->getTitle() != "")
 			{
 				BoardEditor::getInstance().m_map->load(BoardEditor::getInstance().m_guiLoadMap->findComponent("TEXTFIELD_WORLD_NAME")->getTitle());
-				BoardEditor::getInstance().m_listWorld->clear();
-				for(Uint16 i = 0; i < BoardEditor::getInstance().m_map->getWorldObjectSize(); i++)
-					BoardEditor::getInstance().m_listWorld->addItem({BoardEditor::getInstance().m_map->getWorldObject(i).m_name, BoardEditor::getInstance().m_map->getWorldObject(i).m_tileTex});
-				BoardEditor::getInstance().m_tabEntity->clear();
-				for(Uint16 i = 0; i < BoardEditor::getInstance().m_map->getEntitySize(); i++)
-					BoardEditor::getInstance().m_tabEntity->addItem({BoardEditor::getInstance().m_map->getEntity(i).m_name, 0});
+				BoardEditor::getInstance().refresh();
 				BoardEditor::getInstance().unpause();
 			}
 		}), PANEL_ALIGN_CENTER);
@@ -330,14 +346,436 @@ void BoardEditor::init()
 	m_map->setLayerVisible(1, m_guiLeftLayer->findComponent("BUTTON_WORLD_VISIBLE")->isSelected() != 0);
 	m_map->setLayerVisible(2, m_guiLeftLayer->findComponent("BUTTON_ENTITY_VISIBLE")->isSelected() != 0);
 	m_map->setLayerVisible(3, m_guiLeftLayer->findComponent("BUTTON_SKY_VISIBLE")->isSelected() != 0);
+
+	refresh();
+}
+
+std::string BoardEditor::getZoneName()
+{
+	return m_map->getName();
 }
 
 void BoardEditor::input()
 {
-	Editor::input();
-}
+	Vector2<Sint32> _mousePos = Globals::getInstance().m_mousePos;
+	Sint8 _rValue = 0; // Input flags: 1 = mouse click, 2 = key press, 4 = mouse scroll
+	Vector2<GLfloat> _camPos = m_camPos * (TILE_SIZE + m_zoom);
 
+	m_guiAll->input(_rValue, Globals::getInstance().m_keyStates, Globals::getInstance().m_mouseStates, _mousePos);
+
+	if(getPause() == "" && (_rValue & 2) == 0 && Globals::getInstance().m_keyStates[GLFW_KEY_G] == 1)
+		m_showGrid = !m_showGrid;
+
+	if(getPause() == "" && (_rValue & 1) == 0 && Globals::getInstance().m_mouseScroll != 0)
+	{
+		m_tZoom += (Globals::getInstance().m_mouseScroll) / 4.f;
+		if(m_tZoom <= -TILE_SIZE + 6)
+			m_tZoom = -TILE_SIZE + 6;
+		if(m_tZoom > 0)
+			m_tZoom = 0;
+	}
+
+	if((_rValue & 2) == 0 && Globals::getInstance().m_keyStates[GLFW_KEY_ESCAPE] == 1)
+	{
+		if(!m_cPauseScreen.empty())
+		{
+			unpause();
+			if(Globals::getInstance().m_exitting == 1)
+				Globals::getInstance().m_exitting = 0;
+		}
+		else
+			Globals::getInstance().m_exitting = 1;
+		_rValue += 2;
+	}
+
+	if(getPause() != "" && (_rValue & 2) == 0 && Globals::getInstance().m_keyStates[GLFW_KEY_ENTER] == 1)
+		m_pauseScreens[m_cPauseScreen[m_cPauseScreen.size() - 1]]->findComponent("BUTTON_SET")->setState(1);
+
+	if(getPause() == "" && Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] != 0 && Globals::getInstance().m_keyStates[GLFW_KEY_Z] == 1)
+		m_map->undo();
+	if(getPause() == "" && Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] != 0 && Globals::getInstance().m_keyStates[GLFW_KEY_Y] == 1)
+		m_map->redo();
+
+	if(Globals::getInstance().m_mouseStates[0] == 1 && m_mouseInArea)
+	{
+		if(!m_lmbDown)
+		{
+			if(Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_SHIFT] == 0)
+				m_map->startEdit();
+			else
+			{
+				switch(m_selectLayer->getSelectedButton())
+				{
+				case 0:
+					m_map->startFill(0, m_tileSetGround->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+					break;
+				case 1:
+					m_map->startFill(1, m_listWorld->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+					break;
+				case 2:
+					m_map->startEdit();
+					break;
+				case 3:
+					m_map->startFill(3, m_tileSetSky->getSelectedTile(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+					break;
+				}
+			}
+			m_lmbDown = true;
+		}
+		if(m_selectLayer->getSelectedButton() == 4)
+			m_selectStart = {Sint32(floor((m_mouseBuffer.x + m_camPos.x) / TILE_SIZE) - 1), Sint32(floor((m_mouseBuffer.y + m_camPos.y) / TILE_SIZE) - 1)};
+	}
+	if(Globals::getInstance().m_mouseStates[1] == 1 && m_mouseInArea)
+	{
+		if(m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y)))
+			m_rmbDown = true;
+	}
+
+	if(m_lmbDown && Globals::getInstance().m_mouseStates[0] == 0)
+	{
+		m_map->stopEdit();
+		m_map->stopFill();
+		m_lmbDown = false;
+	}
+	if(m_rmbDown && Globals::getInstance().m_mouseStates[1] == 0)
+		m_rmbDown = false;
+
+	if((_rValue & 1) == 0 && m_lmbDown && !m_rmbDown && m_mouseInArea)
+	{
+		if(m_map->isFilling())
+			m_map->moveFill(Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+		else
+		{
+			switch(m_selectLayer->getSelectedButton())
+			{
+			case 0:
+				m_map->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetGround->getSelectedTile());
+				break;
+			case 1:
+				m_map->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_listWorld->getSelectedItem());
+				break;
+			case 2:
+				m_map->setEntity(m_tabEntity->getSelectedItem(), Vector2<Sint32>(Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))));
+				break;
+			case 3:
+				m_map->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom))), m_tileSetSky->getSelectedTile());
+				break;
+			case 4:
+				if(m_listStamps->getSelectedItem() == 0)
+					m_selectEnd = {Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom))), Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)))};
+				else
+				{
+					Stamp _selected = m_stamps[m_listStamps->getSelectedItem()];
+
+					for(Sint32 x = Sint32(ceil(-GLfloat(_selected.m_size.x) / 2)); x < Sint32(ceil(GLfloat(_selected.m_size.x) / 2)); x++)
+					{
+						for(Sint32 y = Sint32(ceil(-GLfloat(_selected.m_size.y) / 2)); y < Sint32(ceil(GLfloat(_selected.m_size.y) / 2)); y++)
+						{
+							if(m_guiStamp->findComponent("BUTTON_USE_GROUND")->isSelected() != 0)
+								m_map->setTile(0, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_ground[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							if(m_guiStamp->findComponent("BUTTON_USE_WORLD")->isSelected() != 0)
+								m_map->setTile(1, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_world[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							if(m_guiStamp->findComponent("BUTTON_USE_ENTITY")->isSelected() != 0)
+								m_map->setTile(2, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_entity[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+							if(m_guiStamp->findComponent("BUTTON_USE_SKY")->isSelected() != 0)
+								m_map->setTile(3, Sint32(floor((m_mouseBuffer.x + _camPos.x) / (TILE_SIZE + m_zoom)) - 1) + x, Sint32(floor((m_mouseBuffer.y + _camPos.y) / (TILE_SIZE + m_zoom)) - 1) + y, _selected.m_sky[x - Sint32(ceil(-GLfloat(_selected.m_size.x) / 2))][y - Sint32(ceil(-GLfloat(_selected.m_size.y) / 2))]);
+						}
+					}
+				}
+				break;
+			}
+		}
+	}
+	else if(m_rmbDown)
+	{
+		m_camPos = m_camPos + Vector2<GLfloat>(m_mouseBuffer - _mousePos) / (TILE_SIZE + m_zoom);
+
+		if(m_camPos.x < 0)
+			m_camPos.x = 0;
+		if(m_camPos.y < 0)
+			m_camPos.y = 0;
+		if(m_camPos.x > (m_map->getSize().x))
+			m_camPos.x = GLfloat((m_map->getSize().x));
+		if(m_camPos.y > (m_map->getSize().y))
+			m_camPos.y = GLfloat((m_map->getSize().y));
+	}
+
+	_camPos = m_camPos;
+
+	m_mouseBuffer = _mousePos;
+	m_mouseInArea = ((_rValue & 1) == 0
+		&& m_tileMapArea.checkPoint(GLfloat(m_mouseBuffer.x), GLfloat(m_mouseBuffer.y))
+		&& ((m_mouseBuffer.x / (TILE_SIZE + m_zoom) + m_camPos.x) >= 0) && ((m_mouseBuffer.y / (TILE_SIZE + m_zoom) + m_camPos.y) >= 0)
+		&& ((m_mouseBuffer.x / (TILE_SIZE + m_zoom) + m_camPos.x) < m_map->getSize().x) && ((m_mouseBuffer.y / (TILE_SIZE + m_zoom) + m_camPos.y) < m_map->getSize().y));
+}
 void BoardEditor::update()
 {
-	Editor::update();
+	if(Globals::getInstance().m_exitting == 1 && getPause() != "CONTAINER_EXIT")
+		pause("CONTAINER_EXIT");
+
+	m_deltaUpdate = GLfloat(glfwGetTime() - m_lastUpdate);
+	m_lastUpdate = GLfloat(glfwGetTime());
+
+	GLfloat _zoom = m_zoom;
+	m_zoom -= (m_zoom - m_tZoom) * m_deltaUpdate * 10.f;
+	if(abs(m_zoom - m_tZoom) < 0.01f)
+		m_zoom = m_tZoom;
+
+	m_camPos.x += (GLfloat(m_mouseBuffer.x) / (TILE_SIZE + _zoom) - GLfloat(m_mouseBuffer.x) / (TILE_SIZE + m_zoom));
+	m_camPos.y += (GLfloat(m_mouseBuffer.y) / (TILE_SIZE + _zoom) - GLfloat(m_mouseBuffer.y) / (TILE_SIZE + m_zoom));
+
+	if(m_camPos.x < 0)
+		m_camPos.x = 0;
+	if(m_camPos.y < 0)
+		m_camPos.y = 0;
+	if(m_camPos.x > (m_map->getSize().x))
+		m_camPos.x = GLfloat((m_map->getSize().x));
+	if(m_camPos.y > (m_map->getSize().y))
+		m_camPos.y = GLfloat((m_map->getSize().y));
+
+	m_guiAll->update(m_deltaUpdate);
+
+	if(m_selectLayer->getPrevSelectedButton() != m_selectLayer->getSelectedButton())
+	{
+		switch(m_selectLayer->getSelectedButton())
+		{
+		case 0:
+			m_guiGround->setVisible(true);
+			break;
+		case 1:
+			m_guiWorld->setVisible(true);
+			break;
+		case 2:
+			m_guiEntity->setVisible(true);
+			break;
+		case 3:
+			m_guiSky->setVisible(true);
+			break;
+		case 4:
+			m_guiStamp->setVisible(m_listStamps->getSelectedItem() != 0);
+			break;
+		}
+
+		switch(m_selectLayer->getPrevSelectedButton())
+		{
+		case 0:
+			m_guiGround->setVisible(false);
+			break;
+		case 1:
+			m_guiWorld->setVisible(false);
+			break;
+		case 2:
+			m_guiEntity->setVisible(false);
+			break;
+		case 3:
+			m_guiSky->setVisible(false);
+			break;
+		case 4:
+			m_guiStamp->setVisible(false);
+			m_selectStart = {-1, -1};
+			break;
+		}
+	}
+
+	switch(m_selectLayer->getSelectedButton())
+	{
+	case 1: // WORLD OBJECTS
+		if(m_listWorld->isUpdated() != 0)
+		{
+			m_guiWorld->setVisible(true);
+			if((m_listWorld->isUpdated() & 2) == 2) // New item
+			{
+				m_map->addWorldObject({m_listWorld->getItem(m_listWorld->getSelectedItem()), 1, m_listWorld->getItemTexId(m_listWorld->getSelectedItem())});
+			}
+			if((m_listWorld->isUpdated() & 1) == 1) // Switch item
+			{
+				m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getItem(m_listWorld->getSelectedItem()));
+				m_guiWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
+				m_tileSetWorld->setSelectedTile(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
+
+				m_guiWorldSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldSolidSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldPortal->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldPortal->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+				m_guiWorldPortal->findComponent("TEXTFIELD_NAME")->setTitle(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
+				m_guiWorldPortal->findComponent("NUMFIELD_X")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
+				m_guiWorldPortal->findComponent("NUMFIELD_Y")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
+				m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_direction);
+			}
+		}
+		else if(m_guiWorld->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listWorld->getSelectedItem() != 0 && m_listWorld->getSelectedItem() < m_listWorld->getItemCount())
+		{
+			m_listWorld->removeItem(m_listWorld->getSelectedItem());
+			m_map->removeWorldObject(m_listWorld->getSelectedItem() + 1);
+
+			m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->setTitle(m_listWorld->getItem(m_listWorld->getSelectedItem()));
+			m_guiWorld->findComponent("DROPDOWN_INTERACT")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType);
+			m_tileSetWorld->setSelectedTile(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex);
+
+			m_guiWorldSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldSolidSwitch->findComponent("NUMFIELD_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldSolidSwitch->findComponent("SLIDER_FREQUENCY")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_frequency);
+			m_guiWorldPortal->findComponent("TEXTFIELD_NAME")->setTitle(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_portalDest);
+			m_guiWorldPortal->findComponent("NUMFIELD_X")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destX);
+			m_guiWorldPortal->findComponent("NUMFIELD_Y")->setValue(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_destY);
+			m_guiWorldDirection->findComponent("DROPDOWN_DIRECTION")->setSelectedItem(m_map->getWorldObject(m_listWorld->getSelectedItem()).m_direction);
+		}
+		if(m_listWorld->getSelectedItem() != 0)
+		{
+			if(m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle() != "")
+				m_listWorld->setItem(m_listWorld->getSelectedItem(), m_guiWorld->findComponent("TEXTFIELD_OBJECT_NAME")->getTitle());
+			m_listWorld->setItemTexId(m_listWorld->getSelectedItem(), m_tileSetWorld->getSelectedTile());
+			m_map->getWorldObject(m_listWorld->getSelectedItem()).m_interactionType = m_guiWorld->findComponent("DROPDOWN_INTERACT")->getSelectedItem();
+			m_map->getWorldObject(m_listWorld->getSelectedItem()).m_tileTex = m_tileSetWorld->getSelectedTile();
+		}
+		break;
+	case 2: // ENTITIES
+		if(m_tabEntity->isUpdated() != 0)
+		{
+			if((m_tabEntity->isUpdated() & 2) == 2) // New item
+				m_map->addEntity(BoardMap::Entity(m_tabEntity->getItem(m_tabEntity->getSelectedItem())));
+			if((m_tabEntity->isUpdated() & 1) == 1) // Switch item
+			{
+				m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_tabEntity->getItem(m_tabEntity->getSelectedItem()));
+				if(m_tabEntity->getSelectedItem() != 0)
+					m_tileSetEntity->setTileSheet(m_map->getEntity(m_tabEntity->getSelectedItem()).m_entityTex);
+				else
+					m_tileSetEntity->setTileSheet(Texture());
+				m_tileSetEntity->setSelectedTile(m_map->getEntity(m_tabEntity->getSelectedItem()).m_entityTexId);
+				m_guiEntity->findComponent("DROPDOWN_TYPE")->setSelectedItem(m_map->getEntity(m_tabEntity->getSelectedItem()).m_entityType);
+			}
+		}
+		else if(m_guiEntity->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_tabEntity->getSelectedItem() != 0 && m_tabEntity->getSelectedItem() < m_tabEntity->getTabCount())
+		{
+			m_tabEntity->removeTab(m_tabEntity->getSelectedItem());
+			m_map->removeEntity(m_tabEntity->getSelectedItem());
+
+			m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->setTitle(m_tabEntity->getItem(m_tabEntity->getSelectedItem()));
+			m_tileSetEntity->setTileSheet(m_map->getEntity(m_tabEntity->getSelectedItem()).m_entityTex);
+			m_tileSetEntity->setSelectedTile(m_map->getEntity(m_tabEntity->getSelectedItem()).m_entityTexId);
+		}
+		if(m_tabEntity->getSelectedItem() > 0)
+		{
+			if(m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle() != "")
+			{
+				m_tabEntity->setTab(m_tabEntity->getSelectedItem(), m_guiEntity->findComponent("TEXTFIELD_ENTITY_NAME")->getTitle());
+				m_map->getEntity(m_tabEntity->getSelectedItem()).m_name = m_tabEntity->getItem(m_tabEntity->getSelectedItem());
+			}
+			m_map->getEntity(m_tabEntity->getSelectedItem()).m_entityType = Uint8(m_guiEntity->findComponent("DROPDOWN_TYPE")->getSelectedItem());
+			m_map->getEntity(m_tabEntity->getSelectedItem()).m_entityTexId = m_tileSetEntity->getSelectedTile();
+		}
+		break;
+	case 3:
+
+		break;
+	case 4: // STAMPS
+		if(m_listStamps->isUpdated() != 0)
+		{
+			if((m_listStamps->isUpdated() & 2) == 2) // New item
+				m_stamps.push_back(Stamp());
+			if((m_listStamps->isUpdated() & 1) == 1) // Switch item
+			{
+				m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getItem(m_listStamps->getSelectedItem()));
+				m_selectStart = {-1, -1};
+			}
+			m_guiStamp->setVisible(m_listStamps->getSelectedItem() != 0);
+		}
+		else if(m_guiStamp->findComponent("BUTTON_DELETE")->isSelected() == 3 && m_listStamps->getSelectedItem() != 0 && m_listStamps->getSelectedItem() < m_listStamps->getItemCount())
+		{
+			m_stamps.erase(m_stamps.begin() + m_listStamps->getSelectedItem());
+			m_listStamps->removeItem(m_listStamps->getSelectedItem());
+
+			m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->setTitle(m_listStamps->getItem(m_listStamps->getSelectedItem()));
+			m_selectStart = {-1, -1};
+
+			m_guiStamp->setVisible(m_listStamps->getSelectedItem() != 0);
+		}
+		else if(m_listStamps->getSelectedItem() != 0)
+		{
+			if(m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle() != "")
+				m_listStamps->setItem(m_listStamps->getSelectedItem(), m_guiStamp->findComponent("TEXTFIELD_STAMP_NAME")->getTitle());
+		}
+		if(m_listStamps->getSelectedItem() == 0 && (Globals::getInstance().m_keyStates[GLFW_KEY_LEFT_CONTROL] || Globals::getInstance().m_keyStates[GLFW_KEY_RIGHT_CONTROL]) && Globals::getInstance().m_keyStates[GLFW_KEY_C] == 1)
+		{
+			m_stamps.push_back(Stamp());
+			Vector2<Sint32> _topLeft = Vector2<Sint32>(min(m_selectStart.x, m_selectEnd.x), min(m_selectStart.y, m_selectEnd.y));
+			Vector2<Sint32> _stampSize = Vector2<Sint32>(abs(m_selectEnd.x - m_selectStart.x), abs(m_selectEnd.y - m_selectStart.y)) + 1;
+			Uint16** _groundData = new Uint16*[_stampSize.x];
+			Uint16** _worldData = new Uint16*[_stampSize.x];
+			Uint16** _entityData = new Uint16*[_stampSize.x];
+			Uint16** _skyData = new Uint16*[_stampSize.x];
+			for(Uint16 x = 0; x < _stampSize.x; x++)
+			{
+				_groundData[x] = new Uint16[_stampSize.y];
+				_worldData[x] = new Uint16[_stampSize.y];
+				_entityData[x] = new Uint16[_stampSize.y];
+				_skyData[x] = new Uint16[_stampSize.y];
+				for(Uint16 y = 0; y < _stampSize.y; y++)
+				{
+					_groundData[x][y] = m_map->getTile(0, x + _topLeft.x, y + _topLeft.y);
+					_worldData[x][y] = m_map->getTile(1, x + _topLeft.x, y + _topLeft.y);
+					_entityData[x][y] = m_map->getTile(2, x + _topLeft.x, y + _topLeft.y);
+					_skyData[x][y] = m_map->getTile(3, x + _topLeft.x, y + _topLeft.y);
+				}
+			}
+			m_stamps[m_stamps.size() - 1] = Stamp(_stampSize, _groundData, _worldData, _entityData, _skyData);
+			m_listStamps->addItem(std::string("Item ") + Util::numToString(m_listStamps->getItemCount()), 0);
+		}
+		break;
+	}
+
+	if(m_mouseInArea)
+		m_guiLeft->findComponent("TEXT_CURSOR_POS")->setTitle("Selected Tile\nX: " +
+			Util::numToString(Sint32(floor(m_mouseBuffer.x / (TILE_SIZE + m_zoom) + m_camPos.x))) + "\nY: " +
+			Util::numToString(Sint32(floor(m_mouseBuffer.y / (TILE_SIZE + m_zoom) + m_camPos.y))) + "\nCamera Pos\nX: " +
+			Util::numToString((m_camPos.x), 2) + "\nY: " +
+			Util::numToString((m_camPos.y), 2));
+	else
+		m_guiLeft->findComponent("TEXT_CURSOR_POS")->setTitle("Selected Tile\nX: NA\nY: NA\nCamera Pos\nX: " +
+			Util::numToString((m_camPos.x), 2) + "\nY: " +
+			Util::numToString((m_camPos.y), 2));
+
+	m_map->setViewSize(m_tileMapArea);
+	m_map->setTileSize(TILE_SIZE);
+	m_map->setGridVisible(m_showGrid);
+}
+
+void BoardEditor::render()
+{
+	glColor3f(1, 1, 1);
+	glBindTexture(GL_TEXTURE_2D, m_backTexId.getId());
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(0, 1);
+		glVertex2f(-GLfloat(Globals::getInstance().m_screenSize.x) / 2, -GLfloat(Globals::getInstance().m_screenSize.y) / 2);
+		glTexCoord2f(1, 1);
+		glVertex2f(GLfloat(Globals::getInstance().m_screenSize.x) / 2, -GLfloat(Globals::getInstance().m_screenSize.y) / 2);
+		glTexCoord2f(1, 0);
+		glVertex2f(GLfloat(Globals::getInstance().m_screenSize.x) / 2, GLfloat(Globals::getInstance().m_screenSize.y) / 2);
+		glTexCoord2f(0, 0);
+		glVertex2f(-GLfloat(Globals::getInstance().m_screenSize.x) / 2, GLfloat(Globals::getInstance().m_screenSize.y) / 2);
+	}
+	glEnd();
+
+	m_map->render(m_camPos, m_zoom);
+
+	Editor::render();
+}
+
+void BoardEditor::autosave()
+{
+	m_map->save("_autosave");
+}
+
+void BoardEditor::refresh()
+{
+	BoardEditor::getInstance().m_listWorld->clear();
+	for(Uint16 i = 0; i < BoardEditor::getInstance().m_map->getWorldObjectSize(); i++)
+		BoardEditor::getInstance().m_listWorld->addItem(BoardEditor::getInstance().m_map->getWorldObject(i).m_name, BoardEditor::getInstance().m_map->getWorldObject(i).m_tileTex);
+	BoardEditor::getInstance().m_tabEntity->clear();
+	for(Uint16 i = 0; i < BoardEditor::getInstance().m_map->getEntitySize(); i++)
+		BoardEditor::getInstance().m_tabEntity->addItem(BoardEditor::getInstance().m_map->getEntity(i).m_name);
 }

@@ -36,7 +36,6 @@ void CButton::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseSt
 		p_mousePos.x >= m_pos.x && p_mousePos.x <= m_pos.x + m_size.x &&
 		p_mousePos.y >= m_pos.y && p_mousePos.y <= m_pos.y + m_size.y)
 	{
-		addTooltip();
 		m_hover = true;
 		p_interactFlags += 1;
 	}
@@ -45,6 +44,7 @@ void CButton::input(Sint8& p_interactFlags, Sint8* p_keyStates, Sint8* p_mouseSt
 
 	if(m_hover)
 	{
+		addTooltip();
 		if(p_mouseStates[0] != 0)
 		{
 			if(p_mouseStates[0] == 1 || m_selected != 0)
@@ -221,26 +221,32 @@ void CButtonToggle::render()
 {
 	glPushMatrix();
 	{
-		Component::renderBack();
-		Component::renderFill();
+		if(m_texType == 0)
+		{
+			Component::renderBack();
+			Component::renderFill();
+		}
 		glTranslatef(GLfloat(m_pos.x), GLfloat(m_pos.y), 0);
-		if(m_selected && m_texType != 2)
-			m_colorTheme.m_active.useColor();
-		else
+		if(m_texType == 0)
 		{
-			if(m_hover)
-				((m_colorTheme.m_active / 2 + m_colorTheme.m_fore / 2)).useColor();
+			if(m_selected && m_texType != 2)
+				m_colorTheme.m_active.useColor();
 			else
-				m_colorTheme.m_fore.useColor();
+			{
+				if(m_hover)
+					((m_colorTheme.m_active / 2 + m_colorTheme.m_fore / 2)).useColor();
+				else
+					m_colorTheme.m_fore.useColor();
+			}
+			glBegin(GL_QUADS);
+			{
+				glVertex2f(0, 0);
+				glVertex2f(GLfloat(m_size.x), 0);
+				glVertex2f(GLfloat(m_size.x), GLfloat(m_size.y));
+				glVertex2f(0, GLfloat(m_size.y));
+			}
+			glEnd();
 		}
-		glBegin(GL_QUADS);
-		{
-			glVertex2f(0, 0);
-			glVertex2f(GLfloat(m_size.x), 0);
-			glVertex2f(GLfloat(m_size.x), GLfloat(m_size.y));
-			glVertex2f(0, GLfloat(m_size.y));
-		}
-		glEnd();
 
 		glTranslatef(GLfloat(m_size.x / 2), GLfloat(m_size.y / 2), 0);
 		if(m_texType != 0)
